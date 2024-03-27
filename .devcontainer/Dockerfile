@@ -1,13 +1,13 @@
 FROM almalinux:8.9
 
 RUN dnf -y install \
-      openssh-clients \
-      tar \
-      gzip \
-      git \
-      nodejs \
-      gcc \
-      openldap-devel && \
+    openssh-clients \
+    tar \
+    gzip \
+    git \
+    nodejs \
+    gcc \
+    openldap-devel && \
     rm -rf /var/cache/yum && \
     npm i -g n && \
     n 18

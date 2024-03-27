@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+  editor:
+    container_name: asteroids_editor
+    build:
+      context: .
+    user: developer
+    privileged: true
+    volumes:
+      - developer_home:/home/developer
+      - ../:/app/
+      - $HOME/.ssh:/home/developer/.ssh
+      - $HOME/.gnupg:/home/developer/.gnupg
+      - ./.bashrc:/home/developer/.bashrc
+      - ./.bash-git-prompt:/home/developer/.bash-git-prompt
+    environment:
+      - TZ=America/Denver
+      - PYTHONPATH=/app/api/
+    working_dir: /app
+    command: tail -f /dev/null
+
+  client:
+    container_name: asteroids_client
+    build:
+      context: .
+    user: developer
+    volumes:
+      - ../:/app/:z
+    env_file:
+      - .env
+    command: >
+      sh -c "
+        cd client
+        npm i
+        npm run dev
+      "
+    ports:
+      - 8080:8080
+  
+volumes:
+  developer_home:

@@ -1,8 +1,9 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 
 export const PlayerList: FC<{
   lobbyId: number
 }> = ({ lobbyId }) => {
+  console.log(lobbyId)
   const players = [
     { name: 'Player 1', color: 'Blue', weapon: 'Laser' },
     { name: 'Player 2', color: 'Red', weapon: 'Missiles' },

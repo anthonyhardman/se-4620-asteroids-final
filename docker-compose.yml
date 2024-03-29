@@ -4,21 +4,18 @@ services:
   asteroids_client:
     container_name: asteroids_client
     build:
-      context: .
-      dockerfile: client/Dockerfile
-    user: developer
-    volumes:
-      - ../:/app/:z
+      context: ./client
+      dockerfile: Dockerfile
     ports:
       - 6000:8080
-    environment:
-      - name=value
+    restart: unless-stopped
 
   asteroids_signalr:
     container_name: asteroids_signalr
     build:
       context: .
       dockerfile: ./signalR/Dockerfile
+    restart: unless-stopped
 
   asteroids_grafana:
     image: grafana/grafana:latest
@@ -32,7 +29,8 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./ops/grafana-datasource.yml:/etc/grafana/provisioning/datasources/grafana-datasource.yml
- 
+    restart: unless-stopped
+
   asteroids_prometheus:
     image: prom/prometheus:latest
     container_name: asteroids_prometheus
@@ -43,18 +41,21 @@ services:
       - prometheus_data:/prometheus
     # depends_on:
     #   - asteroids_actor_system
- 
+    restart: unless-stopped
+
   asteroids_loki:
     image: grafana/loki:latest
     container_name: asteroids_loki
     ports:
       - 6003:3100
- 
+    restart: unless-stopped
+
   asteroids_zipkin:
     image: openzipkin/zipkin:latest
     container_name: asteroids_zipkin
     ports:
       - 6004:9411
+    restart: unless-stopped
 
   # probably need to change external ports
   asteroids_otel-collector:
@@ -70,6 +71,7 @@ services:
       - 4317:4317 # OTLP gRPC receiver
       - 4318:4318 # OTLP http receiver
       - 55679:55679 # zpages extension
+    restart: unless-stopped
 
 volumes:
   grafana_data:

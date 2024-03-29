@@ -1,91 +1,67 @@
 version: "3"
 
 services:
-  editor:
-    container_name: asteroids_editor
-    build:
-      context: .
-    user: developer
-    privileged: true
-    volumes:
-      - developer_home:/home/developer
-      - ../:/app/
-      - $HOME/.ssh:/home/developer/.ssh
-      - $HOME/.gnupg:/home/developer/.gnupg
-      - ./.bashrc:/home/developer/.bashrc
-      - ./.bash-git-prompt:/home/developer/.bash-git-prompt
-    environment:
-      - TZ=America/Denver
-    working_dir: /app
-    command: tail -f /dev/null
-
-  client:
+  asteroids_client:
     container_name: asteroids_client
     build:
       context: .
+      dockerfile: client/Dockerfile
     user: developer
     volumes:
       - ../:/app/:z
-    env_file:
-      - .env
-    command: >
-      sh -c "
-        cd client
-        npm i
-        npm run dev
-      "
     ports:
-      - 8080:8080
+      - 6000:8080
+    environment:
+      - name=value
 
   asteroids_signalr:
     container_name: asteroids_signalr
     build:
-      context: ../
+      context: .
       dockerfile: ./signalR/Dockerfile
-    ports:
-      - 8081:8080
 
   asteroids_grafana:
     image: grafana/grafana:latest
     container_name: asteroids_grafana
     user: 1000:1000
     ports:
-      - 3000:3000
+      - 6001:3000
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
       - grafana_data:/var/lib/grafana
-      - ../dev-ops/grafana-datasource.yml:/etc/grafana/provisioning/datasources/grafana-datasource.yml
-
+      - ./ops/grafana-datasource.yml:/etc/grafana/provisioning/datasources/grafana-datasource.yml
+ 
   asteroids_prometheus:
     image: prom/prometheus:latest
     container_name: asteroids_prometheus
     ports:
-      - 9090:9090
+      - 6002:9090
     volumes:
-      - ../dev-ops/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./ops/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
-    # depends_on:
-    #   - asteroids_actor_system
-
+    depends_on:
+      - chatapp.api
+ 
   asteroids_loki:
     image: grafana/loki:latest
     container_name: asteroids_loki
     ports:
-      - 3100:3100
-
+      - 6003:3100
+ 
   asteroids_zipkin:
     image: openzipkin/zipkin:latest
     container_name: asteroids_zipkin
     ports:
-      - 9411:9411
+      - 6004:9411
 
+  # probably need to change external ports
   asteroids_otel-collector:
     image: otel/opentelemetry-collector-contrib
     container_name: asteroids_otel-collector
     volumes:
-      - ../dev-ops/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml
+      - ./ops/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml
     ports:
       - 1888:1888 # pprof extension
       - 8888:8888 # Prometheus metrics exposed by the Collector
@@ -96,6 +72,5 @@ services:
       - 55679:55679 # zpages extension
 
 volumes:
-  developer_home:
   grafana_data:
   prometheus_data:

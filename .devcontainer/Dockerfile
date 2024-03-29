@@ -1,19 +1,19 @@
-FROM almalinux:8.9
+FROM mcr.microsoft.com/dotnet/sdk:8.0
 
-RUN dnf -y install \
-    openssh-clients \
+RUN apt-get update && apt-get install -y \
+    openssh-client \
     tar \
     gzip \
     git \
     nodejs \
     gcc \
-    openldap-devel && \
-    rm -rf /var/cache/yum && \
+    fish \
+    npm && \ 
     npm i -g n && \
     n 18
-
+    
 RUN groupadd --gid 1000 developer \
-    && useradd --uid 1000 --gid 1000 -m developer \
+    && useradd --uid 1000 --gid 1000 -ms /usr/bin/fish developer \
     && chown -R developer. /home/developer
 
 USER developer

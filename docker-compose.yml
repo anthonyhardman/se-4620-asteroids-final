@@ -41,8 +41,8 @@ services:
     volumes:
       - ./ops/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
-    depends_on:
-      - chatapp.api
+    # depends_on:
+    #   - asteroids_actor_system
  
   asteroids_loki:
     image: grafana/loki:latest

@@ -57,7 +57,6 @@ services:
       - 6004:9411
     restart: unless-stopped
 
-  # probably need to change external ports
   asteroids_otel-collector:
     image: otel/opentelemetry-collector-contrib
     container_name: asteroids_otel-collector
@@ -69,7 +68,7 @@ services:
       - 8886:8889 # Prometheus exporter metrics
       - 13132:13133 # health_check extension
       - 4316:4317 # OTLP gRPC receiver
-      - 4317:4318 # OTLP http receiver
+      - 4319:4318 # OTLP http receiver
       - 55678:55679 # zpages extension
     restart: unless-stopped
 

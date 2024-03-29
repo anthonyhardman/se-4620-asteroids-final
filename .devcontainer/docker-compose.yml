@@ -37,8 +37,8 @@ services:
     ports:
       - 8080:8080
 
-  api:
-    container_name: asteroids_api
+  actor-system:
+    container_name: asteroids_actor_system
     build:
       context: .
     user: developer
@@ -46,7 +46,7 @@ services:
       - ../:/app/:z
     command: >
       sh -c "
-        cd api
+        cd actorSystem
         dotnet watch run
       "
     environment:

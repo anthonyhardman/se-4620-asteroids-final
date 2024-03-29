@@ -62,7 +62,7 @@ services:
       dockerfile: Raft.GateWay/Dockerfile
     environment:
       - NODE_ADDRESSES=http://raft-node-1:8080,http://raft-node-2:8080,http://raft-node-3:8080
-      - NODE_IDS=node-1,node-2,node-3
+      - NODE_IDS=asteroids_node_1,asteroids_node_2,asteroids_node_3
 
   raft-node-1:
     container_name: asteroids_node_1

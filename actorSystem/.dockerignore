@@ -1,0 +1,47 @@
+# Exclude bin and obj folders
+bin/
+obj/
+
+# Exclude any .git directories and files
+.git
+.gitignore
+
+# Exclude READMEs and LICENSE
+README.md
+LICENSE
+
+# Docker-related files
+.dockerignore
+Dockerfile
+
+# Exclude user-specific files such as Visual Studio user options file
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Exclude all configuration files and directories
+**/appsettings.json
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/Properties/launchSettings.json
+
+# Exclude logs
+**/logs
+*.log
+*.log.*
+
+# Temp files
+**/tmp
+**/temp
+
+# Exclude all .NET and Visual Studio Code artifacts
+.vs/
+.vscode/
+**/*.code-workspace
+
+# Exclude NuGet
+packages/
+*.nupkg
+*.snupkg
+NuGet.config

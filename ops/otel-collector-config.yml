@@ -1,0 +1,37 @@
+﻿receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+processors:
+  batch:
+
+exporters:
+  # prometheus:
+  #   endpoint: 0.0.0.0:5221
+  zipkin:
+    endpoint: http://asteroids_zipkin:9411/api/v2/spans
+  loki:
+    endpoint: http://asteroids_loki:3100/loki/api/v1/push
+
+extensions:
+  health_check:
+  pprof:
+  zpages:
+
+service:
+  extensions: [health_check, pprof, zpages]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [zipkin]
+    # metrics:
+    #   receivers: [otlp]
+    #   processors: [batch]
+    #   exporters: [prometheus]
+    logs:   
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [loki]

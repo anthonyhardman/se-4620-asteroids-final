@@ -1,0 +1,76 @@
+version: "3"
+
+services:
+  asteroids_client:
+    container_name: asteroids_client
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    user: developer
+    volumes:
+      - ../:/app/:z
+    ports:
+      - 6000:8080
+    environment:
+      - name=value
+
+  asteroids_signalr:
+    container_name: asteroids_signalr
+    build:
+      context: .
+      dockerfile: ./signalR/Dockerfile
+
+  asteroids_grafana:
+    image: grafana/grafana:latest
+    container_name: asteroids_grafana
+    user: 1000:1000
+    ports:
+      - 6001:3000
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./ops/grafana-datasource.yml:/etc/grafana/provisioning/datasources/grafana-datasource.yml
+ 
+  asteroids_prometheus:
+    image: prom/prometheus:latest
+    container_name: asteroids_prometheus
+    ports:
+      - 6002:9090
+    volumes:
+      - ./ops/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    # depends_on:
+    #   - asteroids_actor_system
+ 
+  asteroids_loki:
+    image: grafana/loki:latest
+    container_name: asteroids_loki
+    ports:
+      - 6003:3100
+ 
+  asteroids_zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: asteroids_zipkin
+    ports:
+      - 6004:9411
+
+  # probably need to change external ports
+  asteroids_otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    container_name: asteroids_otel-collector
+    volumes:
+      - ./ops/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
+
+volumes:
+  grafana_data:
+  prometheus_data:

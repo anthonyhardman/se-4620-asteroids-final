@@ -1,0 +1,15 @@
+﻿datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://asteroids_prometheus:9090
+    isDefault: true
+    editable: true
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://asteroids_loki:3100
+    editable: true
+    basic_auth: false
+    org_id: 1
+    version: 1

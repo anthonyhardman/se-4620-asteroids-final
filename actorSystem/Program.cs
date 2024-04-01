@@ -1,3 +1,4 @@
+using actorSystem;
 using actorSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<SignalRService>();
+builder.Services.AddSingleton<IActorBridge, AkkaService>();
+builder.Services.AddHostedService<AkkaService>(
+  sp => (AkkaService)sp.GetRequiredService<IActorBridge>()
+);
 
 var app = builder.Build();
 

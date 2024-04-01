@@ -12,8 +12,22 @@ jobs:
         run: |
           docker compose build 
 
-  Deploy:
+  Test:
+    runs-on: self-hosted
     needs: Build
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '8.0'
+      - name: Run tests
+        run: dotnet test ChatApp.Tests
+
+  Deploy:
+    needs: Test
     runs-on: self-hosted
     environment: Asteroids
     steps:

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace signalR;
 
-public class ChatHub : Hub
+public class AsteroidsHub : Hub
 {
   public async Task LeaveGroup(string groupName)
   {

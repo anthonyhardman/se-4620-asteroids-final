@@ -25,7 +25,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.MapHub<ChatHub>("/api/chat");
+app.MapHub<AsteroidsHub>("/ws");
 app.UseCors("AllowAll");
 
 app.Run();

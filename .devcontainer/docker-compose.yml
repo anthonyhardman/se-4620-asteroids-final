@@ -54,6 +54,7 @@ services:
       - DOTNET_USE_POLLING_FILE_WATCHER=true
       - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
       - ASPNETCORE_ENVIRONMENT=Development
+      - SIGNALR_URL=http://asteroids_signalr:8080/ws
   
   raft-gateway:
     container_name: asteroids_raft_gateway

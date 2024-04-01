@@ -1,8 +1,9 @@
 ﻿
 using Akka.Actor;
 using Akka.DependencyInjection;
+using DotNetty.Common.Utilities;
 
-namespace actorSystem;
+namespace actorSystem.Services;
 
 
 public class AkkaService : IHostedService, IActorBridge
@@ -11,6 +12,7 @@ public class AkkaService : IHostedService, IActorBridge
   private readonly IConfiguration _configuration;
   private readonly IServiceProvider _serviceProvider;
   private readonly IHostApplicationLifetime _applicationLifetime;
+  private readonly IClientService _clientService;
 
   public AkkaService(IServiceProvider serviceProvider, IHostApplicationLifetime appLifetime, IConfiguration configuration)
   {

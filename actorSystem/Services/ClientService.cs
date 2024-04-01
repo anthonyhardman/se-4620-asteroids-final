@@ -7,7 +7,7 @@ public class ClientService : IClientService
 {
   private readonly HubConnection _hubConnection;
 
-  public ClientService(IActorBridge akkaService)
+  public ClientService()
   {
     _hubConnection = new HubConnectionBuilder()
         .WithUrl(Environment.GetEnvironmentVariable("SIGNALR_URL") ?? "http://asteroids_signalr:8080/ws")

@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "signalR", "signalR\signalR.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "actorSystem.Test", "actorSystem.Test\actorSystem.Test.csproj", "{3F22C4C1-F568-4043-81D6-5F3A3A8B369B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shared", "shared\shared.csproj", "{7F7378A0-C333-4238-A8A0-484975D605F0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{3F22C4C1-F568-4043-81D6-5F3A3A8B369B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F22C4C1-F568-4043-81D6-5F3A3A8B369B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F22C4C1-F568-4043-81D6-5F3A3A8B369B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F7378A0-C333-4238-A8A0-484975D605F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F7378A0-C333-4238-A8A0-484975D605F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F7378A0-C333-4238-A8A0-484975D605F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F7378A0-C333-4238-A8A0-484975D605F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

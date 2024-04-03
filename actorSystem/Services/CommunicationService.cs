@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace actorSystem.Services;
 
-public class ClientService : IClientService
+public class CommunicationService : ICommunicationService
 {
   private readonly HubConnection _hubConnection;
   private readonly IActorBridge _akkaService;
 
-  public ClientService(IActorBridge akkaService)
+  public CommunicationService(IActorBridge akkaService)
   {
     _hubConnection = new HubConnectionBuilder()
         .WithUrl(Environment.GetEnvironmentVariable("SIGNALR_URL") ?? "http://asteroids_signalr:8080/ws")
@@ -25,4 +25,6 @@ public class ClientService : IClientService
       await _hubConnection.StartAsync();
     }
   }
+
+  p8
 }

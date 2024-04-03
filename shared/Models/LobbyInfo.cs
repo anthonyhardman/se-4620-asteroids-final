@@ -23,7 +23,7 @@ public class LobbyInfo
             throw new InvalidOperationException("Cannot add more players. The lobby is full.");
         }
 
-        return new LobbyInfo(this.Id, this.CreatedBy, this.PlayerCount + 1, this.MaxPlayers);
+        return new LobbyInfo(Id, CreatedBy, PlayerCount + 1, MaxPlayers);
     }
 
     public LobbyInfo RemovePlayer()
@@ -33,7 +33,7 @@ public class LobbyInfo
             throw new InvalidOperationException("Cannot remove players. The lobby is empty.");
         }
 
-        return new LobbyInfo(this.Id, this.CreatedBy, this.PlayerCount - 1, this.MaxPlayers);
+        return new LobbyInfo(Id, CreatedBy, PlayerCount - 1, MaxPlayers);
     }
 
     protected LobbyInfo(Guid id, string createdBy, int playerCount, int maxPlayers) : this(createdBy, playerCount, maxPlayers)

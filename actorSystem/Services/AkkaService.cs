@@ -31,6 +31,9 @@ public class AkkaService : IHostedService, IActorBridge
 
     _actorSystem = ActorSystem.Create("akka-system", actorSystemSetup);
 
+    // create client supervisor
+    // create lobby supervisor
+
 #pragma warning disable CS4014
     _actorSystem.WhenTerminated.ContinueWith(_ =>
     {

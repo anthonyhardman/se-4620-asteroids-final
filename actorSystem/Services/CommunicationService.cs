@@ -53,4 +53,5 @@ public class CommunicationService : ICommunicationService, IHostedService
   {
     await _hubConnection.StopAsync();
   }
+
 }

@@ -8,7 +8,7 @@ public class LobbyInfo
     public int PlayerCount { get; private set; }
     public int MaxPlayers { get; }
 
-    public LobbyInfo(string createdBy, int playerCount = 1, int maxPlayers = 5)
+    public LobbyInfo(string createdBy, int playerCount = 0, int maxPlayers = 5)
     {
         Id = Guid.NewGuid();
         CreatedBy = createdBy ?? throw new ArgumentNullException(nameof(createdBy));

@@ -1,4 +1,3 @@
-using Akka.Actor;
 using Akka.TestKit.Xunit2;
 using actorSystem;
 using Xunit;

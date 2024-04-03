@@ -15,7 +15,8 @@ function App() {
   useEffect(() => {
     if (auth.user) {
       console.log("Registered client with ID: ", auth.user.profile.sub)
-      context.registerClient(auth.user.profile.sub)
+      context.registerClient(auth.user.profile.preferred_username ?? "")
+      console.log(auth.user.profile.preferred_username)
     }
   }, [auth.user, context])
 

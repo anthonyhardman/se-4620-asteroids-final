@@ -2,6 +2,7 @@
 using Akka.Actor;
 using Akka.DependencyInjection;
 using DotNetty.Common.Utilities;
+using shared.Models;
 
 namespace actorSystem.Services;
 
@@ -13,7 +14,7 @@ public class AkkaService : IHostedService, IActorBridge
   private readonly ILogger<AkkaService> logger;
   private readonly IServiceProvider _serviceProvider;
   private readonly IHostApplicationLifetime _applicationLifetime;
-  private IActorRef? _clientSupervisor;
+  private IActorRef? _lobbySupervisor;
 
   public AkkaService(IServiceProvider serviceProvider, IHostApplicationLifetime appLifetime, IConfiguration configuration, ILogger<AkkaService> logger)
   {
@@ -32,7 +33,7 @@ public class AkkaService : IHostedService, IActorBridge
     var actorSystemSetup = bootstrap.And(diSetup);
 
     _actorSystem = _serviceProvider.GetRequiredService<ActorSystem>();
-    _clientSupervisor = _actorSystem.ActorSelection("/user/client-supervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+    _lobbySupervisor = _actorSystem.ActorSelection("/user/lobby-supervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
 
 #pragma warning disable CS4014
     _actorSystem.WhenTerminated.ContinueWith(_ =>
@@ -60,13 +61,17 @@ public class AkkaService : IHostedService, IActorBridge
 
   public void CreateLobby(string username)
   {
-    _clientSupervisor?.Tell(new CreateLobbyCommand(username));
+    _lobbySupervisor?.Tell(new CreateLobbyCommand(username));
   }
 
   public void JoinLobby(string username, Guid lobbyId)
   {
-    _clientSupervisor?.Tell(new JoinLobbyCommand(username, lobbyId));
+    _lobbySupervisor?.Tell(new JoinLobbyCommand(username, lobbyId));
   }
 
-
+  public async Task<LobbyList> GetLobbies()
+  {
+    var result = await _lobbySupervisor.Ask<LobbyList>(new GetLobbiesQuery());
+    return result ?? new LobbyList();
+  }
 }

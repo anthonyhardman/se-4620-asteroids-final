@@ -1,4 +1,6 @@
 
+using shared.Models;
+
 namespace actorSystem;
 
 public interface IActorBridge
@@ -7,5 +9,5 @@ public interface IActorBridge
   Task<T> Ask<T>(object message);
   public void CreateLobby(string username);
   public void JoinLobby(string username, Guid lobbyId);
-
+  public Task<LobbyList> GetLobbies();
 }

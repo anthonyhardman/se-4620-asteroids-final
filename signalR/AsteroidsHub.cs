@@ -12,13 +12,29 @@ public class AsteroidsHub : Hub
     this.logger = logger;
   }
 
-  public async Task SendLobbyList(LobbyList message, string connectionId)
+  // public async Task SendLobbyList(LobbyList message, string connectionId)
+  // {
+  //   // using var activity = message.Activity("Lobby list is in the signalr hub");
+  //   logger.LogInformation("Sending lobby list to: " + connectionId);
+  //   var client = Clients.Client(connectionId);
+  //   await client
+  //     .SendAsync(SignalRMessages.ReceiveLobbyList, message);
+  // }
+
+  // Sent by frontend
+  public async Task RequestLobbies()
   {
-    // using var activity = message.Activity("Lobby list is in the signalr hub");
-    logger.LogInformation("Sending lobby list to: " + connectionId);
-    var client = Clients.Client(connectionId);
-    await client
-      .SendAsync(SignalRMessages.ReceiveLobbyList, message);
+    logger.LogInformation("Requesting lobbies for: " + Context.ConnectionId);
+    // Only Akka listening to this one
+    await Clients.All.SendAsync("SendLobbies");
+  }
+
+  // Sent by Akka
+  public async Task SendLobbies(LobbyList lobbies)
+  {
+    logger.LogInformation("Sending lobbies to: " + Context.ConnectionId);
+    // Only frontend listening to this one
+    await Clients.All.SendAsync("ReceiveLobbies", lobbies);
   }
 
   public async Task LeaveGroup(string groupName)

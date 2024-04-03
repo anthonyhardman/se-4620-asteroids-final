@@ -10,6 +10,7 @@ interface WebsocketAsteroidsContextType {
   isConnected: boolean;
   lobbies: LobbyInfo[];
   createLobby: () => void;
+  requestLobbies: () => void;
 }
 
 export const WebsocketAsteroidsContext = createContext<WebsocketAsteroidsContextType>({
@@ -18,6 +19,7 @@ export const WebsocketAsteroidsContext = createContext<WebsocketAsteroidsContext
   isConnected: false,
   lobbies: [],
   createLobby: () => { },
+  requestLobbies: () => { }
 });
 
 export const WebsocketAsteroidsProvider: FC<{
@@ -51,7 +53,7 @@ export const WebsocketAsteroidsProvider: FC<{
       actionQueue.current = [];
     }).catch((error) => console.error("WebSocket Error: ", error));
 
-    connection.current.on("ReceiveLobbyList", (l: LobbyList) => {
+    connection.current.on("ReceiveLobbies", (l: LobbyList) => {
       setLobbies(l.lobbies)
     })
 
@@ -86,12 +88,19 @@ export const WebsocketAsteroidsProvider: FC<{
     }
   };
 
-
   const createLobby = () => {
     executeOrQueueAction(() => connection.current?.invoke("CreateLobby", auth.user?.profile.sub)
       .catch((error) => {
         console.error(error);
         toast.error("Error creating lobby")
+      }))
+  }
+
+  const requestLobbies = () => {
+    executeOrQueueAction(() => connection.current?.invoke("RequestLobbies")
+      .catch((error) => {
+        console.error(error);
+        toast.error("Error getting lobbies")
       }))
   }
 
@@ -101,7 +110,8 @@ export const WebsocketAsteroidsProvider: FC<{
       leaveGroup,
       isConnected,
       lobbies,
-      createLobby
+      createLobby,
+      requestLobbies
     }}>
       {children}
     </WebsocketAsteroidsContext.Provider>

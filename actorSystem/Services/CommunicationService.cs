@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.SignalR.Client;
+using shared.Models;
 
 namespace actorSystem.Services;
 
@@ -33,6 +34,7 @@ public class CommunicationService : ICommunicationService, IHostedService
     });
     _hubConnection.On<string>("CreateLobby", CreateLobby);
     _hubConnection.On<string, Guid>("JoinLobby", JoinLobby);
+    _hubConnection.On("SendLobbies", SendLobbies);
   }
 
 
@@ -57,6 +59,12 @@ public class CommunicationService : ICommunicationService, IHostedService
   public void JoinLobby(string username, Guid lobbyId)
   {
     _akkaService.JoinLobby(username, lobbyId);
+  }
+
+  public async Task SendLobbies()
+  {
+    var lobbyList = await _akkaService.GetLobbies();
+    await _hubConnection.SendAsync("SendLobbies", lobbyList);
   }
 
 }

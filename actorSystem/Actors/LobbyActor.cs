@@ -6,6 +6,7 @@ namespace actorSystem;
 
 public record JoinLobbyCommand(string Username, Guid LobbyId);
 public record UserJoined(string Username);
+public record GetLobbyInfoQuery();
 
 public class LobbyActor : ReceiveActor
 {
@@ -19,6 +20,7 @@ public class LobbyActor : ReceiveActor
     Players.Add(info.CreatedBy, new PlayerShip());
 
     Receive<JoinLobbyCommand>(command => JoinLobby(command));
+    Receive<GetLobbyInfoQuery>(_ => Sender.Tell(Info));
   }
 
   public void JoinLobby(JoinLobbyCommand command)

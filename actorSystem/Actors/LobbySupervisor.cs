@@ -17,9 +17,20 @@ public class LobbySupervisor : ReceiveActor
   {
     Receive<CreateLobbyCommand>(command => CreateLobby(command));
     Receive<JoinLobbyCommand>(command => JoinLobby(command));
-    Receive<GetLobbiesQuery>(_ => {
+    ReceiveAsync<GetLobbiesQuery>(async _ => await GetLobbies());
+  }
 
-    });
+  private async Task GetLobbies()
+  {
+    var lobbiesTasks = Lobbies.Values.Select(lobby => lobby.Ask<LobbyInfo>(new GetLobbyInfoQuery()));
+    if (!lobbiesTasks.Any())
+    {
+      Sender.Tell(new LobbyList(new List<LobbyInfo>()));
+      return;
+    }
+
+    var lobbies = (await Task.WhenAll(lobbiesTasks)).ToList();
+    Sender.Tell(new LobbyList(lobbies));
   }
 
   private void JoinLobby(JoinLobbyCommand command)

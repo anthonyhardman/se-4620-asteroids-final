@@ -3,19 +3,14 @@ using Akka.TestKit.Xunit2;
 using actorSystem;
 using Akka.TestKit;
 using FluentAssertions;
+using shared.Models;
 
 public class LobbySupervisorTests : TestKit
 {
-  private TestProbe probe;
-
-  public LobbySupervisorTests()
-  {
-    probe = CreateTestProbe();
-  }
-
   [Fact]
   public void LobbySupervisor_ShouldCreateLobby_WhenCreateLobbyCommandReceived()
   {
+    var probe = CreateTestProbe();
     var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
 
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
@@ -32,6 +27,7 @@ public class LobbySupervisorTests : TestKit
   [Fact]
   public void User_Joins_Created_Lobby()
   {
+    var probe = CreateTestProbe();
     var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
     var lobbyId = new Guid();
@@ -48,6 +44,47 @@ public class LobbySupervisorTests : TestKit
       uj.Username.Should().Be("testUser1");
     });
 
+  }
+
+  [Fact]
+  public async Task No_lobbies()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+
+    LobbyList list = (LobbyList)await lobbySupervisor.Ask(new GetLobbiesQuery());
+
+    list.LobbyCount.Should().Be(0);
+  }
+
+  [Fact]
+  public async Task Can_Get_Lobbies()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
+
+    probe.ExpectMsg<LobbyCreated>();
+
+    LobbyList list = (LobbyList)await lobbySupervisor.Ask(new GetLobbiesQuery());
+
+    list.LobbyCount.Should().Be(1);
+  }
+
+  [Fact]
+  public async Task Can_Get_Two_Lobbies()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    lobbySupervisor.Tell(new CreateLobbyCommand("testUser1"), probe.Ref);
+    probe.ExpectMsg<LobbyCreated>();
+
+    lobbySupervisor.Tell(new CreateLobbyCommand("testUser2"), probe.Ref);
+    probe.ExpectMsg<LobbyCreated>();
+
+    LobbyList list = (LobbyList)await lobbySupervisor.Ask(new GetLobbiesQuery());
+
+    list.LobbyCount.Should().Be(2);
   }
 
   // [Fact]

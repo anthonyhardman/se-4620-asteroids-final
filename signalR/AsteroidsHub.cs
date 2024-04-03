@@ -14,8 +14,8 @@ public class AsteroidsHub : Hub
 
   public async Task SendLobbyList(LobbyList message, string connectionId)
   {
-    using var activity = message.Activity("Lobby list is in the signalr hub");
-    // logger.LogInformation("processing signalR request going to: " + connectionId);
+    // using var activity = message.Activity("Lobby list is in the signalr hub");
+    logger.LogInformation("Sending lobby list to: " + connectionId);
     var client = Clients.Client(connectionId);
     await client
       .SendAsync(SignalRMessages.ReceiveLobbyList, message);
@@ -35,5 +35,11 @@ public class AsteroidsHub : Hub
   {
     logger.LogInformation("Registering client: " + username);
     await Clients.All.SendAsync("RegisterClient", username);
+  }
+
+  public async Task CreateLobby(string username)
+  {
+    logger.LogInformation("Creating lobby for client: " + username);
+    await Clients.All.SendAsync("CreateLobby", username);
   }
 }

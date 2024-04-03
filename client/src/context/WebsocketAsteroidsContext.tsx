@@ -1,24 +1,33 @@
 import * as signalR from "@microsoft/signalr";
 import { FC, ReactNode, createContext, useEffect, useRef, useState } from "react";
+import { LobbyInfo, LobbyList } from "../models/Lobby";
+import { useAuth } from "react-oidc-context";
+import toast from "react-hot-toast";
 
 interface WebsocketAsteroidsContextType {
   joinGroup: (group: string) => void;
   leaveGroup: (group: string) => void;
   registerClient: (client: string) => void;
   isConnected: boolean;
+  lobbies: LobbyInfo[];
+  createLobby: () => void;
 }
 
 export const WebsocketAsteroidsContext = createContext<WebsocketAsteroidsContextType>({
   joinGroup: () => { },
   leaveGroup: () => { },
   registerClient: () => { },
-  isConnected: false
+  isConnected: false,
+  lobbies: [],
+  createLobby: () => { },
 });
 
 export const WebsocketAsteroidsProvider: FC<{
   children: ReactNode
 }> = ({ children }) => {
+  const auth = useAuth();
   const [isConnected, setIsConnected] = useState(false);
+  const [lobbies, setLobbies] = useState<LobbyInfo[]>([])
   const connection = useRef<signalR.HubConnection | null>(null);
   const actionQueue = useRef<Array<() => void>>([]);
 
@@ -44,6 +53,10 @@ export const WebsocketAsteroidsProvider: FC<{
       actionQueue.current = [];
     }).catch((error) => console.error("WebSocket Error: ", error));
 
+    connection.current.on("ReceiveLobbyList", (l: LobbyList) => {
+      setLobbies(l.lobbies)
+    })
+
     connection.current.onclose = () => {
       console.log("Disconnected from the server.");
     };
@@ -52,6 +65,8 @@ export const WebsocketAsteroidsProvider: FC<{
       connection.current?.stop().then(() => setIsConnected(false));
     };
   }, []);
+
+  console.log("lobbies: ", lobbies)
 
   const executeOrQueueAction = (action: () => void) => {
     if (isConnected) {
@@ -68,16 +83,33 @@ export const WebsocketAsteroidsProvider: FC<{
 
   const leaveGroup = (group: string) => {
     if (isConnected && connection.current && connection.current.state === signalR.HubConnectionState.Connected) {
-      connection.current.invoke("LeaveGroup", group).catch((error) => console.error("Error leaving group:", error));
+      connection.current.invoke("LeaveGroup", group)
+        .catch((error) => console.error("Error leaving group:", error));
     }
   };
 
   const registerClient = (client: string) => {
-    executeOrQueueAction(() => connection.current?.invoke("RegisterClient", client).catch((error) => console.error("Error registering client:", error)))
+    executeOrQueueAction(() => connection.current?.invoke("RegisterClient", client)
+      .catch((error) => console.error("Error registering client:", error)))
+  }
+
+  const createLobby = () => {
+    executeOrQueueAction(() => connection.current?.invoke("CreateLobby", auth.user?.profile.sub)
+      .catch((error) => {
+        console.error(error);
+        toast.error("Error creating lobby")
+      }))
   }
 
   return (
-    <WebsocketAsteroidsContext.Provider value={{ joinGroup, leaveGroup, registerClient, isConnected }}>
+    <WebsocketAsteroidsContext.Provider value={{
+      joinGroup,
+      leaveGroup,
+      registerClient,
+      isConnected,
+      lobbies,
+      createLobby
+    }}>
       {children}
     </WebsocketAsteroidsContext.Provider>
   );

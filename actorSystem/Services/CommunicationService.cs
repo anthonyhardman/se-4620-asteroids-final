@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace actorSystem.Services;
 
-public class CommunicationService : ICommunicationService
+public class CommunicationService : ICommunicationService, IHostedService
 {
   private readonly HubConnection _hubConnection;
   private readonly IActorBridge _akkaService;
@@ -11,6 +11,8 @@ public class CommunicationService : ICommunicationService
 
   public CommunicationService(IActorBridge akkaService, ILogger<CommunicationService> logger)
   {
+    Console.WriteLine("communication service");
+    logger.LogInformation("communication service");
     _hubConnection = new HubConnectionBuilder()
         .WithUrl(Environment.GetEnvironmentVariable("SIGNALR_URL") ?? "http://asteroids_signalr:8080/ws")
         .WithAutomaticReconnect()
@@ -30,26 +32,29 @@ public class CommunicationService : ICommunicationService
       {
         throw new InvalidOperationException("ConnectionId cannot be null.");
       }
-      
+
       RegisterClient(username, _hubConnection.ConnectionId);
     });
-
-    ConnectAsync().Wait();
   }
 
-  public async Task ConnectAsync()
-  {
-    if (_hubConnection.State == HubConnectionState.Disconnected)
-    {
-      Console.WriteLine("Connecting to SignalR hub...");
-      logger.LogInformation("Connecting to SignalR hub...");
-      await _hubConnection.StartAsync();
-    }
-  }
 
   public void RegisterClient(string username, string connectionId)
   {
     _akkaService.RegisterClient(new RegisterClientCommand(connectionId, username));
   }
 
+  public async Task StartAsync(CancellationToken cancellationToken)
+  {
+    Console.WriteLine("Connecting to SignalR hub...");
+    logger.LogInformation("Connecting to SignalR hub...");
+    if (_hubConnection.State == HubConnectionState.Disconnected)
+    {
+      await _hubConnection.StartAsync();
+    }
+  }
+
+  public async Task StopAsync(CancellationToken cancellationToken)
+  {
+    await _hubConnection.StopAsync();
+  }
 }

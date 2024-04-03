@@ -8,21 +8,25 @@ namespace actorSystem.Services;
 
 public class AkkaService : IHostedService, IActorBridge
 {
-  private ActorSystem _actorSystem;
+  private ActorSystem? _actorSystem;
   private readonly IConfiguration _configuration;
+  private readonly ILogger<AkkaService> logger;
   private readonly IServiceProvider _serviceProvider;
   private readonly IHostApplicationLifetime _applicationLifetime;
-  private IActorRef _clientSupervisor;
+  private IActorRef? _clientSupervisor;
 
-  public AkkaService(IServiceProvider serviceProvider, IHostApplicationLifetime appLifetime, IConfiguration configuration)
+  public AkkaService(IServiceProvider serviceProvider, IHostApplicationLifetime appLifetime, IConfiguration configuration, ILogger<AkkaService> logger)
   {
     _serviceProvider = serviceProvider;
     _applicationLifetime = appLifetime;
     _configuration = configuration;
+    this.logger = logger;
   }
 
   public async Task StartAsync(CancellationToken cancellationToken)
   {
+    Console.WriteLine("Connecting to akka service...");
+    logger.LogInformation("logger: Connecting to akka service...");
     var bootstrap = BootstrapSetup.Create();
 
     var diSetup = DependencyResolverSetup.Create(_serviceProvider);

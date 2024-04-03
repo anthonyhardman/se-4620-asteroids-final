@@ -15,8 +15,6 @@ builder.Services.AddAkka("asteroid-system", (cb) =>
 {
   cb.WithActors((system, registry) =>
      {
-       var sessionSupervisorActor = system.ActorOf(ClientSupervisor.Props(), "client-supervisor");
-       registry.TryRegister<ClientSupervisor>(sessionSupervisorActor);
        var lobbySupervisorActor = system.ActorOf(LobbySupervisor.Props(), "lobby-supervisor");
        registry.TryRegister<LobbySupervisor>(lobbySupervisorActor);
      });

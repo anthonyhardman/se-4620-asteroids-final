@@ -7,7 +7,6 @@ import toast from "react-hot-toast";
 interface WebsocketAsteroidsContextType {
   joinGroup: (group: string) => void;
   leaveGroup: (group: string) => void;
-  registerClient: (client: string) => void;
   isConnected: boolean;
   lobbies: LobbyInfo[];
   createLobby: () => void;
@@ -16,7 +15,6 @@ interface WebsocketAsteroidsContextType {
 export const WebsocketAsteroidsContext = createContext<WebsocketAsteroidsContextType>({
   joinGroup: () => { },
   leaveGroup: () => { },
-  registerClient: () => { },
   isConnected: false,
   lobbies: [],
   createLobby: () => { },
@@ -88,10 +86,6 @@ export const WebsocketAsteroidsProvider: FC<{
     }
   };
 
-  const registerClient = (client: string) => {
-    executeOrQueueAction(() => connection.current?.invoke("RegisterClient", client)
-      .catch((error) => console.error("Error registering client:", error)))
-  }
 
   const createLobby = () => {
     executeOrQueueAction(() => connection.current?.invoke("CreateLobby", auth.user?.profile.sub)
@@ -105,7 +99,6 @@ export const WebsocketAsteroidsProvider: FC<{
     <WebsocketAsteroidsContext.Provider value={{
       joinGroup,
       leaveGroup,
-      registerClient,
       isConnected,
       lobbies,
       createLobby

@@ -15,6 +15,8 @@ public class LobbyActor : ReceiveActor
   public LobbyActor(LobbyInfo info)
   {
     Info = info;
+    Info.AddPlayer();
+    Players.Add(info.CreatedBy, new PlayerShip());
 
     Receive<JoinLobbyCommand>(command => JoinLobby(command));
   }

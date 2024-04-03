@@ -31,15 +31,15 @@ public class AsteroidsHub : Hub
     await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
   }
 
-  public async Task RegisterClient(string username)
-  {
-    logger.LogInformation("Registering client: " + username);
-    await Clients.All.SendAsync("RegisterClient", username);
-  }
-
   public async Task CreateLobby(string username)
   {
     logger.LogInformation("Creating lobby for client: " + username);
     await Clients.All.SendAsync("CreateLobby", username);
+  }
+
+  public async Task JoinLobby(string username, Guid lobbyId)
+  {
+    logger.LogInformation("Joining lobby for client: " + username);
+    await Clients.All.SendAsync("JoinLobby", username, lobbyId);
   }
 }

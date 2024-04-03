@@ -58,8 +58,15 @@ public class AkkaService : IHostedService, IActorBridge
     throw new NotImplementedException();
   }
 
-  public void RegisterClient(RegisterClientCommand command)
+  public void CreateLobby(string username)
   {
-    _clientSupervisor.Tell(command);
+    _clientSupervisor?.Tell(new CreateLobbyCommand(username));
   }
+
+  public void JoinLobby(string username, Guid lobbyId)
+  {
+    _clientSupervisor?.Tell(new JoinLobbyCommand(username, lobbyId));
+  }
+
+
 }

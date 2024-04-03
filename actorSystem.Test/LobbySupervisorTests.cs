@@ -41,11 +41,11 @@ public class LobbySupervisorTests : TestKit
       lobbyId = lc.Info.Id;
     });
 
-    lobbySupervisor.Tell(new JoinLobbyCommand("testUser", lobbyId), probe.Ref);
+    lobbySupervisor.Tell(new JoinLobbyCommand("testUser1", lobbyId), probe.Ref);
 
     probe.ExpectMsg<UserJoined>(uj =>
     {
-      uj.Username.Should().Be("testUser");
+      uj.Username.Should().Be("testUser1");
     });
 
   }

@@ -2,5 +2,6 @@ namespace actorSystem.Services;
 
 public interface ICommunicationService
 {
-  public void RegisterClient(string username, string connectionId);
+  public void CreateLobby(string username);
+  public void JoinLobby(string username, Guid lobbyId);
 }

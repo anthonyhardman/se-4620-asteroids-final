@@ -30,16 +30,11 @@ public class CommunicationService : ICommunicationService, IHostedService
       {
         throw new InvalidOperationException("ConnectionId cannot be null.");
       }
-
-      RegisterClient(username, _hubConnection.ConnectionId);
     });
+    _hubConnection.On<string>("CreateLobby", CreateLobby);
+    _hubConnection.On<string, Guid>("JoinLobby", JoinLobby);
   }
 
-
-  public void RegisterClient(string username, string connectionId)
-  {
-    _akkaService.RegisterClient(new RegisterClientCommand(connectionId, username));
-  }
 
   public async Task StartAsync(CancellationToken cancellationToken)
   {
@@ -52,6 +47,16 @@ public class CommunicationService : ICommunicationService, IHostedService
   public async Task StopAsync(CancellationToken cancellationToken)
   {
     await _hubConnection.StopAsync();
+  }
+
+  public void CreateLobby(string username)
+  {
+    _akkaService.CreateLobby(username);
+  }
+
+  public void JoinLobby(string username, Guid lobbyId)
+  {
+    _akkaService.JoinLobby(username, lobbyId);
   }
 
 }

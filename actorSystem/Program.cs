@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ICommunicationService, CommunicationService>();
-
+builder.Services.AddSingleton<IActorBridge, AkkaService>();
 
 builder.Services.AddAkka("asteroid-system", (cb) =>
 {
@@ -22,7 +22,6 @@ builder.Services.AddAkka("asteroid-system", (cb) =>
      });
 });
 
-builder.Services.AddSingleton<IActorBridge, AkkaService>();
 builder.Services.AddHostedService<AkkaService>(
   sp => (AkkaService)sp.GetRequiredService<IActorBridge>()
 );

@@ -29,7 +29,7 @@ public class AkkaService : IHostedService, IActorBridge
 
     var actorSystemSetup = bootstrap.And(diSetup);
 
-    _actorSystem = ActorSystem.Create("akka-system", actorSystemSetup);
+    _actorSystem = _serviceProvider.GetRequiredService<ActorSystem>();
     _clientSupervisor = _actorSystem.ActorSelection("/user/client-supervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
 
 #pragma warning disable CS4014

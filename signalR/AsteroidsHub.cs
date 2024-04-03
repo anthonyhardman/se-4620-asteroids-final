@@ -30,4 +30,10 @@ public class AsteroidsHub : Hub
   {
     await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
   }
+
+  public async Task RegisterClient(string username)
+  {
+    logger.LogInformation("Registering client: " + username);
+    await Clients.All.SendAsync("RegisterClient", username);
+  }
 }

@@ -25,8 +25,6 @@ public class AkkaService : IHostedService, IActorBridge
 
   public async Task StartAsync(CancellationToken cancellationToken)
   {
-    Console.WriteLine("Connecting to akka service...");
-    logger.LogInformation("logger: Connecting to akka service...");
     var bootstrap = BootstrapSetup.Create();
 
     var diSetup = DependencyResolverSetup.Create(_serviceProvider);

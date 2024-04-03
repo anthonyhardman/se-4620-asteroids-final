@@ -11,8 +11,6 @@ public class CommunicationService : ICommunicationService, IHostedService
 
   public CommunicationService(IActorBridge akkaService, ILogger<CommunicationService> logger)
   {
-    Console.WriteLine("communication service");
-    logger.LogInformation("communication service");
     _hubConnection = new HubConnectionBuilder()
         .WithUrl(Environment.GetEnvironmentVariable("SIGNALR_URL") ?? "http://asteroids_signalr:8080/ws")
         .WithAutomaticReconnect()
@@ -45,8 +43,6 @@ public class CommunicationService : ICommunicationService, IHostedService
 
   public async Task StartAsync(CancellationToken cancellationToken)
   {
-    Console.WriteLine("Connecting to comm service...");
-    logger.LogInformation("Connecting to comm service...");
     if (_hubConnection.State == HubConnectionState.Disconnected)
     {
       await _hubConnection.StartAsync();

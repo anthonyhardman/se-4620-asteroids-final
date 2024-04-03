@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Akka.Actor;
 using Akka.Event;
 
@@ -19,10 +18,10 @@ public class ClientSupervisor : ReceiveActor
   private void RegisterClient(RegisterClientCommand command)
   {
     var actorPath = GetClientActorPath(command.Username);
-    if (Clients.ContainsKey(actorPath))
+    if (Clients.TryGetValue(actorPath, out IActorRef? value))
     {
       Log.Info($"User session for {command.Username} already exists.");
-      Sender.Tell(new ClientRegistered(command.ConnectionId, Clients[actorPath].Path.ToStringWithAddress()));
+      Sender.Tell(new ClientRegistered(command.ConnectionId, value.Path.ToStringWithAddress()));
     }
     else
     {
@@ -37,21 +36,10 @@ public class ClientSupervisor : ReceiveActor
 
   private string GetClientActorPath(string username)
   {
-    var validActorPath = UsernameToActorPath(username);
+    var validActorPath = AkkaHelper.UsernameToActorPath(username);
     return $"client_{validActorPath}";
   }
 
-  private static string UsernameToActorPath(string username)
-  {
-    if (string.IsNullOrEmpty(username))
-    {
-      throw new ArgumentException("Username cannot be null or empty.", nameof(username));
-    }
-
-    string validActorPath = Regex.Replace(username, "[\\$\\/\\#\\s]+", "_").ToLower();
-
-    return validActorPath;
-  }
 
   protected ILoggingAdapter Log { get; } = Context.GetLogger();
   public static Props Props()

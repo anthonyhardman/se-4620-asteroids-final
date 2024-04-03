@@ -12,7 +12,7 @@ public class AkkaService : IHostedService, IActorBridge
   private readonly IConfiguration _configuration;
   private readonly IServiceProvider _serviceProvider;
   private readonly IHostApplicationLifetime _applicationLifetime;
-  private readonly IClientService _clientService;
+  private IActorRef _clientSupervisor;
 
   public AkkaService(IServiceProvider serviceProvider, IHostApplicationLifetime appLifetime, IConfiguration configuration)
   {
@@ -30,9 +30,7 @@ public class AkkaService : IHostedService, IActorBridge
     var actorSystemSetup = bootstrap.And(diSetup);
 
     _actorSystem = ActorSystem.Create("akka-system", actorSystemSetup);
-
-    // create client supervisor
-    // create lobby supervisor
+    _clientSupervisor = _actorSystem.ActorSelection("/user/client-supervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
 
 #pragma warning disable CS4014
     _actorSystem.WhenTerminated.ContinueWith(_ =>
@@ -56,5 +54,10 @@ public class AkkaService : IHostedService, IActorBridge
   public Task<T> Ask<T>(object message)
   {
     throw new NotImplementedException();
+  }
+
+  public void RegisterClient(RegisterClientCommand command)
+  {
+    _clientSupervisor.Tell(command);
   }
 }

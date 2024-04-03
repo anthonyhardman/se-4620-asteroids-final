@@ -14,8 +14,23 @@ public class CommunicationService : ICommunicationService
         .WithUrl(Environment.GetEnvironmentVariable("SIGNALR_URL") ?? "http://asteroids_signalr:8080/ws")
         .WithAutomaticReconnect()
         .Build();
-    
+
     _akkaService = akkaService;
+
+    _hubConnection.On<string>("RegisterClient", (username) =>
+    {
+      if (string.IsNullOrEmpty(username))
+      {
+        throw new ArgumentException("Username cannot be null or empty.", nameof(username));
+      }
+
+      if (_hubConnection.ConnectionId == null)
+      {
+        throw new InvalidOperationException("ConnectionId cannot be null.");
+      }
+      
+      RegisterClient(username, _hubConnection.ConnectionId);
+    });
   }
 
   public async Task ConnectAsync()
@@ -26,5 +41,9 @@ public class CommunicationService : ICommunicationService
     }
   }
 
-  p8
+  public void RegisterClient(string username, string connectionId)
+  {
+    _akkaService.RegisterClient(new RegisterClientCommand(connectionId, username));
+  }
+
 }

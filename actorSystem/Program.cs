@@ -1,5 +1,6 @@
 using actorSystem;
 using actorSystem.Services;
+using Akka.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +8,20 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<IClientService, ClientService>();
+builder.Services.AddSingleton<ICommunicationService, CommunicationService>();
+
+
+builder.Services.AddAkka("asteroid-system", (cb) =>
+{
+  cb.WithActors((system, registry) =>
+     {
+       var sessionSupervisorActor = system.ActorOf(ClientSupervisor.Props(), "client-supervisor");
+       registry.TryRegister<ClientSupervisor>(sessionSupervisorActor);
+       var lobbySupervisorActor = system.ActorOf(LobbySupervisor.Props(), "lobby-supervisor");
+       registry.TryRegister<LobbySupervisor>(lobbySupervisorActor);
+     });
+});
+
 builder.Services.AddSingleton<IActorBridge, AkkaService>();
 builder.Services.AddHostedService<AkkaService>(
   sp => (AkkaService)sp.GetRequiredService<IActorBridge>()
@@ -24,29 +38,4 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-  var forecast = Enumerable.Range(1, 5).Select(index =>
-      new WeatherForecast
-      (
-          DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-          Random.Shared.Next(-20, 55),
-          summaries[Random.Shared.Next(summaries.Length)]
-      ))
-      .ToArray();
-  return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
-
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-  public int TemperatureF => 32 + (int)(TemperatureC / 0.55);
-}

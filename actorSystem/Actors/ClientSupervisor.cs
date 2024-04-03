@@ -4,12 +4,12 @@ using Akka.Event;
 
 namespace actorSystem;
 
-public record RegisterClientCommand(string connectionId, string username);
-public record ClientRegistered(string connectionId, string clientActorPath);
+public record RegisterClientCommand(string ConnectionId, string Username);
+public record ClientRegistered(string ConnectionId, string ClientActorPath);
 
 public class ClientSupervisor : ReceiveActor
 {
-  private Dictionary<string, IActorRef> clients = new();
+  private readonly Dictionary<string, IActorRef> Clients = [];
 
   public ClientSupervisor()
   {
@@ -18,20 +18,20 @@ public class ClientSupervisor : ReceiveActor
 
   private void RegisterClient(RegisterClientCommand command)
   {
-    var actorPath = GetClientActorPath(command.username);
-    if (clients.ContainsKey(actorPath))
+    var actorPath = GetClientActorPath(command.Username);
+    if (Clients.ContainsKey(actorPath))
     {
-      Log.Info($"User session for {command.username} already exists.");
-      // Sender.Tell(new ClientRegistered(command.connectionId, clients[command.username].Path.ToStringWithAddress()));
+      Log.Info($"User session for {command.Username} already exists.");
+      Sender.Tell(new ClientRegistered(command.ConnectionId, Clients[actorPath].Path.ToStringWithAddress()));
     }
     else
     {
-      Log.Info($"Creating user session for {command.username}");
+      Log.Info($"Creating user session for {command.Username}");
 
-      var clientActor = Context.ActorOf(ClientActor.Props(command.connectionId, command.username), actorPath);
+      var clientActor = Context.ActorOf(ClientActor.Props(command.ConnectionId, command.Username), actorPath);
 
-      clients.Add(actorPath, clientActor);
-      // Sender.Tell(new ClientRegistered(command.connectionId, clientActor.Path.ToStringWithAddress()));
+      Clients.Add(actorPath, clientActor);
+      Sender.Tell(new ClientRegistered(command.ConnectionId, clientActor.Path.ToStringWithAddress()));
     }
   }
 
@@ -58,4 +58,5 @@ public class ClientSupervisor : ReceiveActor
   {
     return Akka.Actor.Props.Create<ClientSupervisor>();
   }
+
 }

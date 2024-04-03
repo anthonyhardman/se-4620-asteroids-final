@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="Akka" Version="1.5.18" />
+    <PackageReference Include="Akka.Hosting" Version="1.5.18" />
+    <PackageReference Include="Akka.Remote.Hosting" Version="1.5.18" />
     <PackageReference Include="Akka.Bootstrap.Docker" Version="0.5.3" />
     <PackageReference Include="Akka.Cluster" Version="1.5.18" />
     <PackageReference Include="Akka.DependencyInjection" Version="1.5.18" />

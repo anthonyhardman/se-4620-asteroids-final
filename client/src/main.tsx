@@ -9,12 +9,14 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from 'react-oidc-context';
 import { WebStorageStateStore } from 'oidc-client-ts';
 import { getQueryClient } from './services/queryClient.tsx';
+import { AuthRequired } from './AuthRequired.tsx';
+import { WebsocketAsteroidsContext, WebsocketAsteroidsProvider } from './context/WebsocketAsteroidsContext.tsx';
 
 const queryClient = getQueryClient();
 
 const oidcConfig = {
   userStore: new WebStorageStateStore({ store: window.localStorage }),
-  authority: "https://harnesskc.duckdns:25651/realms/asteroids",
+  authority: "https://harnesskc.duckdns.org:25651/realms/asteroids",
   client_id: "asteroids",
   redirect_uri: window.location.origin,
   response_type: 'code',
@@ -27,9 +29,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <AuthProvider {...oidcConfig}>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          {/* <AuthRequired> */}
-          <App />
-          {/* </AuthRequired> */}
+          <AuthRequired>
+            <WebsocketAsteroidsProvider>
+              <App />
+            </WebsocketAsteroidsProvider>
+          </AuthRequired>
         </BrowserRouter>
       </QueryClientProvider>
     </AuthProvider>

@@ -4,9 +4,19 @@ import { Home } from "./pages/home/Home"
 import { NavBar } from "./components/NavBar"
 import { Lobby } from "./pages/lobby/Lobby"
 import { Shop } from "./pages/shop/Shop"
-import { WebsocketAsteroidsProvider } from "./context/WebsocketAsteroidsContext"
+import { WebsocketAsteroidsContext, WebsocketAsteroidsProvider } from "./context/WebsocketAsteroidsContext"
+import { useAuth } from "react-oidc-context"
+import { useContext, useEffect } from "react"
 
 function App() {
+  const auth = useAuth()
+  const context = useContext(WebsocketAsteroidsContext)
+  
+  useEffect(() => {
+    if (auth.user) {
+      context.registerClient(auth.user.profile.sub)
+    }
+  }, [auth.user, context])
 
   return (
     <>

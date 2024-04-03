@@ -4,12 +4,14 @@ import { FC, ReactNode, createContext, useEffect, useRef, useState } from "react
 interface WebsocketAsteroidsContextType {
   joinGroup: (group: string) => void;
   leaveGroup: (group: string) => void;
+  registerClient: (client: string) => void;
   isConnected: boolean;
 }
 
 export const WebsocketAsteroidsContext = createContext<WebsocketAsteroidsContextType>({
   joinGroup: () => { },
   leaveGroup: () => { },
+  registerClient: () => { },
   isConnected: false
 });
 
@@ -70,8 +72,12 @@ export const WebsocketAsteroidsProvider: FC<{
     }
   };
 
+  const registerClient = (client: string) => {
+    executeOrQueueAction(() => connection.current?.invoke("RegisterClient", client).catch((error) => console.error("Error registering client:", error)))
+  }
+
   return (
-    <WebsocketAsteroidsContext.Provider value={{ joinGroup, leaveGroup, isConnected }}>
+    <WebsocketAsteroidsContext.Provider value={{ joinGroup, leaveGroup, registerClient, isConnected }}>
       {children}
     </WebsocketAsteroidsContext.Provider>
   );

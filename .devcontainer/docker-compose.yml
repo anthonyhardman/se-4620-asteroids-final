@@ -112,8 +112,10 @@ services:
       - DOTNET_WATCH_AUTO_RELOAD=true
       - DOTNET_USE_POLLING_FILE_WATCHER=true
       - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
-      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_URLS=http://+:8081
       - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - 8081:8081
 
   asteroids_grafana:
     image: grafana/grafana:latest

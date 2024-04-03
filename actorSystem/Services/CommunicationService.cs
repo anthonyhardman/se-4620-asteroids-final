@@ -45,8 +45,8 @@ public class CommunicationService : ICommunicationService, IHostedService
 
   public async Task StartAsync(CancellationToken cancellationToken)
   {
-    Console.WriteLine("Connecting to SignalR hub...");
-    logger.LogInformation("Connecting to SignalR hub...");
+    Console.WriteLine("Connecting to comm service...");
+    logger.LogInformation("Connecting to comm service...");
     if (_hubConnection.State == HubConnectionState.Disconnected)
     {
       await _hubConnection.StartAsync();

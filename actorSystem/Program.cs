@@ -25,7 +25,9 @@ builder.Services.AddAkka("asteroid-system", (cb) =>
 builder.Services.AddHostedService<AkkaService>(
   sp => (AkkaService)sp.GetRequiredService<IActorBridge>()
 );
-
+builder.Services.AddHostedService<CommunicationService>(
+  sp => (CommunicationService)sp.GetRequiredService<ICommunicationService>()
+);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

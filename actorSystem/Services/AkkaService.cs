@@ -76,10 +76,9 @@ public class AkkaService : IHostedService, IActorBridge
     return result ?? new LobbyList();
   }
 
-  public async Task<DateTime> StartGame(StartGameCommand command)
+  public void StartGame(StartGameCommand command)
   {
-    var result = await _lobbySupervisor.Ask<GameStartedCommand>(command);
-    return result.StartedAt;
+    _lobbySupervisor.Tell(command);
   }
 
   public async Task<LobbyInfo> GetLobbyInfo(Guid lobbyId)

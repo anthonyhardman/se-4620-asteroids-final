@@ -62,7 +62,7 @@ public class LobbyActor : ReceiveActor
         new Tick(),
         Self
       );
-      Sender.Tell(new GameStartedCommand(DateTime.UtcNow));
+      Log.Info($"Started game {command.LobbyId}");
     }
     catch (InvalidOperationException exception)
     {

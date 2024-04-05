@@ -67,10 +67,17 @@ public class AsteroidsHub : Hub
     await Clients.All.SendAsync("LobbyCreated");
   }
 
-  public async Task GameStarted(DateTime startedAt, Guid lobbyId)
+  public async Task GameStarted(Guid lobbyId)
   {
-    logger.LogInformation($"Game {lobbyId} started at {startedAt}");
-    await Clients.Group(lobbyId.ToString()).SendAsync("GameStarted", startedAt);
+    logger.LogInformation($"Game {lobbyId} started");
+    await Clients.Group(lobbyId.ToString()).SendAsync("GameStarted");
+  }
+
+  public async Task GameStarting(Guid lobbyId)
+  {
+    DateTime startedAt = DateTime.UtcNow;
+    logger.LogInformation($"Starting game countdown for lobby {lobbyId}");
+    await Clients.Group(lobbyId.ToString()).SendAsync("GameStarting", startedAt);
   }
 
   public async Task UpdateLobbyInfo(LobbyInfo info)

@@ -11,7 +11,7 @@ import { useAuth } from "react-oidc-context";
 import toast from "react-hot-toast";
 import { getQueryClient } from "../services/queryClient";
 import { HomeKeys } from "../pages/home/homeHooks";
-import { LobbyInfo } from "../models/Lobby";
+import { LobbyInfo, LobbyState } from "../models/Lobby";
 
 interface WebsocketAsteroidsContextType {
   joinGroup: (group: string) => void;
@@ -19,7 +19,9 @@ interface WebsocketAsteroidsContextType {
   isConnected: boolean;
   startedAt?: Date;
   createLobby: () => void;
-  lobbyInfo?: LobbyInfo
+  lobbyInfo?: LobbyInfo;
+  playing: boolean;
+  startPlayingCountdown: (lobbyId: string) => void;
 }
 
 export const WebsocketAsteroidsContext =
@@ -30,6 +32,8 @@ export const WebsocketAsteroidsContext =
     startedAt: undefined,
     createLobby: () => { },
     lobbyInfo: undefined,
+    playing: false,
+    startPlayingCountdown: () => { }
   });
 
 export const WebsocketAsteroidsProvider: FC<{
@@ -39,6 +43,7 @@ export const WebsocketAsteroidsProvider: FC<{
   const [isConnected, setIsConnected] = useState(false);
   const [startedAt, setStartedAt] = useState<Date>();
   const [lobbyInfo, setLobbyInfo] = useState<LobbyInfo>()
+  const [playing, setPlaying] = useState(lobbyInfo?.state == LobbyState.Playing);
   const connection = useRef<signalR.HubConnection | null>(null);
   const actionQueue = useRef<Array<() => void>>([]);
   const queryClient = getQueryClient();
@@ -74,8 +79,14 @@ export const WebsocketAsteroidsProvider: FC<{
       });
     });
 
-    connection.current.on("GameStarted", (startedAt: Date) => {
+    connection.current.on("GameStarting", (startedAt: Date) => {
+      console.log("Starting game")
       setStartedAt(startedAt);
+    })
+
+    connection.current.on("GameStarted", () => {
+      console.log("Started game")
+      setPlaying(true);
     })
 
     connection.current.on("UpdateLobbyInfo", (info: LobbyInfo) => {
@@ -132,6 +143,17 @@ export const WebsocketAsteroidsProvider: FC<{
     );
   };
 
+  const startPlayingCountdown = (lobbyId: string) => {
+    executeOrQueueAction(() =>
+      connection.current
+        ?.invoke("GameStarting", lobbyId)
+        .catch((error) => {
+          console.error(error);
+          toast.error("Error starting lobby");
+        })
+    );
+  }
+
   return (
     <WebsocketAsteroidsContext.Provider
       value={{
@@ -140,7 +162,9 @@ export const WebsocketAsteroidsProvider: FC<{
         isConnected,
         startedAt,
         createLobby,
-        lobbyInfo
+        lobbyInfo,
+        playing,
+        startPlayingCountdown
       }}
     >
       {children}

@@ -5,7 +5,6 @@ import { WebsocketAsteroidsContext } from '../../context/WebsocketAsteroidsConte
 import toast from 'react-hot-toast';
 import { useGetLobbyInfoQuery, useStartGameMutation } from './lobbyHooks';
 import { Spinner } from '../../components/Spinner';
-import { LobbyState } from '../../models/Lobby';
 
 export const Lobby = () => {
   const context = useContext(WebsocketAsteroidsContext);
@@ -42,7 +41,7 @@ export const Lobby = () => {
   }, [lobbyId, context, context.isConnected]);
 
   useEffect(() => {
-    if (context.startedAt) {
+    if (context.startedAt && !context.playing) {
       setGameStarting(true);
       const start = new Date(context.startedAt).getTime();
       const now = Date.now();
@@ -55,8 +54,9 @@ export const Lobby = () => {
           setCountdown(timer - 1);
           timer -= 1;
         } else {
-          clearInterval(countdownIntervalRef.current);
+          startGameMutation.mutate(lobbyId ?? "");
           toast.success('Game starts now!');
+          clearInterval(countdownIntervalRef.current);
           setGameStarting(false);
         }
       }, 1000);
@@ -65,19 +65,24 @@ export const Lobby = () => {
     return () => {
       if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
-  }, [context.startedAt]);
+  }, [context, startGameMutation, lobbyId]);
 
   if (lobbyInfoQuery.isLoading) return <Spinner />
   if (lobbyInfoQuery.isError) return <h3 className='text-center'>Error getting lobby</h3>
   if (!lobbyId || !lobbyInfo) return <h3 className='text-center'>Unknown Lobby</h3>
 
   const startGame = () => {
-    startGameMutation.mutate(lobbyId);
+    context.startPlayingCountdown(lobbyId)
   };
+
+  if (context.playing) return (
+    <div>Playing</div>
+  )
+
   return (
     <div className="container mt-2 text-center">
       <h1>Waiting in Lobby</h1>
-      {(gameStarting) ? (
+      {gameStarting ? (
         <>
           <div className="alert alert-warning" role="alert">
             Game starting in {countdown} seconds. Complete your customizations!
@@ -88,7 +93,7 @@ export const Lobby = () => {
         </>
       ) : (
         <>
-          {lobbyInfo.state === LobbyState.Joining ? (
+          {!context.playing ? (
             <>
               <div>The game has not started yet. Customize your ship before the game begins!</div>
               <div className='mt-2'>

@@ -10,7 +10,7 @@ public interface IActorBridge
   public Task<string> CreateLobby(string username);
   public void JoinLobby(string username, Guid lobbyId);
   public Task<LobbyList> GetLobbies();
-  public Task<DateTime> StartGame(StartGameCommand command);
+  public void StartGame(StartGameCommand command);
   public Task<LobbyInfo> GetLobbyInfo(Guid lobbyId);
 
 }

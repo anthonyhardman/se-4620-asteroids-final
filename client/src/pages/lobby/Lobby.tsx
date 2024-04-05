@@ -2,27 +2,17 @@ import { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { PlayerList } from './PlayerList';
 import { WebsocketAsteroidsContext } from '../../context/WebsocketAsteroidsContext';
+import toast from 'react-hot-toast';
+import { useStartGameMutation } from './lobbyHooks';
 
 export const Lobby = () => {
   const context = useContext(WebsocketAsteroidsContext);
   const lobbyId = useParams<{ id: string }>().id;
+  const startGameMutation = useStartGameMutation()
   const [gameStarting, setGameStarting] = useState(false);
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState<number>(0);
   const [countdownInterval, setCountdownInterval] = useState(0);
 
-  const startGame = () => {
-    setGameStarting(true);
-    let timer = countdown;
-    setCountdownInterval(setInterval(() => {
-      setCountdown(timer - 1);
-      if (timer <= 1) {
-        clearInterval(countdownInterval);
-        console.log('Game starts now!');
-        reset();
-      }
-      timer -= 1;
-    }, 1000));
-  };
 
   const reset = () => {
     setGameStarting(false);
@@ -46,7 +36,27 @@ export const Lobby = () => {
     }
   }, [lobbyId, context, context.isConnected])
 
+  useEffect(() => {
+    if (context.startedAt) {
+      setGameStarting(true);
+      let timer = new Date().getUTCDate().valueOf() - new Date(context.startedAt).valueOf();
+      setCountdownInterval(setInterval(() => {
+        setCountdown(timer - 1);
+        if (timer <= 1) {
+          clearInterval(countdownInterval);
+          toast.success('Game starts now!');
+        }
+        timer -= 1;
+      }, 1000));
+    }
+  }, [context.startedAt, countdownInterval])
+
   if (!lobbyId) return <h3 className='text-center'>Unknown Lobby</h3>
+
+  
+  const startGame = () => {
+    startGameMutation.mutate(lobbyId);
+  };
 
   return (
     <div className="container mt-2 text-center">

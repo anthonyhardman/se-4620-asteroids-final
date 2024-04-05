@@ -16,6 +16,7 @@ interface WebsocketAsteroidsContextType {
   joinGroup: (group: string) => void;
   leaveGroup: (group: string) => void;
   isConnected: boolean;
+  startedAt?: Date;
   createLobby: () => void;
 }
 
@@ -24,6 +25,7 @@ export const WebsocketAsteroidsContext =
     joinGroup: () => {},
     leaveGroup: () => {},
     isConnected: false,
+    startedAt: undefined,
     createLobby: () => {},
   });
 
@@ -32,6 +34,7 @@ export const WebsocketAsteroidsProvider: FC<{
 }> = ({ children }) => {
   const auth = useAuth();
   const [isConnected, setIsConnected] = useState(false);
+  const [startedAt, setStartedAt] = useState<Date>()
   const connection = useRef<signalR.HubConnection | null>(null);
   const actionQueue = useRef<Array<() => void>>([]);
   const queryClient = getQueryClient();
@@ -66,6 +69,10 @@ export const WebsocketAsteroidsProvider: FC<{
         queryKey: HomeKeys.lobbies,
       });
     });
+
+    connection.current.on("GameStarted", (startedAt: Date) => {
+      setStartedAt(startedAt);
+    })
 
     connection.current.onclose = () => {
       console.log("Disconnected from the server.");
@@ -122,6 +129,7 @@ export const WebsocketAsteroidsProvider: FC<{
         joinGroup,
         leaveGroup,
         isConnected,
+        startedAt,
         createLobby,
       }}
     >

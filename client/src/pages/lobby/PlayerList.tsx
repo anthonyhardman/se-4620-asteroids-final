@@ -3,6 +3,7 @@ import { FC } from 'react';
 export const PlayerList: FC<{
   lobbyId: string
 }> = ({ lobbyId }) => {
+  console.log(lobbyId);
   const players = [
     { name: 'Player 1', color: 'Blue', weapon: 'Laser' },
     { name: 'Player 2', color: 'Red', weapon: 'Missiles' },

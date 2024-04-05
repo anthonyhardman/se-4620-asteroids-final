@@ -51,6 +51,7 @@ public class LobbyActor : ReceiveActor
   {
     try
     {
+      Log.Info($"Starting game {command.LobbyId}");
       Info.Start(command.Username);
       _gameLoop = Context.System.Scheduler.ScheduleTellRepeatedlyCancelable(
         TimeSpan.FromMilliseconds(_timeStep),

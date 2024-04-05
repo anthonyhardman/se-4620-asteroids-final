@@ -4,7 +4,7 @@ import { LobbyInfo } from "../../models/Lobby";
 import { useUser } from "../../userHooks";
 
 export const HomeKeys = {
-  lobbies: ["lobbies"],
+  lobbies: ["lobbies"] as const,
 };
 
 export const useGetLobbiesQuery = () => {

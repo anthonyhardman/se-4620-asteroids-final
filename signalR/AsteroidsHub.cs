@@ -70,6 +70,6 @@ public class AsteroidsHub : Hub
   public async Task GameStarted(DateTime startedAt, Guid lobbyId)
   {
     logger.LogInformation($"Game {lobbyId} started at {startedAt}");
-    await Clients.Group(lobbyId.ToString()).SendAsync("GameStarted", startedAt, lobbyId);
+    await Clients.Group(lobbyId.ToString()).SendAsync("GameStarted", startedAt);
   }
 }

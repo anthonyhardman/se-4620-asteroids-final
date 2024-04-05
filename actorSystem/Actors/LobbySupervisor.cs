@@ -64,7 +64,7 @@ public class LobbySupervisor : ReceiveActor
   private void CreateLobby(CreateLobbyCommand command)
   {
     var lobbyInfo = new LobbyInfo(command.Username);
-    var lobbyActor = Context.ActorOf(LobbyActor.Props(lobbyInfo), $"lobby_{command.Username}");
+    var lobbyActor = Context.ActorOf(LobbyActor.Props(lobbyInfo), $"lobby_{lobbyInfo.Id}");
     Lobbies.Add(lobbyInfo.Id, lobbyActor);
     Sender.Tell(new LobbyCreated(lobbyInfo, lobbyActor.Path.ToString()));
     Log.Info($"Lobby created: {lobbyActor.Path}");

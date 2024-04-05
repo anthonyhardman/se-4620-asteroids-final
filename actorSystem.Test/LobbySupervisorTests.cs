@@ -110,4 +110,92 @@ public class LobbySupervisorTests : TestKit
     lobbySupervisor.Tell(new JoinLobbyCommand("testUser6", lobbyId), probe.Ref);
     probe.ExpectMsg<Status.Failure>();
   }
+
+  [Fact]
+  public void Attempt_To_Join_Non_Existent_Lobby_Returns_Failure()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var nonExistentLobbyId = Guid.NewGuid(); // Using a GUID that hasn't been associated with a lobby
+
+    lobbySupervisor.Tell(new JoinLobbyCommand("randomUser", nonExistentLobbyId), probe.Ref);
+
+    probe.ExpectMsg<Status.Failure>(failure =>
+    {
+      failure.Cause.Message.Should().Contain($"Lobby {nonExistentLobbyId} not found.");
+    });
+  }
+
+  [Fact]
+  public void Request_Info_For_Non_Existent_Lobby_Returns_Failure()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var nonExistentLobbyId = Guid.NewGuid(); // A GUID that hasn't been used to create a lobby
+
+    lobbySupervisor.Tell(nonExistentLobbyId, probe.Ref);
+
+    probe.ExpectMsg<Status.Failure>(failure =>
+    {
+      failure.Cause.Message.Should().Contain($"Lobby {nonExistentLobbyId} not found.");
+    });
+  }
+
+  [Fact]
+  public void Multiple_Users_Join_Same_Lobby()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    lobbySupervisor.Tell(new CreateLobbyCommand("hostUser"), probe.Ref);
+    var lobbyCreated = probe.ExpectMsg<LobbyCreated>();
+    var lobbyId = lobbyCreated.Info.Id;
+
+    lobbySupervisor.Tell(new JoinLobbyCommand("user1", lobbyId), probe.Ref);
+    lobbySupervisor.Tell(new JoinLobbyCommand("user2", lobbyId), probe.Ref);
+
+    probe.ExpectMsg<UserJoined>(uj => uj.Username.Should().Be("user1"));
+    probe.ExpectMsg<UserJoined>(uj => uj.Username.Should().Be("user2"));
+  }
+
+  [Fact]
+  public void Start_Game_In_Non_Existent_Lobby_Returns_Failure()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var nonExistentLobbyId = Guid.NewGuid();
+
+    lobbySupervisor.Tell(new StartGameCommand("no_one", nonExistentLobbyId), probe.Ref);
+
+    probe.ExpectMsg<Status.Failure>(failure =>
+    {
+      failure.Cause.Message.Should().Contain($"Unable to start game. Lobby {nonExistentLobbyId} not found.");
+    });
+  }
+
+  [Fact]
+  public void LobbySupervisor_Receives_Unexpected_Command()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+
+    lobbySupervisor.Tell(new object(), probe.Ref);
+
+    probe.ExpectNoMsg(TimeSpan.FromSeconds(1)); // Verifying that the system does not crash or respond unpredictably.
+  }
+
+  [Fact]
+  public async Task Query_Lobbies_After_Game_Starts()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    lobbySupervisor.Tell(new CreateLobbyCommand("user1"), probe.Ref);
+    var lobby1 = probe.ExpectMsg<LobbyCreated>();
+    lobbySupervisor.Tell(new CreateLobbyCommand("user2"), probe.Ref);
+    probe.ExpectMsg<LobbyCreated>();
+
+    lobbySupervisor.Tell(new StartGameCommand("user1", lobby1.Info.Id), probe.Ref);
+
+    LobbyList list = (LobbyList)await lobbySupervisor.Ask(new GetLobbiesQuery());
+    list.Count.Should().Be(2);
+  }
 }

@@ -10,7 +10,7 @@ public record GetLobbyInfoQuery();
 public record Tick();
 public record StartGameCommand(string Username, Guid LobbyId);
 public record GameStartedCommand(DateTime StartedAt);
-public record StopGameCommand(string Username);
+public record StopGameCommand(string Username, Guid LobbyId);
 public record PlayerInput(string Username, InputState InputState);
 
 public class LobbyActor : ReceiveActor
@@ -62,6 +62,7 @@ public class LobbyActor : ReceiveActor
         new Tick(),
         Self
       );
+      Sender.Tell(new Status.Success("Game started."));
       Log.Info($"Started game {command.LobbyId}");
     }
     catch (InvalidOperationException exception)
@@ -74,6 +75,7 @@ public class LobbyActor : ReceiveActor
   public void StopGame(StopGameCommand command)
   {
     _gameLoop?.Cancel();
+    Sender.Tell(new Status.Success("Game stopped."));
   }
 
   public void UpdateGame()

@@ -20,6 +20,7 @@ public class LobbySupervisor : ReceiveActor
     ReceiveAsync<GetLobbiesQuery>(async _ => await GetLobbies());
     Receive<StartGameCommand>(StartGame);
     Receive<Guid>(GetLobby);
+    Receive<StopGameCommand>(StopGame);
   }
 
   private void GetLobby(Guid lobbyId)
@@ -61,6 +62,7 @@ public class LobbySupervisor : ReceiveActor
     }
   }
 
+
   private void CreateLobby(CreateLobbyCommand command)
   {
     var lobbyInfo = new LobbyInfo(command.Username);
@@ -81,6 +83,19 @@ public class LobbySupervisor : ReceiveActor
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to start game. Lobby {command.LobbyId} not found.")));
     }
   }
+
+  private void StopGame(StopGameCommand command)
+  {
+    if (Lobbies.TryGetValue(command.LobbyId, out var lobby))
+    {
+      lobby.Forward(command);
+    }
+    else
+    {
+      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to stop game. Lobby {command.LobbyId} not found.")));
+    }
+  }
+
 
   protected ILoggingAdapter Log { get; } = Context.GetLogger();
 

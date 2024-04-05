@@ -3,12 +3,18 @@ import { useParams } from 'react-router-dom';
 import { PlayerList } from './PlayerList';
 import { WebsocketAsteroidsContext } from '../../context/WebsocketAsteroidsContext';
 import toast from 'react-hot-toast';
-import { useStartGameMutation } from './lobbyHooks';
+import { useGetLobbyInfoQuery, useStartGameMutation } from './lobbyHooks';
+import { Spinner } from '../../components/Spinner';
+import { LobbyState } from '../../models/Lobby';
 
 export const Lobby = () => {
   const context = useContext(WebsocketAsteroidsContext);
   const lobbyId = useParams<{ id: string }>().id;
   const startGameMutation = useStartGameMutation();
+  const lobbyInfoQuery = useGetLobbyInfoQuery(lobbyId);
+  const lobbyInfo = context.lobbyInfo && context.lobbyInfo.id === lobbyId
+    ? context.lobbyInfo
+    : lobbyInfoQuery.data
   const [gameStarting, setGameStarting] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const countdownIntervalRef = useRef<number>();
@@ -61,8 +67,9 @@ export const Lobby = () => {
     };
   }, [context.startedAt]);
 
-
-  if (!lobbyId) return <h3 className='text-center'>Unknown Lobby</h3>
+  if (lobbyInfoQuery.isLoading) return <Spinner />
+  if (lobbyInfoQuery.isError) return <h3 className='text-center'>Error getting lobby</h3>
+  if (!lobbyId || !lobbyInfo) return <h3 className='text-center'>Unknown Lobby</h3>
 
   const startGame = () => {
     startGameMutation.mutate(lobbyId);
@@ -70,7 +77,7 @@ export const Lobby = () => {
   return (
     <div className="container mt-2 text-center">
       <h1>Waiting in Lobby</h1>
-      {gameStarting ? (
+      {(gameStarting) ? (
         <>
           <div className="alert alert-warning" role="alert">
             Game starting in {countdown} seconds. Complete your customizations!
@@ -81,35 +88,23 @@ export const Lobby = () => {
         </>
       ) : (
         <>
-          <div>The game has not started yet. Customize your ship before the game begins!</div>
-          <div className='mt-2'>
-            <button className="btn btn-success" onClick={startGame}>Start Game</button>
-          </div >
+          {lobbyInfo.state === LobbyState.Joining ? (
+            <>
+              <div>The game has not started yet. Customize your ship before the game begins!</div>
+              <div className='mt-2'>
+                <button className="btn btn-success" onClick={startGame}>Start Game</button>
+              </div >
+            </>
+          ) : (
+            <div>Playing</div>
+          )}
         </>
       )}
       <div className='row my-3'>
-        {/* <div className='col'>
-          <div className='row text-start'>
-            <div className='col'>
-              <label htmlFor="shipColorSelect" className="form-label">Ship Color</label>
-              <select id="shipColorSelect" className="form-select" value={shipColor} onChange={(e) => setShipColor(e.target.value)}>
-                <option>Blue</option>
-                <option>Red</option>
-                <option>Green</option>
-              </select>
-            </div>
-            <div className='col'>
-              <label htmlFor="shipWeaponSelect" className="form-label">Ship Weapon</label>
-              <select id="shipWeaponSelect" className="form-select" value={shipWeapon} onChange={(e) => setShipWeapon(e.target.value)}>
-                <option>Laser</option>
-                <option>Missiles</option>
-                <option>Plasma Cannon</option>
-              </select>
-            </div>
-          </div>
-        </div> */}
         <div className='col-auto text-start'>
-          <PlayerList lobbyId={lobbyId} />
+          {lobbyInfo && (
+            <PlayerList lobbyInfo={lobbyInfo} />
+          )}
         </div>
       </div>
 

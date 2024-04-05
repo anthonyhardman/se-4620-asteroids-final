@@ -61,9 +61,9 @@ public class AsteroidsHub : Hub
     await Clients.All.SendAsync("JoinLobby", username, lobbyId);
   }
 
-  public async Task LobbyCreated()
+  public async Task LobbyCreated(Guid lobbyId)
   {
-    logger.LogInformation("Lobby created");
+    logger.LogInformation($"Lobby created {lobbyId}");
     await Clients.All.SendAsync("LobbyCreated");
   }
 
@@ -71,5 +71,11 @@ public class AsteroidsHub : Hub
   {
     logger.LogInformation($"Game {lobbyId} started at {startedAt}");
     await Clients.Group(lobbyId.ToString()).SendAsync("GameStarted", startedAt);
+  }
+
+  public async Task UpdateLobbyInfo(LobbyInfo info)
+  {
+    logger.LogInformation($"Update lobby {info.Id}");
+    await Clients.Group(info.Id.ToString()).SendAsync("UpdateLobbyInfo", info);
   }
 }

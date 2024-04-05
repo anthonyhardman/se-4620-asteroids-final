@@ -11,4 +11,6 @@ public interface IActorBridge
   public void JoinLobby(string username, Guid lobbyId);
   public Task<LobbyList> GetLobbies();
   public Task<DateTime> StartGame(StartGameCommand command);
+  public Task<LobbyInfo> GetLobbyInfo(Guid lobbyId);
+
 }

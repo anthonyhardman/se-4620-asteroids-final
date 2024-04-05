@@ -19,6 +19,19 @@ public class LobbySupervisor : ReceiveActor
     Receive<JoinLobbyCommand>(JoinLobby);
     ReceiveAsync<GetLobbiesQuery>(async _ => await GetLobbies());
     Receive<StartGameCommand>(StartGame);
+    Receive<Guid>(GetLobby);
+  }
+
+  private void GetLobby(Guid lobbyId)
+  {
+    if (Lobbies.TryGetValue(lobbyId, out var lobby))
+    {
+      lobby.Forward(new GetLobbyInfoQuery());
+    }
+    else
+    {
+      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Lobby {lobbyId} not found.")));
+    }
   }
 
   private async Task GetLobbies()

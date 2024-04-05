@@ -54,7 +54,7 @@ public class CommunicationService : ICommunicationService, IHostedService
   public async Task<string> CreateLobby(string username)
   {
     var lobbyId = await _akkaService.CreateLobby(username);
-    await _hubConnection.SendAsync("LobbyCreated");
+    await _hubConnection.SendAsync("LobbyCreated", lobbyId);
     return lobbyId;
   }
 
@@ -72,5 +72,15 @@ public class CommunicationService : ICommunicationService, IHostedService
   {
     var startedAt = await _akkaService.StartGame(command);
     await _hubConnection.SendAsync("GameStarted", startedAt, command.LobbyId);
+    var info = await _akkaService.GetLobbyInfo(command.LobbyId);
+    Console.WriteLine(JsonSerializer.Serialize(info));
+    await _hubConnection.SendAsync("UpdateLobbyInfo", info);
   }
+
+  public async Task<LobbyInfo> GetLobbyInfo(Guid lobbyId)
+  {
+    var result = await _akkaService.GetLobbyInfo(lobbyId);
+    return result;
+  }
+
 }

@@ -11,6 +11,7 @@ import { useAuth } from "react-oidc-context";
 import toast from "react-hot-toast";
 import { getQueryClient } from "../services/queryClient";
 import { HomeKeys } from "../pages/home/homeHooks";
+import { LobbyInfo } from "../models/Lobby";
 
 interface WebsocketAsteroidsContextType {
   joinGroup: (group: string) => void;
@@ -18,15 +19,17 @@ interface WebsocketAsteroidsContextType {
   isConnected: boolean;
   startedAt?: Date;
   createLobby: () => void;
+  lobbyInfo?: LobbyInfo
 }
 
 export const WebsocketAsteroidsContext =
   createContext<WebsocketAsteroidsContextType>({
-    joinGroup: () => {},
-    leaveGroup: () => {},
+    joinGroup: () => { },
+    leaveGroup: () => { },
     isConnected: false,
     startedAt: undefined,
-    createLobby: () => {},
+    createLobby: () => { },
+    lobbyInfo: undefined,
   });
 
 export const WebsocketAsteroidsProvider: FC<{
@@ -34,7 +37,8 @@ export const WebsocketAsteroidsProvider: FC<{
 }> = ({ children }) => {
   const auth = useAuth();
   const [isConnected, setIsConnected] = useState(false);
-  const [startedAt, setStartedAt] = useState<Date>()
+  const [startedAt, setStartedAt] = useState<Date>();
+  const [lobbyInfo, setLobbyInfo] = useState<LobbyInfo>()
   const connection = useRef<signalR.HubConnection | null>(null);
   const actionQueue = useRef<Array<() => void>>([]);
   const queryClient = getQueryClient();
@@ -72,6 +76,11 @@ export const WebsocketAsteroidsProvider: FC<{
 
     connection.current.on("GameStarted", (startedAt: Date) => {
       setStartedAt(startedAt);
+    })
+
+    connection.current.on("UpdateLobbyInfo", (info: LobbyInfo) => {
+      console.log("Recieved update")
+      setLobbyInfo(info)
     })
 
     connection.current.onclose = () => {
@@ -131,6 +140,7 @@ export const WebsocketAsteroidsProvider: FC<{
         isConnected,
         startedAt,
         createLobby,
+        lobbyInfo
       }}
     >
       {children}

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace shared.Models;
 
 public enum LobbyState
@@ -11,11 +13,21 @@ public enum LobbyState
 public class LobbyInfo
 {
     public Guid Id { get; }
-    public string CreatedBy { get; }
+    public string CreatedBy { get; } = string.Empty;
     public int PlayerCount => Players.Count;
     public int MaxPlayers { get; }
     public Dictionary<string, PlayerShip> Players { get; init; } = [];
     public LobbyState State { get; private set; }
+
+    [JsonConstructor]
+    public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state)
+    {
+        Id = id;
+        CreatedBy = createdBy;
+        MaxPlayers = maxPlayers;
+        Players = players;
+        State = state;
+    }
 
     public LobbyInfo(string createdBy, int maxPlayers = 5)
     {

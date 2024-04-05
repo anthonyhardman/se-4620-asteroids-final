@@ -1,13 +1,14 @@
 using System.Data;
 using System.Numerics;
+using System.Text.Json.Serialization;
 
 namespace shared.Models;
 
 public class PlayerShip
 {
-  Vector2 Position { get; set; }
-  Vector2 Velocity { get; set; }
-  Vector2 Direction { get; set; }
+  public Vector2 Position { get; private set; }
+  public Vector2 Velocity { get; private set; }
+  public Vector2 Direction { get; private set; }
   public InputState? InputState { get; set; }
 
   public void Update(float timeStep)

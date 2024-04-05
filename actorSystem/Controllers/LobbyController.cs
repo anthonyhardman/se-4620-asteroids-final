@@ -35,4 +35,11 @@ public class LobbyController : ControllerBase
   {
     await _communicationService.StartGame(command);
   }
+
+  [HttpGet("{lobbyId}")]
+  public async Task<LobbyInfo> GetLobbyInfo(Guid lobbyId)
+  {
+    var result = await _communicationService.GetLobbyInfo(lobbyId);
+    return result;
+  }
 }

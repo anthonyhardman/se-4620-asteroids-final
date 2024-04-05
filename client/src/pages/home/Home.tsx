@@ -33,7 +33,7 @@ export const Home = () => {
               <div className="card-body text-center">
                 <div className="card-title fs-4">Lobby {index + 1}</div>
                 <div className="mb-2">{GetPlayerText(l.playerCount)}</div>
-                {l.playerCount < 5 ? (
+                {l.playerCount < l.maxPlayers ? (
                   <Link
                     to={`/lobby/${l.id}`}
                     className="text-reset text-decoration-none btn btn-secondary w-100"

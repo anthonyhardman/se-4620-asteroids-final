@@ -5,6 +5,7 @@ import { WebsocketAsteroidsContext } from '../../context/WebsocketAsteroidsConte
 import toast from 'react-hot-toast';
 import { useGetLobbyInfoQuery, useStartGameMutation } from './lobbyHooks';
 import { Spinner } from '../../components/Spinner';
+import { LobbyState } from '../../models/Lobby';
 
 export const Lobby = () => {
   const context = useContext(WebsocketAsteroidsContext);
@@ -16,6 +17,7 @@ export const Lobby = () => {
     : lobbyInfoQuery.data
   const [gameStarting, setGameStarting] = useState(false);
   const [countdown, setCountdown] = useState(10);
+  const playing = context.playing || lobbyInfo?.state === LobbyState.Playing
   const countdownIntervalRef = useRef<number>();
 
   const reset = () => {
@@ -75,7 +77,7 @@ export const Lobby = () => {
     context.startPlayingCountdown(lobbyId)
   };
 
-  if (context.playing) return (
+  if (playing) return (
     <div>Playing</div>
   )
 
@@ -93,7 +95,7 @@ export const Lobby = () => {
         </>
       ) : (
         <>
-          {!context.playing ? (
+          {!playing ? (
             <>
               <div>The game has not started yet. Customize your ship before the game begins!</div>
               <div className='mt-2'>

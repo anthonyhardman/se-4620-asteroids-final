@@ -23,6 +23,7 @@ public class LobbyActor : ReceiveActor
   {
     Info = info;
     Info.AddPlayer(info.CreatedBy);
+    Log.Info($"{info.CreatedBy} created and joined lobby {Info.Id}");
 
     Receive<JoinLobbyCommand>(JoinLobby);
     Receive<GetLobbyInfoQuery>(_ => Sender.Tell(Info));
@@ -37,11 +38,12 @@ public class LobbyActor : ReceiveActor
     {
       Info.AddPlayer(command.Username);
       Sender.Tell(new UserJoined(command.Username));
+      Log.Info($"{command.Username} joined lobby {Info.Id}");
     }
     catch (InvalidOperationException exception)
     {
       Log.Error(exception.Message);
-      Sender.Tell(new Status.Failure(new KeyNotFoundException(exception.Message)));
+      Sender.Tell(new Status.Failure(new InvalidOperationException(exception.Message)));
     }
   }
 
@@ -65,7 +67,7 @@ public class LobbyActor : ReceiveActor
     catch (InvalidOperationException exception)
     {
       Log.Error(exception.Message);
-      Sender.Tell(new Status.Failure(new KeyNotFoundException(exception.Message)));
+      Sender.Tell(new Status.Failure(new InvalidOperationException(exception.Message)));
     }
   }
 

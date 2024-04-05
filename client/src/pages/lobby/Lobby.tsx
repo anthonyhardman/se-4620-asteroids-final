@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { PlayerList } from './PlayerList';
 import { WebsocketAsteroidsContext } from '../../context/WebsocketAsteroidsContext';
@@ -8,56 +8,65 @@ import { useStartGameMutation } from './lobbyHooks';
 export const Lobby = () => {
   const context = useContext(WebsocketAsteroidsContext);
   const lobbyId = useParams<{ id: string }>().id;
-  const startGameMutation = useStartGameMutation()
+  const startGameMutation = useStartGameMutation();
   const [gameStarting, setGameStarting] = useState(false);
-  const [countdown, setCountdown] = useState<number>(0);
-  const [countdownInterval, setCountdownInterval] = useState(0);
-
+  const [countdown, setCountdown] = useState(10);
+  const countdownIntervalRef = useRef<number>();
 
   const reset = () => {
     setGameStarting(false);
     setCountdown(10);
-    clearInterval(countdownInterval);
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
   };
 
   useEffect(() => {
     if (context.isConnected && lobbyId) {
-      context.joinGroup(lobbyId)
-      console.log("Joined group")
+      context.joinGroup(lobbyId);
+      console.log("Joined group");
     } else {
       console.log("Connection not ready");
     }
 
     return () => {
       if (context.isConnected && lobbyId) {
-        context.leaveGroup(lobbyId)
-        console.log("Left group")
+        context.leaveGroup(lobbyId);
+        console.log("Left group");
       }
-    }
-  }, [lobbyId, context, context.isConnected])
+    };
+  }, [lobbyId, context, context.isConnected]);
 
   useEffect(() => {
     if (context.startedAt) {
       setGameStarting(true);
-      let timer = new Date().getUTCDate().valueOf() - new Date(context.startedAt).valueOf();
-      setCountdownInterval(setInterval(() => {
-        setCountdown(timer - 1);
-        if (timer <= 1) {
-          clearInterval(countdownInterval);
+      const start = new Date(context.startedAt).getTime();
+      const now = Date.now();
+      const diffInSeconds = Math.floor((now - start) / 1000);
+      let timer = 10 - diffInSeconds;
+      setCountdown(timer);
+
+      countdownIntervalRef.current = setInterval(() => {
+        if (timer > 0) {
+          setCountdown(timer - 1);
+          timer -= 1;
+        } else {
+          clearInterval(countdownIntervalRef.current);
           toast.success('Game starts now!');
+          setGameStarting(false);
         }
-        timer -= 1;
-      }, 1000));
+      }, 1000);
     }
-  }, [context.startedAt, countdownInterval])
+
+    return () => {
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+    };
+  }, [context.startedAt]);
+
 
   if (!lobbyId) return <h3 className='text-center'>Unknown Lobby</h3>
 
-  
   const startGame = () => {
     startGameMutation.mutate(lobbyId);
   };
-
   return (
     <div className="container mt-2 text-center">
       <h1>Waiting in Lobby</h1>

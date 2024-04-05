@@ -58,4 +58,10 @@ public class AsteroidsHub : Hub
     logger.LogInformation("Joining lobby for client: " + username);
     await Clients.All.SendAsync("JoinLobby", username, lobbyId);
   }
+
+  public async Task LobbyCreated()
+  {
+    logger.LogInformation("Lobby created");
+    await Clients.All.SendAsync("LobbyCreated");
+  }
 }

@@ -25,12 +25,14 @@ public class LobbySupervisor : ReceiveActor
     var lobbiesTasks = Lobbies.Values.Select(lobby => lobby.Ask<LobbyInfo>(new GetLobbyInfoQuery()));
     if (!lobbiesTasks.Any())
     {
-      Sender.Tell(new LobbyList(new List<LobbyInfo>()));
+      Sender.Tell(new LobbyList());
       return;
     }
 
     var lobbies = (await Task.WhenAll(lobbiesTasks)).ToList();
-    Sender.Tell(new LobbyList(lobbies));
+    var lobbyList = new LobbyList();
+    lobbyList.AddRange(lobbies);
+    Sender.Tell(lobbyList);
   }
 
   private void JoinLobby(JoinLobbyCommand command)

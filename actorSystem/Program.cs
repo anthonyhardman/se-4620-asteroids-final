@@ -10,6 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ICommunicationService, CommunicationService>();
 builder.Services.AddSingleton<IActorBridge, AkkaService>();
+builder.Services.AddControllers();
 
 builder.Services.AddAkka("asteroid-system", (cb) =>
 {
@@ -36,5 +37,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.MapControllers();
 
 app.Run();

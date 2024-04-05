@@ -59,9 +59,10 @@ public class AkkaService : IHostedService, IActorBridge
     throw new NotImplementedException();
   }
 
-  public void CreateLobby(string username)
+  public async Task<string> CreateLobby(string username)
   {
-    _lobbySupervisor?.Tell(new CreateLobbyCommand(username));
+    var result = await _lobbySupervisor.Ask<LobbyCreated>(new CreateLobbyCommand(username));
+    return result.Info.Id.ToString();
   }
 
   public void JoinLobby(string username, Guid lobbyId)

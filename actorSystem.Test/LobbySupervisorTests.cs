@@ -54,7 +54,7 @@ public class LobbySupervisorTests : TestKit
 
     LobbyList list = (LobbyList)await lobbySupervisor.Ask(new GetLobbiesQuery());
 
-    list.LobbyCount.Should().Be(0);
+    list.Count.Should().Be(0);
   }
 
   [Fact]
@@ -68,7 +68,7 @@ public class LobbySupervisorTests : TestKit
 
     LobbyList list = (LobbyList)await lobbySupervisor.Ask(new GetLobbiesQuery());
 
-    list.LobbyCount.Should().Be(1);
+    list.Count.Should().Be(1);
   }
 
   [Fact]
@@ -84,7 +84,7 @@ public class LobbySupervisorTests : TestKit
 
     LobbyList list = (LobbyList)await lobbySupervisor.Ask(new GetLobbiesQuery());
 
-    list.LobbyCount.Should().Be(2);
+    list.Count.Should().Be(2);
   }
 
   // [Fact]

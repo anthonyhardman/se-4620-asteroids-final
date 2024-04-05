@@ -4,7 +4,7 @@ namespace actorSystem.Services;
 
 public interface ICommunicationService
 {
-  public void CreateLobby(string username);
-  public void JoinLobby(string username, Guid lobbyId);
-  public Task SendLobbies();
+  Task<string> CreateLobby(string username);
+  void JoinLobby(string username, Guid lobbyId);
+  Task<LobbyList> GetLobbies();
 }

@@ -1,18 +1,9 @@
 
+using System.Text.Json.Serialization;
+
 namespace shared.Models;
 
-public class LobbyList
+public class LobbyList : List<LobbyInfo>
 {
-  public LobbyList(List<LobbyInfo> lobbies)
-  {
-    Lobbies = lobbies;
-  }
-
-  public LobbyList()
-  {
-
-  }
-
-  private List<LobbyInfo> Lobbies { get; set; } = [];
-  public int LobbyCount => Lobbies.Count;
+  
 }

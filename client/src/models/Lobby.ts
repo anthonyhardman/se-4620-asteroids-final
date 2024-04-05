@@ -8,3 +8,7 @@ export interface LobbyInfo {
   playerCount: number;
   maxPlayers: number;
 }
+
+export interface CreateLobbyCommand {
+  username: string;
+} 

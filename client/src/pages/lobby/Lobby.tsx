@@ -9,8 +9,6 @@ export const Lobby = () => {
   const [gameStarting, setGameStarting] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const [countdownInterval, setCountdownInterval] = useState(0);
-  const [shipColor, setShipColor] = useState('Blue');
-  const [shipWeapon, setShipWeapon] = useState('Laser');
 
   const startGame = () => {
     setGameStarting(true);
@@ -71,7 +69,7 @@ export const Lobby = () => {
         </>
       )}
       <div className='row my-3'>
-        <div className='col'>
+        {/* <div className='col'>
           <div className='row text-start'>
             <div className='col'>
               <label htmlFor="shipColorSelect" className="form-label">Ship Color</label>
@@ -90,7 +88,7 @@ export const Lobby = () => {
               </select>
             </div>
           </div>
-        </div>
+        </div> */}
         <div className='col-auto text-start'>
           <PlayerList lobbyId={lobbyId} />
         </div>

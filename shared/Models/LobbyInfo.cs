@@ -1,43 +1,66 @@
 namespace shared.Models;
 
+public enum LobbyState
+{
+    Joining,
+    Playing,
+    Stopped
+}
+
 // Secure Coding DDD demonstrating immutability
 public class LobbyInfo
 {
     public Guid Id { get; }
     public string CreatedBy { get; }
-    public int PlayerCount { get; private set; }
+    public int PlayerCount => Players.Count;
     public int MaxPlayers { get; }
+    public Dictionary<string, PlayerShip> Players { get; init; } = [];
+    public LobbyState State { get; private set; }
 
-    public LobbyInfo(string createdBy, int playerCount = 0, int maxPlayers = 5)
+    public LobbyInfo(string createdBy, int maxPlayers = 5)
     {
         Id = Guid.NewGuid();
         CreatedBy = createdBy ?? throw new ArgumentNullException(nameof(createdBy));
-        PlayerCount = playerCount;
         MaxPlayers = maxPlayers;
+        State = LobbyState.Joining;
     }
 
-    public LobbyInfo AddPlayer()
+    public void AddPlayer(string username)
     {
-        if (PlayerCount >= MaxPlayers)
+        if (PlayerCount >= MaxPlayers && State == LobbyState.Joining)
         {
             throw new InvalidOperationException("Cannot add more players. The lobby is full.");
         }
 
-        return new LobbyInfo(Id, CreatedBy, PlayerCount + 1, MaxPlayers);
+        Players.Add(username, new PlayerShip());
     }
 
-    public LobbyInfo RemovePlayer()
+    public void RemovePlayer(string username)
     {
         if (PlayerCount <= 0)
         {
             throw new InvalidOperationException("Cannot remove players. The lobby is empty.");
         }
 
-        return new LobbyInfo(Id, CreatedBy, PlayerCount - 1, MaxPlayers);
+        Players.Remove(username);
     }
 
-    protected LobbyInfo(Guid id, string createdBy, int playerCount, int maxPlayers) : this(createdBy, playerCount, maxPlayers)
+    public void Start(string username)
     {
-        Id = id;
+        if (username == CreatedBy)
+        {
+            if (State == LobbyState.Joining)
+            {
+                State = LobbyState.Playing;
+            }
+            else
+            {
+                throw new InvalidOperationException("Cannot start game. Wrong state.");
+            }
+        }
+        else
+        {
+            throw new InvalidOperationException("Cannot start game. Only the creator can start the game.");
+        }
     }
 }

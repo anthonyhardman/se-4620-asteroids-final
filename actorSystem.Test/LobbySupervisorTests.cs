@@ -19,7 +19,8 @@ public class LobbySupervisorTests : TestKit
     {
       lc.Info.CreatedBy.Should().Be("testUser");
       lc.Info.MaxPlayers.Should().Be(5);
-      lc.Info.PlayerCount.Should().Be(0);
+      lc.Info.PlayerCount.Should().Be(1);
+      lc.Info.State.Should().Be(LobbyState.Joining);
       lc.ActorPath.Should().Contain("lobby_");
     });
   }

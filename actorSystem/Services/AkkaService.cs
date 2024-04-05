@@ -75,4 +75,10 @@ public class AkkaService : IHostedService, IActorBridge
     var result = await _lobbySupervisor.Ask<LobbyList>(new GetLobbiesQuery());
     return result ?? new LobbyList();
   }
+
+  public async Task<DateTime> StartGame(StartGameCommand command)
+  {
+    var result = await _lobbySupervisor.Ask<GameStartedCommand>(command);
+    return result.StartedAt;
+  }
 }

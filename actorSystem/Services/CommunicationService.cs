@@ -67,4 +67,10 @@ public class CommunicationService : ICommunicationService, IHostedService
   {
     return await _akkaService.GetLobbies();
   }
+
+  public async Task StartGame(StartGameCommand command)
+  {
+    var startedAt = await _akkaService.StartGame(command);
+    await _hubConnection.SendAsync("GameStarted", startedAt, command.LobbyId);
+  }
 }

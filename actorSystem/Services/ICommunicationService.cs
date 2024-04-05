@@ -7,4 +7,5 @@ public interface ICommunicationService
   Task<string> CreateLobby(string username);
   void JoinLobby(string username, Guid lobbyId);
   Task<LobbyList> GetLobbies();
+  Task StartGame(StartGameCommand command);
 }

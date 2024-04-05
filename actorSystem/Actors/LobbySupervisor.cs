@@ -15,9 +15,10 @@ public class LobbySupervisor : ReceiveActor
 
   public LobbySupervisor()
   {
-    Receive<CreateLobbyCommand>(command => CreateLobby(command));
-    Receive<JoinLobbyCommand>(command => JoinLobby(command));
+    Receive<CreateLobbyCommand>(CreateLobby);
+    Receive<JoinLobbyCommand>(JoinLobby);
     ReceiveAsync<GetLobbiesQuery>(async _ => await GetLobbies());
+    Receive<StartGameCommand>(StartGame);
   }
 
   private async Task GetLobbies()
@@ -54,6 +55,18 @@ public class LobbySupervisor : ReceiveActor
     Lobbies.Add(lobbyInfo.Id, lobbyActor);
     Sender.Tell(new LobbyCreated(lobbyInfo, lobbyActor.Path.ToString()));
     Log.Info($"Lobby created: {lobbyActor.Path}");
+  }
+
+  private void StartGame(StartGameCommand command)
+  {
+    if (Lobbies.TryGetValue(command.LobbyId, out var lobby))
+    {
+      lobby.Forward(command);
+    }
+    else
+    {
+      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to start game. Lobby {command.LobbyId} not found.")));
+    }
   }
 
   protected ILoggingAdapter Log { get; } = Context.GetLogger();

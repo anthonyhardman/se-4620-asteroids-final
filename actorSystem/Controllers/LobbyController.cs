@@ -29,4 +29,10 @@ public class LobbyController : ControllerBase
     var lobbyId = await _communicationService.CreateLobby(command.Username);
     return Ok(lobbyId);
   }
+
+  [HttpPut]
+  public async Task StartGame([FromBody] StartGameCommand command)
+  {
+    await _communicationService.StartGame(command);
+  }
 }

@@ -1,12 +1,19 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCreateLobbyMutation, useGetLobbiesQuery } from "./homeHooks";
+import { useUser } from "../../userHooks";
 
 export const Home = () => {
+  const user = useUser();
+  const navigate = useNavigate();
   const lobbiesQuery = useGetLobbiesQuery();
   const createLobbyMutation = useCreateLobbyMutation();
   const lobbies = lobbiesQuery.data ?? [];
 
-  console.log(lobbies);
+  const hasLobby = lobbies.filter(l => l.createdBy === user?.preferred_username).length > 0
+
+  const createHandler = () => {
+    createLobbyMutation.mutateAsync().then(id => navigate(`/lobby/${id}`));
+  }
 
   return (
     <div className="container mt-2">
@@ -15,15 +22,14 @@ export const Home = () => {
           <h1 className="text-center">Join Lobby</h1>
         </div>
         <div className="col-2 my-auto text-end">
-          {/* Trying to create a lobby with the same user kind of breaks actor system
-          because it tries to create a new actor with the same id. We'll need to figure 
-          out how we'd like to handle this. */}
-          <button
-            className="btn btn-outline-primary"
-            onClick={() => createLobbyMutation.mutate()}
-          >
-            Create
-          </button>
+          {!hasLobby && (
+            <button
+              className="btn btn-outline-primary"
+              onClick={createHandler}
+            >
+              Create
+            </button>
+          )}
         </div>
       </div>
       <div className="row">
@@ -38,7 +44,7 @@ export const Home = () => {
                     to={`/lobby/${l.id}`}
                     className="text-reset text-decoration-none btn btn-secondary w-100"
                   >
-                    Join
+                    {l.createdBy = user?.preferred_username ? "Joined" : "Join"}
                   </Link>
                 ) : (
                   <button className="btn btn-outline-secondary w-100" disabled>

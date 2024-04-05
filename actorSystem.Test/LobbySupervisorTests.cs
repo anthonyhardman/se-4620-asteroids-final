@@ -87,33 +87,28 @@ public class LobbySupervisorTests : TestKit
     list.Count.Should().Be(2);
   }
 
-  // [Fact]
-  // public void LobbySupervisor_ShouldThrowInvalidOperationException_WhenInvalidOperationOccurs()
-  // {
-  //   // Arrange
-  //   var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
-  //   Guid lobbyId = Guid.Empty;
+  [Fact]
+  public void LobbySupervisor_ShouldThrowInvalidOperationException_WhenInvalidOperationOccurs()
+  {
+    var probe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    Guid lobbyId = Guid.Empty;
 
-  //   // Act
-  //   lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
-  //   probe.ExpectMsg<LobbyCreated>(lc =>
-  //   {
-  //     lobbyId = lc.Info.Id;
-  //   });
+    lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
+    probe.ExpectMsg<LobbyCreated>(lc =>
+    {
+      lobbyId = lc.Info.Id;
+    });
 
-  //   probe.ExpectMsg<UserJoined>();
+    for (int i = 0; i < 4; ++i)
+    {
+      lobbySupervisor.Tell(new JoinLobbyCommand($"testUser{i}", lobbyId), probe.Ref);
+      probe.ExpectMsg<UserJoined>();
+    }
 
-  //   for (int i = 0; i < 4; ++i)
-  //   {
-  //     lobbySupervisor.Tell(new JoinLobbyCommand($"testUser{i}", lobbyId), probe.Ref);
-  //     probe.ExpectMsg<UserJoined>();
-  //   }
+    lobbySupervisor.Tell(new JoinLobbyCommand("testUser6", lobbyId), probe.Ref);
 
-  //   // Assert
-  //   lobbySupervisor.Tell(new JoinLobbyCommand("testUser6", lobbyId), probe.Ref);
-
-  //   EventFilter.Exception<InvalidOperationException>().ExpectOne(() =>
-  //   {
-  //   });
-  // }
+    var lobbyActor = probe.ActorSelection("/user/lobbySupervisor/lobby_testUser").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+    
+  }
 }

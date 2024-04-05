@@ -40,7 +40,6 @@ public class LobbySupervisor : ReceiveActor
     if (Lobbies.TryGetValue(command.LobbyId, out var lobby))
     {
       lobby.Forward(command);
-      Sender.Tell(new UserJoined(command.Username));
     }
     else
     {

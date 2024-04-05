@@ -10,7 +10,7 @@ import { AuthProvider } from 'react-oidc-context';
 import { WebStorageStateStore } from 'oidc-client-ts';
 import { getQueryClient } from './services/queryClient.tsx';
 import { AuthRequired } from './AuthRequired.tsx';
-import { WebsocketAsteroidsContext, WebsocketAsteroidsProvider } from './context/WebsocketAsteroidsContext.tsx';
+import { WebsocketAsteroidsProvider } from './context/WebsocketAsteroidsContext.tsx';
 
 const queryClient = getQueryClient();
 

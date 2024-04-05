@@ -16,7 +16,7 @@ public class LobbyActor : ReceiveActor
 {
   public LobbyInfo Info { get; set; }
   public Dictionary<string, PlayerShip> Players { get; set; } = new Dictionary<string, PlayerShip>();
-  private ICancelable _gameLoop;
+  private ICancelable? _gameLoop;
   private const float _timeStep = 16.667f;
 
   public LobbyActor(LobbyInfo info)
@@ -34,9 +34,16 @@ public class LobbyActor : ReceiveActor
 
   public void JoinLobby(JoinLobbyCommand command)
   {
-    Info.AddPlayer();
-    Players.Add(command.Username, new PlayerShip());
-    Sender.Tell(new UserJoined(command.Username));
+    try
+    {
+      Info.AddPlayer();
+      Players.Add(command.Username, new PlayerShip());
+      Sender.Tell(new UserJoined(command.Username));
+    }
+    catch (InvalidOperationException exception)
+    {
+      Sender.Tell(new Status.Failure(new KeyNotFoundException(exception.Message)));
+    }
   }
 
   protected ILoggingAdapter Log { get; } = Context.GetLogger();
@@ -54,7 +61,7 @@ public class LobbyActor : ReceiveActor
 
   public void StopGame()
   {
-    _gameLoop.Cancel();
+    _gameLoop?.Cancel();
   }
 
   public void UpdateGame()

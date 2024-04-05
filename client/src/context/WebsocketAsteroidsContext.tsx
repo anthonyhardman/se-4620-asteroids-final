@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { LobbyInfo, LobbyList } from "../models/Lobby";
 import { useAuth } from "react-oidc-context";
 import toast from "react-hot-toast";
 import { getQueryClient } from "../services/queryClient";
@@ -17,9 +16,7 @@ interface WebsocketAsteroidsContextType {
   joinGroup: (group: string) => void;
   leaveGroup: (group: string) => void;
   isConnected: boolean;
-  lobbies: LobbyInfo[];
   createLobby: () => void;
-  requestLobbies: () => void;
 }
 
 export const WebsocketAsteroidsContext =
@@ -27,9 +24,7 @@ export const WebsocketAsteroidsContext =
     joinGroup: () => {},
     leaveGroup: () => {},
     isConnected: false,
-    lobbies: [],
     createLobby: () => {},
-    requestLobbies: () => {},
   });
 
 export const WebsocketAsteroidsProvider: FC<{
@@ -37,7 +32,6 @@ export const WebsocketAsteroidsProvider: FC<{
 }> = ({ children }) => {
   const auth = useAuth();
   const [isConnected, setIsConnected] = useState(false);
-  const [lobbies, setLobbies] = useState<LobbyInfo[]>([]);
   const connection = useRef<signalR.HubConnection | null>(null);
   const actionQueue = useRef<Array<() => void>>([]);
   const queryClient = getQueryClient();
@@ -80,9 +74,8 @@ export const WebsocketAsteroidsProvider: FC<{
     return () => {
       connection.current?.stop().then(() => setIsConnected(false));
     };
-  }, []);
+  }, [queryClient]);
 
-  console.log("lobbies: ", lobbies);
 
   const executeOrQueueAction = (action: () => void) => {
     if (isConnected) {
@@ -123,25 +116,13 @@ export const WebsocketAsteroidsProvider: FC<{
     );
   };
 
-  const requestLobbies = () => {
-    console.log("Requesting lobbies");
-    executeOrQueueAction(() =>
-      connection.current?.invoke("RequestLobbies").catch((error) => {
-        console.error(error);
-        toast.error("Error getting lobbies");
-      })
-    );
-  };
-
   return (
     <WebsocketAsteroidsContext.Provider
       value={{
         joinGroup,
         leaveGroup,
         isConnected,
-        lobbies,
         createLobby,
-        requestLobbies,
       }}
     >
       {children}

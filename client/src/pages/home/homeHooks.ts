@@ -1,14 +1,11 @@
-import { useMutation, useQuery} from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { LobbyInfo } from "../../models/Lobby";
 import { useUser } from "../../userHooks";
-import { getQueryClient } from "../../services/queryClient";
 
 export const HomeKeys = {
   lobbies: ["lobbies"],
 };
-
-const queryClient = getQueryClient();
 
 export const useGetLobbiesQuery = () => {
   return useQuery({
@@ -31,11 +28,6 @@ export const useCreateLobbyMutation = () => {
         username: user?.preferred_username,
       });
       return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: HomeKeys.lobbies
-      });
-    },
+    }
   });
 };

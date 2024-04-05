@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { PlayerList } from './PlayerList';
+import { WebsocketAsteroidsContext } from '../../context/WebsocketAsteroidsContext';
 
 export const Lobby = () => {
-  const lobbyId = Number(useParams<{ id: string }>().id);
+  const context = useContext(WebsocketAsteroidsContext);
+  const lobbyId = useParams<{ id: string }>().id;
   const [gameStarting, setGameStarting] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const [countdownInterval, setCountdownInterval] = useState(0);
@@ -30,9 +32,27 @@ export const Lobby = () => {
     clearInterval(countdownInterval);
   };
 
+  useEffect(() => {
+    if (context.isConnected && lobbyId) {
+      context.joinGroup(lobbyId)
+      console.log("Joined group")
+    } else {
+      console.log("Connection not ready");
+    }
+
+    return () => {
+      if (context.isConnected && lobbyId) {
+        context.leaveGroup(lobbyId)
+        console.log("Left group")
+      }
+    }
+  }, [lobbyId, context, context.isConnected])
+
+  if (!lobbyId) return <h3 className='text-center'>Unknown Lobby</h3>
+
   return (
     <div className="container mt-2 text-center">
-      <h1>Lobby {lobbyId}</h1>
+      <h1>Waiting in Lobby</h1>
       {gameStarting ? (
         <>
           <div className="alert alert-warning" role="alert">

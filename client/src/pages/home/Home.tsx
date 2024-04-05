@@ -10,9 +10,9 @@ export const Home = () => {
   const lobbies = lobbiesQuery.data ?? [];
 
   const hasLobby = lobbies.filter(l => l.createdBy === user?.preferred_username).length > 0
-
   const createHandler = () => {
-    createLobbyMutation.mutateAsync().then(id => navigate(`/lobby/${id}`));
+    createLobbyMutation.mutateAsync()
+      .then(id => navigate(`/lobby/${id}`));
   }
 
   return (
@@ -44,7 +44,7 @@ export const Home = () => {
                     to={`/lobby/${l.id}`}
                     className="text-reset text-decoration-none btn btn-secondary w-100"
                   >
-                    {l.createdBy = user?.preferred_username ? "Joined" : "Join"}
+                    {l.createdBy === user?.preferred_username ? "Created" : "Join"}
                   </Link>
                 ) : (
                   <button className="btn btn-outline-secondary w-100" disabled>

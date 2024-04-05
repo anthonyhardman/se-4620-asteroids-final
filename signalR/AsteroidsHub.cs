@@ -39,11 +39,13 @@ public class AsteroidsHub : Hub
 
   public async Task LeaveGroup(string groupName)
   {
+    logger.LogInformation($"Left group {groupName}");
     await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
   }
 
   public async Task JoinGroup(string groupName)
   {
+    logger.LogInformation($"Joined group {groupName}");
     await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
   }
 

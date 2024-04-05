@@ -36,7 +36,7 @@ public class LobbyActor : ReceiveActor
   {
     try
     {
-      Info.AddPlayer();
+      Info = Info.AddPlayer();
       Players.Add(command.Username, new PlayerShip());
       Sender.Tell(new UserJoined(command.Username));
     }

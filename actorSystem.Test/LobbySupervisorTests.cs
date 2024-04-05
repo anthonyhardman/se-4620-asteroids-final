@@ -107,8 +107,6 @@ public class LobbySupervisorTests : TestKit
     }
 
     lobbySupervisor.Tell(new JoinLobbyCommand("testUser6", lobbyId), probe.Ref);
-
-    var lobbyActor = probe.ActorSelection("/user/lobbySupervisor/lobby_testUser").ResolveOne(TimeSpan.FromSeconds(3)).Result;
-    
+    probe.ExpectMsg<Status.Failure>();
   }
 }

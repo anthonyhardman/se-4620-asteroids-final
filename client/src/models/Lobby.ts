@@ -4,6 +4,7 @@ export interface LobbyList {
 
 export enum LobbyState {
   Joining,
+  Countdown,
   Playing,
   Stopped
 }
@@ -15,7 +16,10 @@ export interface LobbyInfo {
   maxPlayers: number;
   state: LobbyState;
   players: { [username: string]: PlayerShip }
+  countdownTime: number;
 }
+
+
 
 export interface PlayerShip {
   position: Vector;

@@ -1,4 +1,5 @@
-﻿using Akka.Actor;
+﻿using actorSystem.Services;
+using Akka.Actor;
 using Akka.Event;
 using shared.Models;
 
@@ -17,13 +18,16 @@ public class LobbyActor : ReceiveActor
 {
   public LobbyInfo Info { get; set; }
   private ICancelable? _gameLoop;
+  private ICommunicationService _communicationService;
   private const float _timeStep = 16.667f;
+  private float countdown = 10000;
 
-  public LobbyActor(LobbyInfo info)
+  public LobbyActor(LobbyInfo info, ICommunicationService communicationService)
   {
     Info = info;
     Info.AddPlayer(info.CreatedBy);
     Log.Info($"{info.CreatedBy} created and joined lobby {Info.Id}");
+    _communicationService = communicationService;
 
     Receive<JoinLobbyCommand>(JoinLobby);
     Receive<GetLobbyInfoQuery>(_ => Sender.Tell(Info));
@@ -54,7 +58,8 @@ public class LobbyActor : ReceiveActor
     try
     {
       Log.Info($"Starting game {command.LobbyId}");
-      Info.Start(command.Username);
+      countdown = 10000;
+      Info.StartCountdown();
       _gameLoop = Context.System.Scheduler.ScheduleTellRepeatedlyCancelable(
         TimeSpan.FromMilliseconds(_timeStep),
         TimeSpan.FromMicroseconds(_timeStep),
@@ -80,10 +85,23 @@ public class LobbyActor : ReceiveActor
 
   public void UpdateGame()
   {
-    foreach (var player in Info.Players)
+    if (Info.State == LobbyState.Countdown)
     {
-      player.Value.Update(_timeStep);
+      countdown -= _timeStep;
+      Info.UpdateCountdownTime(countdown);
+      if (countdown <= 0)
+      {
+        Info.StartPlaying();
+      }
     }
+    else if (Info.State == LobbyState.Playing)
+    {
+      foreach (var player in Info.Players)
+      {
+        player.Value.Update(_timeStep);
+      }
+    }
+    _communicationService.SendLobbyInfo(Info);
   }
 
   public void UpdatePlayerInput(PlayerInput input)
@@ -99,4 +117,8 @@ public class LobbyActor : ReceiveActor
     return Akka.Actor.Props.Create<LobbyActor>(info);
   }
 
+  public static Props Props(LobbyInfo info, ICommunicationService communicationService)
+  {
+    return Akka.Actor.Props.Create<LobbyActor>(() => new LobbyActor(info, communicationService));
+  }
 }

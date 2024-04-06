@@ -5,6 +5,7 @@ namespace shared.Models;
 public enum LobbyState
 {
     Joining,
+    Countdown,
     Playing,
     Stopped
 }
@@ -18,15 +19,17 @@ public class LobbyInfo
     public int MaxPlayers { get; }
     public Dictionary<string, PlayerShip> Players { get; init; } = [];
     public LobbyState State { get; private set; }
+    public int CountdownTime { get; private set; }
 
     [JsonConstructor]
-    public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state)
+    public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime)
     {
         Id = id;
         CreatedBy = createdBy;
         MaxPlayers = maxPlayers;
         Players = players;
         State = state;
+        CountdownTime = countdownTime;
     }
 
     public LobbyInfo(string createdBy, int maxPlayers = 5)
@@ -57,22 +60,35 @@ public class LobbyInfo
         Players.Remove(username);
     }
 
-    public void Start(string username)
+    public void StartPlaying()
     {
-        if (username == CreatedBy)
+        if (State == LobbyState.Joining || State == LobbyState.Countdown)
         {
-            if (State == LobbyState.Joining)
-            {
-                State = LobbyState.Playing;
-            }
-            else
-            {
-                throw new InvalidOperationException("Cannot start game. Wrong state.");
-            }
+            State = LobbyState.Playing;
         }
         else
         {
-            throw new InvalidOperationException("Cannot start game. Only the creator can start the game.");
+            throw new InvalidOperationException("Cannot start game. Wrong state.");
+        }
+    }
+
+    public void StartCountdown()
+    {
+        if (State == LobbyState.Joining)
+        {
+            State = LobbyState.Countdown;
+        }
+        else
+        {
+            throw new InvalidOperationException("Cannot start countdown. Wrong state.");
+        }
+    }
+
+    public void UpdateCountdownTime(float time)
+    {
+        if (State == LobbyState.Countdown)
+        {
+            CountdownTime = (int)Math.Round(time / 1000);
         }
     }
 }

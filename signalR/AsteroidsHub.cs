@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using shared.Models;
 
@@ -61,10 +62,10 @@ public class AsteroidsHub : Hub
     await Clients.All.SendAsync("JoinLobby", username, lobbyId);
   }
 
-  public async Task LobbyCreated(Guid lobbyId)
+  public async Task LobbyCreated(Guid lobbyId, LobbyList lobbies)
   {
     logger.LogInformation($"Lobby created {lobbyId}");
-    await Clients.All.SendAsync("LobbyCreated");
+    await Clients.All.SendAsync("LobbyCreated", lobbies);
   }
 
   public async Task GameStarted(Guid lobbyId)

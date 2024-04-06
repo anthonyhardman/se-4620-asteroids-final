@@ -1,5 +1,6 @@
 using actorSystem;
 using actorSystem.Services;
+using Akka.DependencyInjection;
 using Akka.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);

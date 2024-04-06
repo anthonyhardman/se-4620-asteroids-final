@@ -6,10 +6,20 @@ namespace shared.Models;
 
 public class PlayerShip
 {
+  [JsonConverter(typeof(Vector2Converter))]
   public Vector2 Position { get; private set; }
+  [JsonConverter(typeof(Vector2Converter))]
   public Vector2 Velocity { get; private set; }
+  [JsonConverter(typeof(Vector2Converter))]
   public Vector2 Direction { get; private set; }
   public InputState? InputState { get; set; }
+
+  public PlayerShip()
+  {
+    Position = new Vector2(0, 0);
+    Velocity = new Vector2(0, 0);
+    Direction = new Vector2(0, -1);
+  }
 
   public void Update(float timeStep)
   {

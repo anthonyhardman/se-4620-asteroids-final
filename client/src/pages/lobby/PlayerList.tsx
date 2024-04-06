@@ -1,21 +1,23 @@
-import { FC } from 'react';
-import { LobbyInfo } from '../../models/Lobby';
+import { FC } from "react";
+import { LobbyInfo } from "../../models/Lobby";
+import { useUser } from "../../userHooks";
 
 export const PlayerList: FC<{
-  lobbyInfo: LobbyInfo
+  lobbyInfo: LobbyInfo;
 }> = ({ lobbyInfo }) => {
-  console.log(lobbyInfo)
+  const user = useUser();
   return (
     <div>
-      <div className='fs-4 text-center'>Other Players</div>
+      <div className="fs-4 text-center">Other Players</div>
       <ul className="list-group">
-        {/* {lobbyInfo.players.map((player, index) => (
-          <li key={index} className="list-group-item">
-            <strong>{player.name}</strong>: Color - {player.color}, Weapon - {player.weapon}
-          </li>
-        ))} */}
+        {Object.entries(lobbyInfo.players)
+          .filter(([player, _ /*ship*/]) => player !== user?.preferred_username)
+          .map(([player, _ /*ship*/]) => (
+            <li key={player} className="list-group-item">
+              <strong>{player}</strong>
+            </li>
+          ))}
       </ul>
     </div>
   );
 };
-

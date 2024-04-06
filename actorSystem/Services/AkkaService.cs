@@ -26,11 +26,11 @@ public class AkkaService : IHostedService, IActorBridge
 
   public async Task StartAsync(CancellationToken cancellationToken)
   {
-    var bootstrap = BootstrapSetup.Create();
+    // var bootstrap = BootstrapSetup.Create();
 
-    var diSetup = DependencyResolverSetup.Create(_serviceProvider);
+    // var diSetup = DependencyResolverSetup.Create(_serviceProvider);
 
-    var actorSystemSetup = bootstrap.And(diSetup);
+    // var actorSystemSetup = bootstrap.And(diSetup);
 
     _actorSystem = _serviceProvider.GetRequiredService<ActorSystem>();
     _lobbySupervisor = _actorSystem.ActorSelection("/user/lobby-supervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
@@ -59,10 +59,10 @@ public class AkkaService : IHostedService, IActorBridge
     throw new NotImplementedException();
   }
 
-  public async Task<string> CreateLobby(string username)
+  public async Task<Guid> CreateLobby(string username)
   {
     var result = await _lobbySupervisor.Ask<LobbyCreated>(new CreateLobbyCommand(username));
-    return result.Info.Id.ToString();
+    return result.Info.Id;
   }
 
   public void JoinLobby(string username, Guid lobbyId)

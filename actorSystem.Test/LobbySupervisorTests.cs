@@ -4,9 +4,29 @@ using actorSystem;
 using Akka.TestKit;
 using FluentAssertions;
 using shared.Models;
+using Moq;
+using actorSystem.Services;
+using Akka.Actor.Setup;
+using Akka.DependencyInjection;
 
 public class LobbySupervisorTests : TestKit
 {
+  private static IServiceProvider SetupMockServiceProvider()
+  {
+    var mockServiceProvider = new Mock<IServiceProvider>();
+    mockServiceProvider.Setup(x => x.GetService(typeof(ICommunicationService)))
+      .Returns(new Mock<ICommunicationService>().Object);
+
+    return mockServiceProvider.Object;
+  }
+
+  public LobbySupervisorTests()
+    : base(ActorSystemSetup.Create()
+      .And(DependencyResolverSetup.Create(SetupMockServiceProvider())))
+  {
+
+  }
+
   [Fact]
   public void LobbySupervisor_ShouldCreateLobby_WhenCreateLobbyCommandReceived()
   {

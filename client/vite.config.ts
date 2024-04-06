@@ -14,6 +14,11 @@ export default defineConfig({
       
         target: "http://actor-system:8080",
         changeOrigin: true,
+      },
+      "/ws": {
+        target: "http://asteroids_signalr:8081",
+        changeOrigin: true,
+        ws: true,
       }
     },
   },

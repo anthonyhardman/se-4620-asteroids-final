@@ -42,4 +42,11 @@ public class LobbyController : ControllerBase
     var result = await _communicationService.GetLobbyInfo(lobbyId);
     return result;
   }
+
+  [HttpPut("join")]
+  public async Task<IActionResult> JoinLobby([FromBody] JoinLobbyCommand command)
+  {
+    _communicationService.JoinLobby(command.Username, command.LobbyId);
+    return Ok();
+  }
 }

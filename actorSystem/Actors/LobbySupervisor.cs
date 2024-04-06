@@ -1,4 +1,5 @@
 ﻿using Akka.Actor;
+using Akka.DependencyInjection;
 using Akka.Event;
 using shared.Models;
 
@@ -66,7 +67,8 @@ public class LobbySupervisor : ReceiveActor
   private void CreateLobby(CreateLobbyCommand command)
   {
     var lobbyInfo = new LobbyInfo(command.Username);
-    var lobbyActor = Context.ActorOf(LobbyActor.Props(lobbyInfo), $"lobby_{lobbyInfo.Id}");
+    var props = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo);
+    var lobbyActor = Context.ActorOf(props, $"lobby_{lobbyInfo.Id}");
     Lobbies.Add(lobbyInfo.Id, lobbyActor);
     Sender.Tell(new LobbyCreated(lobbyInfo, lobbyActor.Path.ToString()));
     Log.Info($"Lobby created: {lobbyActor.Path}");

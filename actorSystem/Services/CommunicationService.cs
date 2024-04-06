@@ -33,6 +33,7 @@ public class CommunicationService : ICommunicationService, IHostedService
         throw new InvalidOperationException("ConnectionId cannot be null.");
       }
     });
+    
     _hubConnection.On<string>("CreateLobby", CreateLobby);
     _hubConnection.On<string, Guid>("JoinLobby", JoinLobby);
   }
@@ -51,10 +52,12 @@ public class CommunicationService : ICommunicationService, IHostedService
     await _hubConnection.StopAsync();
   }
 
-  public async Task<string> CreateLobby(string username)
+  public async Task<Guid> CreateLobby(string username)
   {
     var lobbyId = await _akkaService.CreateLobby(username);
-    await _hubConnection.SendAsync("LobbyCreated", lobbyId);
+    var lobbies = await _akkaService.GetLobbies();
+    Console.WriteLine(JsonSerializer.Serialize(lobbies));
+    await _hubConnection.SendAsync("LobbyCreated", lobbyId, lobbies);
     return lobbyId;
   }
 
@@ -71,10 +74,6 @@ public class CommunicationService : ICommunicationService, IHostedService
   public async Task StartGame(StartGameCommand command)
   {
     _akkaService.StartGame(command);
-    await _hubConnection.SendAsync("GameStarted", command.LobbyId);
-    var info = await _akkaService.GetLobbyInfo(command.LobbyId);
-    Console.WriteLine(JsonSerializer.Serialize(info));
-    await _hubConnection.SendAsync("UpdateLobbyInfo", info);
   }
 
   public async Task<LobbyInfo> GetLobbyInfo(Guid lobbyId)
@@ -83,4 +82,8 @@ public class CommunicationService : ICommunicationService, IHostedService
     return result;
   }
 
+  public void SendLobbyInfo(LobbyInfo info)
+  {
+    _hubConnection.SendAsync("UpdateLobbyInfo", info);
+  }
 }

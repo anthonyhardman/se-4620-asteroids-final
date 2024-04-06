@@ -20,7 +20,6 @@ export const useGetLobbiesQuery = () => {
 
 export const useCreateLobbyMutation = () => {
   const user = useUser();
-
   return useMutation({
     mutationFn: async (): Promise<string> => {
       const url = "/api/lobby";
@@ -31,3 +30,17 @@ export const useCreateLobbyMutation = () => {
     }
   });
 };
+
+export const useJoinLobbyMutation = () => {
+  const user  = useUser();
+  return useMutation({
+    mutationFn: async (lobbyId: string): Promise<void> => {
+      const url = `/api/lobby/join`;
+      const response = await axios.put(url, {
+        username: user?.preferred_username,
+        lobbyId: lobbyId,
+      });
+      return response.data;
+    }
+  });
+}

@@ -1,19 +1,55 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useCreateLobbyMutation, useGetLobbiesQuery } from "./homeHooks";
+import {
+  useCreateLobbyMutation,
+  useGetLobbiesQuery,
+  useJoinLobbyMutation,
+} from "./homeHooks";
 import { useUser } from "../../userHooks";
+import { LobbyInfo } from "../../models/Lobby";
 
 export const Home = () => {
   const user = useUser();
   const navigate = useNavigate();
   const lobbiesQuery = useGetLobbiesQuery();
   const createLobbyMutation = useCreateLobbyMutation();
+  const joinLobbyMutation = useJoinLobbyMutation();
   const lobbies = lobbiesQuery.data ?? [];
 
-  const hasLobby = lobbies.filter(l => l.createdBy === user?.preferred_username).length > 0
+  const hasLobby =
+    lobbies.filter((l) => l.createdBy === user?.preferred_username).length > 0;
   const createHandler = () => {
-    createLobbyMutation.mutateAsync()
-      .then(id => navigate(`/lobby/${id}`));
-  }
+    createLobbyMutation.mutateAsync().then((id) => navigate(`/lobby/${id}`));
+  };
+
+  const joinHandler = (id: string) => {
+    console.log("Joining lobby", id);
+    joinLobbyMutation.mutateAsync(id).then(() => navigate(`/lobby/${id}`));
+  };
+
+  const joinButton = (lobby: LobbyInfo) => {
+    if (hasAlreadyJoined(lobby, user?.preferred_username ?? "")) {
+      return (
+        <Link to={`/lobby/${lobby.id}`} className="btn btn-secondary w-100">
+          Enter
+        </Link>
+      );
+    } else if (lobby.playerCount < lobby.maxPlayers) {
+      return (
+        <button
+          onClick={() => joinHandler(lobby.id)}
+          className="btn btn-secondary w-100"
+        >
+          Join
+        </button>
+      );
+    } else {
+      return (
+        <button className="btn btn-outline-secondary w-100" disabled>
+          Full
+        </button>
+      );
+    }
+  };
 
   return (
     <div className="container mt-2">
@@ -23,10 +59,7 @@ export const Home = () => {
         </div>
         <div className="col-2 my-auto text-end">
           {!hasLobby && (
-            <button
-              className="btn btn-outline-primary"
-              onClick={createHandler}
-            >
+            <button className="btn btn-outline-primary" onClick={createHandler}>
               Create
             </button>
           )}
@@ -39,18 +72,7 @@ export const Home = () => {
               <div className="card-body text-center">
                 <div className="card-title fs-4">Lobby {index + 1}</div>
                 <div className="mb-2">{GetPlayerText(l.playerCount)}</div>
-                {l.playerCount < l.maxPlayers ? (
-                  <Link
-                    to={`/lobby/${l.id}`}
-                    className="text-reset text-decoration-none btn btn-secondary w-100"
-                  >
-                    {l.createdBy === user?.preferred_username ? "Created" : "Join"}
-                  </Link>
-                ) : (
-                  <button className="btn btn-outline-secondary w-100" disabled>
-                    Full
-                  </button>
-                )}
+                <div className="mb-2">{joinButton(l)}</div>
               </div>
             </div>
           </div>
@@ -63,4 +85,8 @@ export const Home = () => {
 function GetPlayerText(count: number) {
   if (count === 1) return "1 Player";
   return `${count} Players`;
+}
+
+function hasAlreadyJoined(lobby: LobbyInfo, username: string) {
+  return lobby.players[username] !== undefined || lobby.createdBy === username;
 }

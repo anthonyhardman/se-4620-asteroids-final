@@ -18,10 +18,14 @@ public class PlayerShip
   private const float velocityCap = 0.3f;
   private const int maxX = 400 * 3;
   private const int maxY = 300 * 3;
+  private static readonly Random random = new();
 
   public PlayerShip()
   {
-    Position = new Vector2(0, 0);
+    Position = new Vector2(
+        random.Next(-maxX, maxX),
+        random.Next(-maxY, maxY)
+    );
     Velocity = new Vector2(0.0f, 0);
     Direction = new Vector2(0, -1);
   }
@@ -70,10 +74,10 @@ public class PlayerShip
 
   private float WrapValue(float value, float min, float max)
   {
-      float range = max - min;
-      while (value < min) value += range;
-      while (value > max) value -= range;
-      return value;
+    float range = max - min;
+    while (value < min) value += range;
+    while (value > max) value -= range;
+    return value;
   }
 }
 

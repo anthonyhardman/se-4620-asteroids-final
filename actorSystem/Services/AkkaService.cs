@@ -86,4 +86,9 @@ public class AkkaService : IHostedService, IActorBridge
     var result = await _lobbySupervisor.Ask<LobbyInfo>(lobbyId);
     return result;
   }
+
+  public void UpdatePlayerInputState(string username, Guid lobbyId, InputState inputState)
+  {
+    _lobbySupervisor.Tell(new UpdatePlayerInputStateCommand(username, lobbyId, inputState));
+  }
 }

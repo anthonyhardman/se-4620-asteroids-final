@@ -83,7 +83,13 @@ public class AsteroidsHub : Hub
 
   public async Task UpdateLobbyInfo(LobbyInfo info)
   {
-    logger.LogInformation($"Update lobby {info.Id}");
+    // logger.LogInformation($"Update lobby {info.Id}");
     await Clients.Group(info.Id.ToString()).SendAsync("UpdateLobbyInfo", info);
+  }
+
+  public async Task UpdatePlayerInputState(string username, Guid lobbyId, InputState inputState)
+  {
+    logger.LogInformation($"Update player input state {username}");
+    await Clients.All.SendAsync("UpdatePlayerInputState", username, lobbyId, inputState);
   }
 }

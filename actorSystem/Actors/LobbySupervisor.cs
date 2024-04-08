@@ -1,6 +1,7 @@
 ﻿using Akka.Actor;
 using Akka.DependencyInjection;
 using Akka.Event;
+using Microsoft.AspNet.SignalR.Messaging;
 using shared.Models;
 
 namespace actorSystem;
@@ -8,6 +9,7 @@ namespace actorSystem;
 public record CreateLobbyCommand(string Username);
 public record LobbyCreated(LobbyInfo Info, string ActorPath);
 public record GetLobbiesQuery();
+public record UpdatePlayerInputStateCommand(string Username, Guid LobbyId, InputState InputState);
 
 
 public class LobbySupervisor : ReceiveActor
@@ -22,6 +24,7 @@ public class LobbySupervisor : ReceiveActor
     Receive<StartGameCommand>(StartGame);
     Receive<Guid>(GetLobby);
     Receive<StopGameCommand>(StopGame);
+    Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
   }
 
   private void GetLobby(Guid lobbyId)
@@ -95,6 +98,18 @@ public class LobbySupervisor : ReceiveActor
     else
     {
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to stop game. Lobby {command.LobbyId} not found.")));
+    }
+  }
+
+  public void UpdatePlayerInputState(UpdatePlayerInputStateCommand command)
+  {
+    if (Lobbies.TryGetValue(command.LobbyId, out var lobby))
+    {
+      lobby.Tell(new PlayerInput(command.Username, command.InputState));
+    }
+    else
+    {
+      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to update player input state. Lobby {command.LobbyId} not found.")));
     }
   }
 

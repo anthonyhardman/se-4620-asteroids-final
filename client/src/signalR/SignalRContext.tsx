@@ -7,15 +7,17 @@ import {
   useRef,
   useState,
 } from "react";
-import { LobbyInfo } from "../models/Lobby";
+import { InputState, LobbyInfo } from "../models/Lobby";
 import { HomeKeys } from "../pages/home/homeHooks";
 import { getQueryClient } from "../services/queryClient";
 import { LobbyKeys } from "../pages/lobby/lobbyHooks";
+import { useUser } from "../userHooks";
 
 interface SignalRConnectionContextType {
   joinGroup: (group: string) => void;
   leaveGroup: (group: string) => void;
   isConnected: boolean;
+  updatePlayerInput : (lobbyId: string, inputState: InputState) => void;
 }
 
 export const SignalRContext = createContext<
@@ -29,6 +31,7 @@ export const SignalRConnectionProvider: FC<{ children: ReactNode }> = ({
   const queryClient = getQueryClient();
   const queue = useRef<Array<() => void>>([]);
   const [isConnected, setIsConnected] = useState(false)
+  const user = useUser();
 
   useEffect(() => {
     const createConnection = () =>
@@ -109,8 +112,16 @@ export const SignalRConnectionProvider: FC<{ children: ReactNode }> = ({
     );
   };
 
+  const updatePlayerInput = (lobbyId: string, inputState: InputState) => {
+    executeOrQueueAction(() =>
+      connection
+        ?.invoke("UpdatePlayerInputState", user?.preferred_username, lobbyId, inputState)
+        .catch((error) => console.error(`Error updating player input state`, error)
+    ));
+  }
+
   return (
-    <SignalRContext.Provider value={{ joinGroup, leaveGroup, isConnected }}>
+    <SignalRContext.Provider value={{ joinGroup, leaveGroup, isConnected, updatePlayerInput }}>
       {children}
     </SignalRContext.Provider>
   );

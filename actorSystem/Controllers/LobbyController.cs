@@ -33,7 +33,7 @@ public class LobbyController : ControllerBase
   [HttpPut]
   public async Task StartGame([FromBody] StartGameCommand command)
   {
-    await _communicationService.StartGame(command);
+    _communicationService.StartGame(command);
   }
 
   [HttpGet("{lobbyId}")]

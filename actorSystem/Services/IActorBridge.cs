@@ -12,5 +12,6 @@ public interface IActorBridge
   public Task<LobbyList> GetLobbies();
   public void StartGame(StartGameCommand command);
   public Task<LobbyInfo> GetLobbyInfo(Guid lobbyId);
+  public void UpdatePlayerInputState(string username, Guid lobbyId, InputState inputState);
 
 }

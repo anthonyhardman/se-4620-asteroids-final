@@ -1,10 +1,11 @@
-import { useContext, useEffect} from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { PlayerList } from "./PlayerList";
 import { useGetLobbyInfoQuery, useStartGameMutation } from "./lobbyHooks";
 import { Spinner } from "../../components/Spinner";
-import { LobbyState } from "../../models/Lobby";
+import { InputState, LobbyState, RotationDirection } from "../../models/Lobby";
 import { SignalRContext } from "../../signalR/SignalRContext";
+import { Game } from "./Game";
 
 export const Lobby = () => {
   const signalRContext = useContext(SignalRContext);
@@ -12,7 +13,13 @@ export const Lobby = () => {
   const startGameMutation = useStartGameMutation();
   const lobbyInfoQuery = useGetLobbyInfoQuery(lobbyId);
   const lobbyInfo = lobbyInfoQuery.data;
-
+  const [keysPressed, setKeysPressed] = useState([] as string[])
+  const [inputState, _] = useState<InputState>({
+    thrusting: false,
+    rotationDirection: RotationDirection.None,
+    shootPressed: 0,
+  });
+  
   useEffect(() => {
     if (lobbyId && signalRContext?.isConnected) {
       signalRContext?.joinGroup(lobbyId);
@@ -21,7 +28,6 @@ export const Lobby = () => {
       console.log("Connection not ready");
     }
 
-    console.log("LobbyId", lobbyId);
     return () => {
       if (lobbyId && signalRContext?.isConnected) {
         signalRContext?.leaveGroup(lobbyId);
@@ -29,6 +35,52 @@ export const Lobby = () => {
       }
     };
   }, [lobbyId, signalRContext]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (keysPressed.includes(e.key)) return;
+      setKeysPressed([...keysPressed, e.key]);
+
+      if (e.key === "w") {
+        inputState.thrusting = true;
+      }
+
+      if (e.key === "a") {
+        inputState.rotationDirection = RotationDirection.Left;
+      } else if (e.key === "d") {
+        inputState.rotationDirection = RotationDirection.Right;
+      }
+
+      if (lobbyId && signalRContext?.isConnected) {
+        signalRContext?.updatePlayerInput(lobbyId, inputState);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (!keysPressed.includes(e.key)) return;
+      setKeysPressed(keysPressed.filter((key) => key !== e.key));
+
+      if (e.key === "w") {
+        inputState.thrusting = false;
+      }
+
+      if (e.key === "a" || e.key === "d") {
+        inputState.rotationDirection = RotationDirection.None;
+      }
+
+      if (lobbyId && signalRContext?.isConnected) {
+        signalRContext?.updatePlayerInput(lobbyId, inputState);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [lobbyId, signalRContext, keysPressed, inputState]);
 
   if (lobbyInfoQuery.isLoading) return <Spinner />;
   if (lobbyInfoQuery.isError)
@@ -65,7 +117,13 @@ export const Lobby = () => {
         </div>
       );
     } else if (lobbyInfo.state === LobbyState.Playing) {
-      return <div>Playing</div>;
+      return (
+        <Game
+          players={Object.entries(lobbyInfo.players).map(([_, ship]) => {
+            return ship;
+          })}
+        />
+      );
     } else {
       return <div>Unknown state</div>;
     }

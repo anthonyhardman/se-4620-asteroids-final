@@ -13,32 +13,48 @@ public class PlayerShip
   [JsonConverter(typeof(Vector2Converter))]
   public Vector2 Direction { get; private set; }
   public InputState? InputState { get; set; }
+  private const float acceleration = 0.0005f;
+  private const float rotationAmount = 0.05f;
+  private const float velocityCap = 0.1f;
 
   public PlayerShip()
   {
     Position = new Vector2(0, 0);
-    Velocity = new Vector2(0, 0);
+    Velocity = new Vector2(0.0f, 0);
     Direction = new Vector2(0, -1);
+  }
+
+  [JsonConstructor]
+  public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction)
+  {
+    Position = position;
+    Velocity = velocity;
+    Direction = direction;
   }
 
   public void Update(float timeStep)
   {
     if (InputState != null && InputState.RotationDirection == RotationDirection.Left)
     {
-      Direction = Vector2.Transform(Direction, Matrix3x2.CreateRotation(-0.1f));
+      Direction = Vector2.Transform(Direction, Matrix3x2.CreateRotation(rotationAmount));
       Direction = Vector2.Normalize(Direction);
     }
     else if (InputState != null && InputState.RotationDirection == RotationDirection.Right)
     {
-      Direction = Vector2.Transform(Direction, Matrix3x2.CreateRotation(0.1f));
+      Direction = Vector2.Transform(Direction, Matrix3x2.CreateRotation(-rotationAmount));
       Direction = Vector2.Normalize(Direction);
     }
 
     if (InputState != null && InputState.Thrusting)
     {
       Vector2 oldPosition = Position;
-      Position += Velocity + 0.5f * Direction * timeStep * timeStep;
+      Position += Velocity * timeStep + 0.5f * Direction * acceleration * timeStep * timeStep;
       Velocity = (Position - oldPosition) / timeStep;
+
+      if (Velocity.Length() > velocityCap)
+      {
+        Velocity = Vector2.Normalize(Velocity) * velocityCap;
+      }
     }
     else
     {

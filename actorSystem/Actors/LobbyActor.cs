@@ -1,4 +1,5 @@
-﻿using actorSystem.Services;
+﻿using System.Text.Json;
+using actorSystem.Services;
 using Akka.Actor;
 using Akka.Event;
 using shared.Models;
@@ -34,6 +35,7 @@ public class LobbyActor : ReceiveActor
     Receive<Tick>(_ => UpdateGame());
     Receive<StartGameCommand>(StartGame);
     Receive<StopGameCommand>(StopGame);
+    Receive<PlayerInput>(UpdatePlayerInput);
   }
 
   public void JoinLobby(JoinLobbyCommand command)

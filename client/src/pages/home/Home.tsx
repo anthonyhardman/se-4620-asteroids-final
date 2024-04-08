@@ -15,8 +15,6 @@ export const Home = () => {
   const joinLobbyMutation = useJoinLobbyMutation();
   const lobbies = lobbiesQuery.data ?? [];
 
-  const hasLobby =
-    lobbies.filter((l) => l.createdBy === user?.preferred_username).length > 0;
   const createHandler = () => {
     createLobbyMutation.mutateAsync().then((id) => navigate(`/lobby/${id}`));
   };
@@ -58,11 +56,9 @@ export const Home = () => {
           <h1 className="text-center">Join Lobby</h1>
         </div>
         <div className="col-2 my-auto text-end">
-          {!hasLobby && (
-            <button className="btn btn-outline-primary" onClick={createHandler}>
-              Create
-            </button>
-          )}
+          <button className="btn btn-outline-primary" onClick={createHandler}>
+            Create
+          </button>
         </div>
       </div>
       <div className="row">

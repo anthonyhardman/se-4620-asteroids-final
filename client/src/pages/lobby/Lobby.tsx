@@ -6,8 +6,10 @@ import { Spinner } from "../../components/Spinner";
 import { InputState, LobbyState, RotationDirection } from "../../models/Lobby";
 import { SignalRContext } from "../../signalR/SignalRContext";
 import { Game } from "./Game";
+import { useUser } from "../../userHooks";
 
 export const Lobby = () => {
+  const user = useUser();
   const signalRContext = useContext(SignalRContext);
   const lobbyId = useParams<{ id: string }>().id;
   const startGameMutation = useStartGameMutation();
@@ -102,11 +104,13 @@ export const Lobby = () => {
             The game has not started yet. Customize your ship before the game
             begins!
           </div>
-          <div className="mt-2">
-            <button className="btn btn-success" onClick={startGame}>
-              Start Game
-            </button>
-          </div>
+          {user?.preferred_username === lobbyInfo.createdBy && (
+            <div className="mt-2">
+              <button className="btn btn-success" onClick={startGame}>
+                Start Game
+              </button>
+            </div>
+          )}
         </div>
       );
     } else if (lobbyInfo.state === LobbyState.Countdown) {

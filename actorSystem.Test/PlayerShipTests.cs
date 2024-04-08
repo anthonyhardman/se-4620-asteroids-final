@@ -17,7 +17,7 @@ public class PlayerShipTests
   [Fact]
   public void Update_WithThrust_IncreasesVelocity()
   {
-    var ship = new PlayerShip(new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, -1))
+    var ship = new PlayerShip(new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, -1), 100, "blue")
     {
       InputState = new InputState { Thrusting = true }
     };
@@ -33,7 +33,7 @@ public class PlayerShipTests
   public void Update_WithRotation_ChangesDirection(RotationDirection direction)
   {
     var initialDirection = new Vector2(0, -1);
-    var ship = new PlayerShip(new Vector2(0, 0), new Vector2(0, 0), initialDirection)
+    var ship = new PlayerShip(new Vector2(0, 0), new Vector2(0, 0), initialDirection, 100, "blue")
     {
       InputState = new InputState { RotationDirection = direction }
     };
@@ -46,7 +46,7 @@ public class PlayerShipTests
   [Fact]
   public void Update_WithWrapping_HandlesBoundaryCross()
   {
-    var ship = new PlayerShip(new Vector2(1201, 0), new Vector2(0, 0), new Vector2(0, -1));
+    var ship = new PlayerShip(new Vector2(1201, 0), new Vector2(0, 0), new Vector2(0, -1), 100, "blue");
 
     ship.Update(1.0f);
 
@@ -56,7 +56,7 @@ public class PlayerShipTests
   [Fact]
   public void JsonSerialization_Deserialization_RetainsProperties()
   {
-    var initialShip = new PlayerShip(new Vector2(100, 200), new Vector2(1, -1), new Vector2(0, -1));
+    var initialShip = new PlayerShip(new Vector2(100, 200), new Vector2(1, -1), new Vector2(0, -1), 100, "blue");
 
     var json = JsonSerializer.Serialize(initialShip);
     var deserializedShip = JsonSerializer.Deserialize<PlayerShip>(json);
@@ -69,7 +69,7 @@ public class PlayerShipTests
   [Fact]
   public void Update_WithThrust_ExceedingMaxVelocity_CapsAtMaxVelocity()
   {
-    var ship = new PlayerShip(Vector2.Zero, Vector2.Zero, new Vector2(0, -1))
+    var ship = new PlayerShip(Vector2.Zero, Vector2.Zero, new Vector2(0, -1), 100, "blue")
     {
       InputState = new InputState { Thrusting = true }
     };
@@ -85,7 +85,7 @@ public class PlayerShipTests
   [Fact]
   public void Update_RotationResultsInNormalizedDirection()
   {
-    var ship = new PlayerShip(Vector2.Zero, Vector2.Zero, new Vector2(1, 1))
+    var ship = new PlayerShip(Vector2.Zero, Vector2.Zero, new Vector2(1, 1), 100, "blue")
     {
       InputState = new InputState { RotationDirection = RotationDirection.Right }
     };
@@ -103,7 +103,7 @@ public class PlayerShipTests
   [InlineData(0, -901)]
   public void Update_PositionExceedingBounds_WrapsCorrectly(float initialX, float initialY)
   {
-    var ship = new PlayerShip(new Vector2(initialX, initialY), Vector2.Zero, new Vector2(0, -1));
+    var ship = new PlayerShip(new Vector2(initialX, initialY), Vector2.Zero, new Vector2(0, -1), 100, "blue");
 
     ship.Update(1.0f);
 
@@ -114,7 +114,7 @@ public class PlayerShipTests
   [Fact]
   public void JsonSerialization_ExtremeValues_RetainsProperties()
   {
-    var extremeShip = new PlayerShip(new Vector2(-1200, 900), new Vector2(-0.3f, 0.3f), new Vector2(1, 0));
+    var extremeShip = new PlayerShip(new Vector2(-1200, 900), new Vector2(-0.3f, 0.3f), new Vector2(1, 0), 100, "blue");
 
     var json = JsonSerializer.Serialize(extremeShip);
     var deserializedShip = JsonSerializer.Deserialize<PlayerShip>(json);
@@ -127,7 +127,7 @@ public class PlayerShipTests
   [Fact]
   public void ContinuousRotation_ReturnsToOriginalDirection()
   {
-    var ship = new PlayerShip(Vector2.Zero, Vector2.Zero, Vector2.UnitY)
+    var ship = new PlayerShip(Vector2.Zero, Vector2.Zero, Vector2.UnitY, 100, "blue")
     {
       InputState = new InputState { RotationDirection = RotationDirection.Right }
     };
@@ -145,7 +145,7 @@ public class PlayerShipTests
   [Fact]
   public void PositionUpdate_AtMaxVelocity_AccurateAfterContinuousThrusting()
   {
-    var ship = new PlayerShip(Vector2.Zero, Vector2.Zero, new Vector2(0, -1))
+    var ship = new PlayerShip(Vector2.Zero, Vector2.Zero, new Vector2(0, -1), 100, "blue")
     {
       InputState = new InputState { Thrusting = true }
     };

@@ -10,7 +10,7 @@ export const PlayerList: FC<{
         <li className="list-group-item bg-secondary-subtle">
           <div className="row w-100">
             <div className="col fw-bold">Player</div>
-            <div className="col-2 fw-bold">Health</div>
+            <div className="col-2 text-center fw-bold">Health</div>
           </div>
         </li>
         {Object.entries(lobbyInfo.players)

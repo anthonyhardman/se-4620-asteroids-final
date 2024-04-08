@@ -55,12 +55,13 @@ export const Game: FC<GameProps> = ({ players }) => {
                 position={[0, 30, 0]}
                 scale={[healthPercentage, 0.5, 1]}
               >
-                <planeGeometry args={[80, 10]} />
+                <planeGeometry args={[100, 10]} />
                 <meshBasicMaterial attach="material" color="green" />
               </mesh>
               <Text
                 position={[0, 60, 0]}
                 fontSize={25}
+                fontWeight="bold"
                 color="#fff"
                 anchorX="center"
                 anchorY="middle"

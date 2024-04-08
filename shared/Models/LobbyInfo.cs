@@ -26,7 +26,7 @@ public class LobbyInfo
     private static readonly Random random = new();
 
     [JsonConstructor]
-    public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime)
+    public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime, List<Asteroid> asteroids)
     {
         Id = id;
         CreatedBy = createdBy;
@@ -34,6 +34,7 @@ public class LobbyInfo
         Players = players;
         State = state;
         CountdownTime = countdownTime;
+        Asteroids = asteroids;
     }
 
     public LobbyInfo(string createdBy, int maxPlayers = 5)
@@ -66,8 +67,9 @@ public class LobbyInfo
 
     public void HandleAsteroids()
     {
-        if (random.Next(100) < 10) // 10% chance to add a new asteroid
+        if (random.Next(100) == 1) // 10% chance to add a new asteroid
         {
+            Console.WriteLine("Added asteroid");
             Asteroids.Add(new Asteroid(maxX, maxY));
         }
 

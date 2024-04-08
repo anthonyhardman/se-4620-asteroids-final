@@ -16,9 +16,9 @@ export interface LobbyInfo {
   maxPlayers: number;
   state: LobbyState;
   players: { [username: string]: PlayerShip }
+  asteroids: Asteroid[];
   countdownTime: number;
 }
-
 
 
 export interface PlayerShip {
@@ -29,6 +29,15 @@ export interface PlayerShip {
   health: number;
   maxHealth: number;
   color: string;
+}
+
+export interface Asteroid {
+  position: Vector;
+  velocity: Vector;
+  direction: Vector;
+  size: number;
+  damage: number;
+  health: number;
 }
 
 export interface Vector {

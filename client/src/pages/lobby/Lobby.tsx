@@ -22,6 +22,8 @@ export const Lobby = () => {
     shootPressed: 0,
   });
 
+  console.log("asteroids", lobbyInfo?.asteroids)
+
   useEffect(() => {
     if (lobbyId && signalRContext?.isConnected) {
       signalRContext?.joinGroup(lobbyId);

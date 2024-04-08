@@ -85,7 +85,6 @@ export const SignalRConnectionProvider: FC<{ children: ReactNode }> = ({
   }, [connection, queryClient]);
 
   const executeOrQueueAction = (action: () => void) => {
-    console.log("Executing or queueing action");
     if (connection?.state === HubConnectionState.Connected) {
       action();
     } else {

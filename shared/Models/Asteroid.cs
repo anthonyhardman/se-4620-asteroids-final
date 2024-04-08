@@ -39,9 +39,18 @@ public class Asteroid
         // Random velocity
         Velocity = Direction * (float)(random.NextDouble() * 0.5 + 0.1);
     }
+
+    [JsonConstructor]
+    public Asteroid(Vector2 position, Vector2 velocity, Vector2 direction, float size)
+    {
+        Position = position;
+        Velocity = velocity;
+        Direction = direction;
+        Size = size;
+    }
     public void Update(float timeStep)
     {
-      Position += Velocity * timeStep;
+        Position += Velocity * timeStep;
     }
 
     private static Vector2 RotateVector(Vector2 vector, float angle)

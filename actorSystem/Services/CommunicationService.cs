@@ -41,7 +41,7 @@ public class CommunicationService : ICommunicationService, IHostedService
 
   private async Task EnsureConnectedAsync()
   {
-    if (_hubConnection.State != HubConnectionState.Connected)
+    if (_hubConnection.State == HubConnectionState.Disconnected)
     {
       try
       {

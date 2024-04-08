@@ -40,6 +40,7 @@ export const Game: FC<GameProps> = ({ players }) => {
         {Object.entries(players).map(([username, player]) => {
           const direction = new Vector3(player.direction.x, player.direction.y, 0);
           const quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), direction.normalize());
+          const healthPercentage = player.health / player.maxHealth;
 
           return (
             <group key={username} position={[player.position.x, player.position.y, 0]}>
@@ -48,7 +49,14 @@ export const Game: FC<GameProps> = ({ players }) => {
                 quaternion={quat}
                 scale={[50, 50, 1]}
               >
-                <meshBasicMaterial attach="material" color="blue" />
+                <meshBasicMaterial attach="material" color={player.color} />
+              </mesh>
+              <mesh
+                position={[0, 30, 0]}
+                scale={[healthPercentage, 0.5, 1]}
+              >
+                <planeGeometry args={[80, 10]} />
+                <meshBasicMaterial attach="material" color="green" />
               </mesh>
               <Text
                 position={[0, 60, 0]}

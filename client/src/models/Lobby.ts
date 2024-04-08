@@ -26,6 +26,9 @@ export interface PlayerShip {
   velocity: Vector;
   direction: Vector;
   inputState?: InputState;
+  health: number;
+  maxHealth: number;
+  color: string;
 }
 
 export interface Vector {

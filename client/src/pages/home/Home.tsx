@@ -5,7 +5,7 @@ import {
   useJoinLobbyMutation,
 } from "./homeHooks";
 import { useUser } from "../../userHooks";
-import { LobbyInfo } from "../../models/Lobby";
+import { LobbyInfo, LobbyState } from "../../models/Lobby";
 
 export const Home = () => {
   const user = useUser();
@@ -20,34 +20,29 @@ export const Home = () => {
   };
 
   const joinHandler = (id: string) => {
-    console.log("Joining lobby", id);
     joinLobbyMutation.mutateAsync(id).then(() => navigate(`/lobby/${id}`));
   };
 
   const joinButton = (lobby: LobbyInfo) => {
-    if (hasAlreadyJoined(lobby, user?.preferred_username ?? "")) {
-      return (
-        <Link to={`/lobby/${lobby.id}`} className="btn btn-secondary w-100">
-          Enter
-        </Link>
-      );
-    } else if (lobby.playerCount < lobby.maxPlayers) {
-      return (
-        <button
-          onClick={() => joinHandler(lobby.id)}
-          className="btn btn-secondary w-100"
-        >
-          Join
-        </button>
-      );
-    } else {
-      return (
-        <button className="btn btn-outline-secondary w-100" disabled>
-          Full
-        </button>
-      );
-    }
+    const isJoined = hasAlreadyJoined(lobby, user?.preferred_username ?? "");
+    const canJoin = lobby.playerCount < lobby.maxPlayers && lobby.state === LobbyState.Joining;
+    if (isJoined) return (
+      <Link to={`/lobby/${lobby.id}`} className="btn btn-secondary w-100">
+        Enter
+      </Link>
+    );
+    if (canJoin) return (
+      <button onClick={() => joinHandler(lobby.id)} className="btn btn-secondary w-100">
+        Join
+      </button>
+    );
+    return (
+      <Link to={`/lobby/${lobby.id}`} className="btn btn-secondary w-100">
+        Spectate
+      </Link>
+    );
   };
+
 
   return (
     <div className="container mt-2">

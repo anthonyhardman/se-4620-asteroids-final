@@ -21,8 +21,8 @@ public class PlayerShip
   public float VelocityCap { get; init; } = 0.3f;
   private static readonly Random random = new();
   private static readonly string[] colors = ["blue", "red", "green", "yellow", "purple", "orange"];
-  private int maxX;
-  private int maxY;
+  public int MaxX { get; private set; }
+  public int MaxY { get; private set; }
 
   public PlayerShip(int maxX, int maxY)
   {
@@ -34,18 +34,20 @@ public class PlayerShip
     Direction = new Vector2(0, -1);
     Health = MaxHealth;
     Color = colors[random.Next(colors.Length)];
-    this.maxX = maxX;
-    this.maxY = maxY;
+    MaxX = maxX;
+    MaxY = maxY;
   }
 
   [JsonConstructor]
-  public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction, int health, string color)
+  public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction, int health, string color, int maxX, int maxY)
   {
     Position = position;
     Velocity = velocity;
     Direction = direction;
     Health = health;
     Color = color;
+    MaxX = maxX;
+    MaxY = maxY;
   }
 
   public void Update(float timeStep)
@@ -77,8 +79,8 @@ public class PlayerShip
       Position += Velocity * timeStep;
     }
     Position = new Vector2(
-        WrapValue(Position.X, -maxX, maxX),
-        WrapValue(Position.Y, -maxY, maxY)
+        WrapValue(Position.X, -MaxX, MaxX),
+        WrapValue(Position.Y, -MaxY, MaxY)
     );
   }
 

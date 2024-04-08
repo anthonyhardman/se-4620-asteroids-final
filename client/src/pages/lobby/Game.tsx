@@ -1,23 +1,27 @@
-import { OrthographicCamera } from "@react-three/drei";
+import { OrthographicCamera, Text } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { FC } from "react";
-import { PlayerShip } from "../../models/Lobby";
+import { FC, useMemo } from "react";
 import { BufferAttribute, BufferGeometry, Quaternion, Vector3 } from "three";
+import { PlayerShip } from "../../models/Lobby";
 
 interface GameProps {
-  players: PlayerShip[];
+  players: { [username: string]: PlayerShip };
 }
 
 export const Game: FC<GameProps> = ({ players }) => {
   const Scene = () => {
-    useFrame(() => {});
+    useFrame(() => { });
 
-    const triangleVertices = new Float32Array([
-      0, 0.5, 0, -0.5, -0.5, 0, 0.5, -0.5, 0,
-    ]);
-
-    const geometry = new BufferGeometry();
-    geometry.setAttribute("position", new BufferAttribute(triangleVertices, 3));
+    const shipGeometry = useMemo(() => {
+      const geometry = new BufferGeometry();
+      const vertices = new Float32Array([
+        0, 0.5, 0,  // Tip of the ship
+        -0.5, -0.5, 0,  // Left base
+        0.5, -0.5, 0   // Right base
+      ]);
+      geometry.setAttribute('position', new BufferAttribute(vertices, 3));
+      return geometry;
+    }, []);
 
     return (
       <>
@@ -33,34 +37,29 @@ export const Game: FC<GameProps> = ({ players }) => {
         />
         <ambientLight intensity={0.5} />
         <pointLight decay={0.25} position={[0, 5, 3]} />
-        {players.map((player, index) => {
-          const direction = new Vector3(
-            player.direction.x,
-            player.direction.y,
-            0
-          );
-          const quat = new Quaternion().setFromUnitVectors(
-            new Vector3(0, 1, 0),
-            direction.normalize()
-          );
+        {Object.entries(players).map(([username, player]) => {
+          const direction = new Vector3(player.direction.x, player.direction.y, 0);
+          const quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), direction.normalize());
 
           return (
-            <mesh
-              key={index}
-              quaternion={quat}
-              scale={[50, 50, 1]}
-              position={[player.position.x, player.position.y, 0]}
-            >
-              <bufferGeometry attach="geometry">
-                <bufferAttribute
-                  attach={"attributes-position"}
-                  count={triangleVertices.length / 3} // 3 vertices
-                  array={triangleVertices}
-                  itemSize={3} // 3 values (x, y, z) per vertex
-                />
-              </bufferGeometry>
-              <meshBasicMaterial attach="material" color="blue" />
-            </mesh>
+            <group key={username} position={[player.position.x, player.position.y, 0]}>
+              <mesh
+                geometry={shipGeometry}
+                quaternion={quat}
+                scale={[50, 50, 1]}
+              >
+                <meshBasicMaterial attach="material" color="blue" />
+              </mesh>
+              <Text
+                position={[0, 60, 0]}
+                fontSize={25}
+                color="#fff"
+                anchorX="center"
+                anchorY="middle"
+              >
+                {username}
+              </Text>
+            </group>
           );
         })}
       </>

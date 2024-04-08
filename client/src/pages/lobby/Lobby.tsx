@@ -19,7 +19,7 @@ export const Lobby = () => {
     rotationDirection: RotationDirection.None,
     shootPressed: 0,
   });
-  
+
   useEffect(() => {
     if (lobbyId && signalRContext?.isConnected) {
       signalRContext?.joinGroup(lobbyId);
@@ -96,7 +96,7 @@ export const Lobby = () => {
   const renderLobbyState = () => {
     if (lobbyInfo.state === LobbyState.Joining) {
       return (
-        <>
+        <div className="col-12 mb-2">
           <h1>Waiting in Lobby</h1>
           <div>
             The game has not started yet. Customize your ship before the game
@@ -107,22 +107,22 @@ export const Lobby = () => {
               Start Game
             </button>
           </div>
-        </>
+        </div>
       );
     } else if (lobbyInfo.state === LobbyState.Countdown) {
       return (
-        <div>
-          Game starting in {lobbyInfo.countdownTime} seconds. Customize your
+        <div className="alert alert-primary col-12">
+          Game starting in {lobbyInfo.countdownTime}. Customize your
           ship!
         </div>
       );
     } else if (lobbyInfo.state === LobbyState.Playing) {
       return (
-        <Game
-          players={Object.entries(lobbyInfo.players).map(([_, ship]) => {
-            return ship;
-          })}
-        />
+        <div className="col-auto">
+          <Game
+            players={lobbyInfo.players}
+          />
+        </div>
       );
     } else {
       return <div>Unknown state</div>;
@@ -131,9 +131,9 @@ export const Lobby = () => {
 
   return (
     <div className="container mt-2 text-center">
-      {renderLobbyState()}
       <div className="row my-3">
-        <div className="col-auto text-start">
+        {renderLobbyState()}
+        <div className="col text-start">
           {lobbyInfo && <PlayerList lobbyInfo={lobbyInfo} />}
         </div>
       </div>

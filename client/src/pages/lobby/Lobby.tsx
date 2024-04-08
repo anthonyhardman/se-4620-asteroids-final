@@ -122,7 +122,7 @@ export const Lobby = () => {
       );
     } else if (lobbyInfo.state === LobbyState.Playing) {
       return (
-        <div className="col-auto">
+        <div className="col-xl-auto d-flex justify-content-center">
           <Game
             players={lobbyInfo.players}
           />
@@ -137,7 +137,7 @@ export const Lobby = () => {
     <div className="container mt-2 text-center">
       <div className="row my-3">
         {renderLobbyState()}
-        <div className="col text-start">
+        <div className="col-xl text-start">
           {lobbyInfo && <PlayerList lobbyInfo={lobbyInfo} />}
         </div>
       </div>

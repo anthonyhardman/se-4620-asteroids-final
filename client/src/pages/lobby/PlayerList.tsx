@@ -6,17 +6,28 @@ export const PlayerList: FC<{
 }> = ({ lobbyInfo }) => {
   return (
     <div>
-      <div className="fs-4 text-center">Players</div>
       <ul className="list-group">
+        <li className="list-group-item bg-secondary-subtle">
+          <div className="row w-100">
+            <div className="col fw-bold">Player</div>
+            <div className="col-2 fw-bold">Health</div>
+          </div>
+        </li>
         {Object.entries(lobbyInfo.players)
+          .sort(([playerA, shipA], [playerB, shipB]) => {
+            if (shipA.health > shipB.health) return -1;
+            if (shipA.health < shipB.health) return 1;
+            return playerA.localeCompare(playerB);
+          })
           .map(([player, ship]) => (
             <li key={player} className="list-group-item">
               <div className="row w-100">
                 <div className="col">{player}</div>
-                <div className="col-auto">{ship.health}</div>
+                <div className="col-2 text-center">{ship.health}</div>
               </div>
             </li>
           ))}
+
       </ul>
     </div>
   );

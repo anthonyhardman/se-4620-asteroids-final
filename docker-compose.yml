@@ -22,9 +22,15 @@ services:
       - 6123:443
     restart: unless-stopped
 
-  asteroids_client:
+  asteroids_client_1:
     container_name: asteroids_client
-    scale: 2
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    restart: unless-stopped
+
+  asteroids_client_2:
+    container_name: asteroids_client
     build:
       context: ./client
       dockerfile: Dockerfile

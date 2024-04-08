@@ -40,16 +40,23 @@ public class LobbyActor : ReceiveActor
 
   public void JoinLobby(JoinLobbyCommand command)
   {
-    try
+    if (Info.State == LobbyState.Joining)
     {
-      Info.AddPlayer(command.Username);
-      Sender.Tell(new UserJoined(command.Username));
-      Log.Info($"{command.Username} joined lobby {Info.Id}");
+      try
+      {
+        Info.AddPlayer(command.Username);
+        Sender.Tell(new UserJoined(command.Username));
+        Log.Info($"{command.Username} joined lobby {Info.Id}");
+      }
+      catch (InvalidOperationException exception)
+      {
+        Log.Error(exception.Message);
+        Sender.Tell(new Status.Failure(new InvalidOperationException(exception.Message)));
+      }
     }
-    catch (InvalidOperationException exception)
+    else
     {
-      Log.Error(exception.Message);
-      Sender.Tell(new Status.Failure(new InvalidOperationException(exception.Message)));
+      Sender.Tell(new Status.Failure(new InvalidOperationException("Cannot join game. Wrong state.")));
     }
   }
 
@@ -57,25 +64,32 @@ public class LobbyActor : ReceiveActor
 
   public void StartGame(StartGameCommand command)
   {
-    try
+    if (Info.State == LobbyState.Joining)
     {
-      Log.Info($"Starting game {command.LobbyId}");
-      countdown = 10000;
-      Info.StartCountdown();
-      _gameLoop = Context.System.Scheduler.ScheduleTellRepeatedlyCancelable(
-        TimeSpan.FromMilliseconds(_timeStep),
-        TimeSpan.FromMicroseconds(_timeStep),
-        Self,
-        new Tick(),
-        Self
-      );
-      Sender.Tell(new Status.Success("Game started."));
-      Log.Info($"Started game {command.LobbyId}");
+      try
+      {
+        Log.Info($"Starting game {command.LobbyId}");
+        countdown = 10000;
+        Info.StartCountdown();
+        _gameLoop = Context.System.Scheduler.ScheduleTellRepeatedlyCancelable(
+          TimeSpan.FromMilliseconds(_timeStep),
+          TimeSpan.FromMicroseconds(_timeStep),
+          Self,
+          new Tick(),
+          Self
+        );
+        Sender.Tell(new Status.Success("Game started."));
+        Log.Info($"Started game {command.LobbyId}");
+      }
+      catch (InvalidOperationException exception)
+      {
+        Log.Error(exception.Message);
+        Sender.Tell(new Status.Failure(new InvalidOperationException(exception.Message)));
+      }
     }
-    catch (InvalidOperationException exception)
+    else
     {
-      Log.Error(exception.Message);
-      Sender.Tell(new Status.Failure(new InvalidOperationException(exception.Message)));
+      Sender.Tell(new Status.Failure(new InvalidOperationException("Cannot start game. Wrong state.")));
     }
   }
 

@@ -28,6 +28,8 @@ services:
       context: ./client
       dockerfile: Dockerfile
     restart: unless-stopped
+    depends_on:
+      - asteroids_signalr
 
   asteroids_client_2:
     container_name: asteroids_client_2
@@ -35,6 +37,8 @@ services:
       context: ./client
       dockerfile: Dockerfile
     restart: unless-stopped
+    depends_on:
+      - asteroids_signalr
 
   asteroids_actor_system:
     container_name: asteroids_actor_system
@@ -42,6 +46,8 @@ services:
       context: .
       dockerfile: ./actorSystem/Dockerfile
     restart: unless-stopped
+    depends_on:
+      - asteroids_signalr
 
   asteroids_signalr:
     container_name: asteroids_signalr

@@ -15,7 +15,7 @@ public class PlayerShip
   public InputState? InputState { get; set; }
   private const float acceleration = 0.0005f;
   private const float rotationAmount = 0.05f;
-  private const float velocityCap = 0.3f;
+  public float VelocityCap { get; init; } = 0.3f;
   private const int maxX = 400 * 3;
   private const int maxY = 300 * 3;
   private static readonly Random random = new();
@@ -57,9 +57,9 @@ public class PlayerShip
       Position += Velocity * timeStep + 0.5f * Direction * acceleration * timeStep * timeStep;
       Velocity = (Position - oldPosition) / timeStep;
 
-      if (Velocity.Length() > velocityCap)
+      if (Velocity.Length() > VelocityCap)
       {
-        Velocity = Vector2.Normalize(Velocity) * velocityCap;
+        Velocity = Vector2.Normalize(Velocity) * VelocityCap;
       }
     }
     else

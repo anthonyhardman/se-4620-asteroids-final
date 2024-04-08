@@ -19,12 +19,12 @@ public class PlayerShip
   private const float acceleration = 0.0005f;
   private const float rotationAmount = 0.05f;
   public float VelocityCap { get; init; } = 0.3f;
-  private const int maxX = 400 * 3;
-  private const int maxY = 300 * 3;
   private static readonly Random random = new();
   private static readonly string[] colors = ["blue", "red", "green", "yellow", "purple", "orange"];
+  private int maxX;
+  private int maxY;
 
-  public PlayerShip()
+  public PlayerShip(int maxX, int maxY)
   {
     Position = new Vector2(
         random.Next(-maxX, maxX),
@@ -34,6 +34,8 @@ public class PlayerShip
     Direction = new Vector2(0, -1);
     Health = MaxHealth;
     Color = colors[random.Next(colors.Length)];
+    this.maxX = maxX;
+    this.maxY = maxY;
   }
 
   [JsonConstructor]

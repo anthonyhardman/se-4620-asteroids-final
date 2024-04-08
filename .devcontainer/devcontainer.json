@@ -17,7 +17,8 @@
         "esbenp.prettier-vscode",
         "dsznajder.es7-react-js-snippets",
         "dbaeumer.vscode-eslint",
-        "ms-dotnettools.csdevkit"
+        "ms-dotnettools.csdevkit",
+        "github.vscode-github-actions"
       ]
     }
   },

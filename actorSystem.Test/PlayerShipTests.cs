@@ -9,9 +9,11 @@ public class PlayerShipTests
   [Fact]
   public void Constructor_InitializesWithRandomPosition_WithinBounds()
   {
-    var ship = new PlayerShip();
-    Assert.InRange(ship.Position.X, -1200, 1200);
-    Assert.InRange(ship.Position.Y, -900, 900);
+    int maxX = 1200;
+    int maxY = 900;
+    var ship = new PlayerShip(maxX, maxY);
+    Assert.InRange(ship.Position.X, -maxX, maxX);
+    Assert.InRange(ship.Position.Y, -maxY, maxY);
   }
 
   [Fact]

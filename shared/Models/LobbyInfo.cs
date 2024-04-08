@@ -18,8 +18,12 @@ public class LobbyInfo
     public int PlayerCount => Players.Count;
     public int MaxPlayers { get; }
     public Dictionary<string, PlayerShip> Players { get; init; } = [];
+    public List<Asteroid> Asteroids { get; init; } = [];
     public LobbyState State { get; private set; }
     public int CountdownTime { get; private set; }
+    private const int maxX = 400 * 3;
+    private const int maxY = 300 * 3;
+    private static readonly Random random = new();
 
     [JsonConstructor]
     public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime)
@@ -47,7 +51,7 @@ public class LobbyInfo
             throw new InvalidOperationException("Cannot add more players. The lobby is full.");
         }
 
-        Players.Add(username, new PlayerShip());
+        Players.Add(username, new PlayerShip(maxX, maxY));
     }
 
     public void RemovePlayer(string username)
@@ -59,6 +63,20 @@ public class LobbyInfo
 
         Players.Remove(username);
     }
+
+    public void HandleAsteroids()
+    {
+        if (random.Next(100) < 10) // 10% chance to add a new asteroid
+        {
+            Asteroids.Add(new Asteroid(maxX, maxY));
+        }
+
+        // Remove asteroids that are off the screen, with an extra 100 units of flexibility
+        Asteroids.RemoveAll(asteroid =>
+            asteroid.Position.X < -maxX - 100 || asteroid.Position.X > maxX + 100 ||
+            asteroid.Position.Y < -maxY - 100 || asteroid.Position.Y > maxY + 100);
+    }
+
 
     public void StartPlaying()
     {

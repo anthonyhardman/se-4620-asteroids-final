@@ -47,8 +47,7 @@ export const SignalRConnectionProvider: FC<{ children: ReactNode }> = ({
       newConnection
         .start()
         .then(() => {
-          console.log("Connection established");
-          console.log(newConnection.state);
+          console.log("Connection established", newConnection.state);
           setIsConnected(newConnection.state === HubConnectionState.Connected)
           queue.current.forEach((action) => action());
           queue.current = [];

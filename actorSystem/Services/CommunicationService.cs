@@ -39,24 +39,41 @@ public class CommunicationService : ICommunicationService, IHostedService
     _hubConnection.On<string, Guid, InputState>("UpdatePlayerInputState", UpdatePlayerInputState);
   }
 
+  private async Task EnsureConnectedAsync()
+  {
+    if (_hubConnection.State != HubConnectionState.Connected)
+    {
+      try
+      {
+        await _hubConnection.StartAsync();
+        logger.LogInformation("SignalR hub connection established.");
+      }
+      catch (Exception ex)
+      {
+        logger.LogError(ex, "Error establishing SignalR hub connection.");
+        throw;
+      }
+    }
+  }
 
   public async Task StartAsync(CancellationToken cancellationToken)
   {
-    if (_hubConnection.State == HubConnectionState.Disconnected)
+    if (_hubConnection.State != HubConnectionState.Disconnected)
     {
-      await _hubConnection.StartAsync();
+      await _hubConnection.StartAsync(cancellationToken);
     }
   }
 
   public async Task StopAsync(CancellationToken cancellationToken)
   {
-    await _hubConnection.StopAsync();
+    await _hubConnection.StopAsync(cancellationToken);
   }
 
   public async Task<Guid> CreateLobby(string username)
   {
     var lobbyId = await _akkaService.CreateLobby(username);
     var lobbies = await _akkaService.GetLobbies();
+    await EnsureConnectedAsync();
     await _hubConnection.SendAsync("LobbyCreated", lobbyId, lobbies);
     return lobbyId;
   }
@@ -82,9 +99,10 @@ public class CommunicationService : ICommunicationService, IHostedService
     return result;
   }
 
-  public void SendLobbyInfo(LobbyInfo info)
+  public async Task SendLobbyInfo(LobbyInfo info)
   {
-    _hubConnection.SendAsync("UpdateLobbyInfo", info);
+    await EnsureConnectedAsync();
+    await _hubConnection.SendAsync("UpdateLobbyInfo", info);
   }
 
   public void UpdatePlayerInputState(string username, Guid lobbyId, InputState inputState)

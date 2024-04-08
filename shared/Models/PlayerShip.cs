@@ -15,7 +15,9 @@ public class PlayerShip
   public InputState? InputState { get; set; }
   private const float acceleration = 0.0005f;
   private const float rotationAmount = 0.05f;
-  private const float velocityCap = 0.1f;
+  private const float velocityCap = 0.3f;
+  private const int maxX = 400 * 3;
+  private const int maxY = 300 * 3;
 
   public PlayerShip()
   {
@@ -60,6 +62,18 @@ public class PlayerShip
     {
       Position += Velocity * timeStep;
     }
+    Position = new Vector2(
+        WrapValue(Position.X, -1200, 1200),
+        WrapValue(Position.Y, -900, 900)
+    );
+  }
+
+  private float WrapValue(float value, float min, float max)
+  {
+      float range = max - min;
+      while (value < min) value += range;
+      while (value > max) value -= range;
+      return value;
   }
 }
 

@@ -46,13 +46,13 @@ export const NavBar = () => {
                 </button>
               </Link>
             </li>
-            <li className="nav-item">
+            {/* <li className="nav-item">
               <Link to="/shop" className={`nav-link`}>
                 <button className={`btn border-0 fs-5 ${isActive("/") && "active"}`}>
                   <i className="bi-shop pe-1" />Shop
                 </button>
               </Link>
-            </li>
+            </li> */}
             <li className="nav-item my-auto ms-3">
               {auth.user ? (
                 <button className="btn btn-outline-danger"

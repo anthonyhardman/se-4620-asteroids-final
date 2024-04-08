@@ -1,13 +1,32 @@
 version: "3"
 
 services:
+  asteroids_swag:
+    container_name: asteroids_swag
+    image: lscr.io/linuxserver/swag
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Denver
+      - URL=asteroids-ba.duckdns.org
+      - VALIDATION=duckdns
+      - DUCKDNSTOKEN=993de60e-d20f-47ca-8464-018ce7a8a380
+      - STAGING=false
+    volumes:
+      - swag_config:/config
+      - ./ops/swag/nginx.conf:/config/nginx/site-confs/default.conf
+      - /data/nginx/cache
+    ports:
+      - 6123:443
+    restart: unless-stopped
+
   asteroids_client:
     container_name: asteroids_client
     build:
       context: ./client
       dockerfile: Dockerfile
-    ports:
-      - 6123:80
     restart: unless-stopped
 
   asteroids_actor_system:
@@ -15,8 +34,6 @@ services:
     build:
       context: .
       dockerfile: ./actorSystem/Dockerfile
-    ports:
-      - 6005:8080
     restart: unless-stopped
 
   asteroids_signalr:
@@ -84,3 +101,4 @@ services:
 volumes:
   grafana_data:
   prometheus_data:
+  swag_config:

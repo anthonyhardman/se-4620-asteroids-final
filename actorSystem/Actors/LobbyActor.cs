@@ -47,6 +47,7 @@ public class LobbyActor : ReceiveActor
         Info.AddPlayer(command.Username);
         Sender.Tell(new UserJoined(command.Username));
         Log.Info($"{command.Username} joined lobby {Info.Id}");
+        _communicationService.SendLobbyInfo(Info);
       }
       catch (InvalidOperationException exception)
       {

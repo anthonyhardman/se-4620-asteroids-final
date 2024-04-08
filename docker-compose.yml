@@ -7,7 +7,16 @@ services:
       context: ./client
       dockerfile: Dockerfile
     ports:
-      - 6000:8080
+      - 6123:80
+    restart: unless-stopped
+
+  asteroids_actor_system:
+    container_name: asteroids_actor_system
+    build:
+      context: .
+      dockerfile: ./actorSystem/Dockerfile
+    ports:
+      - 6005:8080
     restart: unless-stopped
 
   asteroids_signalr:

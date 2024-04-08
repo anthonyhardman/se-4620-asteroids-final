@@ -63,8 +63,8 @@ public class PlayerShip
       Position += Velocity * timeStep;
     }
     Position = new Vector2(
-        WrapValue(Position.X, -1200, 1200),
-        WrapValue(Position.Y, -900, 900)
+        WrapValue(Position.X, -maxX, maxX),
+        WrapValue(Position.Y, -maxY, maxY)
     );
   }
 

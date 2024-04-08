@@ -9,6 +9,7 @@ using actorSystem.Services;
 using Akka.Actor.Setup;
 using Akka.DependencyInjection;
 
+namespace actorSystem.Test;
 public class LobbySupervisorTests : TestKit
 {
   private static IServiceProvider SetupMockServiceProvider()

@@ -24,7 +24,7 @@ services:
 
   asteroids_client:
     container_name: asteroids_client
-    replicas: 2
+    scale: 2
     build:
       context: ./client
       dockerfile: Dockerfile

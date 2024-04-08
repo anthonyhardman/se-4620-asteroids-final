@@ -23,14 +23,14 @@ services:
     restart: unless-stopped
 
   asteroids_client_1:
-    container_name: asteroids_client
+    container_name: asteroids_client_1
     build:
       context: ./client
       dockerfile: Dockerfile
     restart: unless-stopped
 
   asteroids_client_2:
-    container_name: asteroids_client
+    container_name: asteroids_client_2
     build:
       context: ./client
       dockerfile: Dockerfile

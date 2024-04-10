@@ -44,8 +44,8 @@ public class AsteroidTests
   [Fact]
   public void Health_IsCalculatedAsSquareOfSize()
   {
-    var asteroid = new Asteroid(new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 1), 2);
-    Assert.Equal(4, asteroid.Health);
+    var asteroid = new Asteroid(1, 1);
+    Assert.Equal(asteroid.Size * asteroid.Size, asteroid.Health);
   }
 
   [Fact]

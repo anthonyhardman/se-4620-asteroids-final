@@ -38,7 +38,6 @@ public class Asteroid
 
         // Random velocity
         Velocity = Direction * (float)(random.NextDouble() * 0.5 + 0.1 + 20);  // Speed corrected
-        Console.WriteLine($"Creating asteroid at {Position} with velocity {Velocity}");
     }
 
 

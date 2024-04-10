@@ -25,6 +25,7 @@ public class LobbyInfo
     private const int maxX = 400 * 3;
     private const int maxY = 300 * 3;
     private static readonly Random random = new();
+    private float elapsedTime = 0.0f;
 
     [JsonConstructor]
     public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime, List<Asteroid> asteroids, float timeStep = 16.667f)
@@ -69,30 +70,35 @@ public class LobbyInfo
 
     public void HandleAsteroids()
     {
-        if (random.Next(200) == 1) // 1% chance to add a new asteroid
-        {
-            Asteroids.Add(new Asteroid(maxX, maxY));
-        }
+        SpawnAsteroid();
 
         foreach (var asteroid in Asteroids)
         {
             asteroid.Update(TimeStep); // Ensure TimeStep is in seconds if using velocity in units per second
         }
 
-        var asteroidCountBefore = Asteroids.Count;
         // Remove asteroids that are off the screen
         Asteroids.RemoveAll(asteroid =>
-            asteroid.Position.X < -maxX || asteroid.Position.X > maxX ||
-            asteroid.Position.Y < -maxY || asteroid.Position.Y > maxY);
-        var asteroidCountAfter = Asteroids.Count;
-
-        if (asteroidCountBefore != asteroidCountAfter)
-        {
-            Console.WriteLine($"Removed {asteroidCountBefore - asteroidCountAfter} asteroids");
-        }
+            asteroid.Position.X < -maxX - 100 || asteroid.Position.X > maxX + 100 ||
+            asteroid.Position.Y < -maxY - 100 || asteroid.Position.Y > maxY + 100);
     }
 
+    private void SpawnAsteroid()
+    {
+        elapsedTime += TimeStep / 1000.0f;
+        float spawnProbability = 0.002f + (elapsedTime / 10000.0f);
+        int desiredAsteroidCount = 1 + (int)(elapsedTime / 180);
 
+        if (Asteroids.Count < desiredAsteroidCount)
+        {
+            spawnProbability *= 1.1f;
+        }
+
+        if (random.NextDouble() < spawnProbability)
+        {
+            Asteroids.Add(new Asteroid(maxX, maxY));
+        }
+    }
 
     public void StartPlaying()
     {

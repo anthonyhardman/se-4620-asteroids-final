@@ -2,18 +2,18 @@ import { FC, useEffect, useRef } from "react";
 import { PlayerShip } from "../../models/Lobby";
 import { Quaternion, Vector3, Mesh, MeshPhongMaterial } from "three";
 import { Text, useGLTF } from "@react-three/drei";
-import shipModelPath from "../../3dModels/Fighter_01.glb?url"
 
 interface PlayerShipDisplayProps {
   player: PlayerShip;
   username: string;
+  model: any;
 }
 
 export const PlayerShipDisplay: FC<PlayerShipDisplayProps> = ({
   player,
   username,
+  model,
 }) => {
-  const { scene } = useGLTF(shipModelPath, true);
   const direction = new Vector3(player.direction.x, player.direction.y, 0);
   const quat = new Quaternion().setFromUnitVectors(
     new Vector3(0, 1, 0),
@@ -41,7 +41,7 @@ export const PlayerShipDisplay: FC<PlayerShipDisplayProps> = ({
         <planeGeometry args={[100, 10]} />
         <meshBasicMaterial attach="material" color="green" />
       </mesh>
-      <primitive ref={spaceShipRef} object={scene} scale={10} quaternion={quat} />
+      <primitive ref={spaceShipRef} object={model} scale={10} quaternion={quat} />
       <Text
         position={[0, 90, 0]}
         fontSize={25}

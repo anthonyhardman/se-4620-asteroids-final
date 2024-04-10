@@ -6,16 +6,16 @@ namespace shared.Models;
 
 public class Asteroid
 {
-  [JsonConverter(typeof(Vector2Converter))]
-  public Vector2 Position { get; private set; }
-  [JsonConverter(typeof(Vector2Converter))]
-  public Vector2 Velocity { get; private set; }
-  [JsonConverter(typeof(Vector2Converter))]
-  public Vector2 Direction { get; private set; }
-  public float Size { get; private set; }
-  public float Damage => Size * Velocity.Length();
-  public float Health => Size * Size;
-  private static readonly Random random = new();
+    [JsonConverter(typeof(Vector2Converter))]
+    public Vector2 Position { get; private set; }
+    [JsonConverter(typeof(Vector2Converter))]
+    public Vector2 Velocity { get; private set; }
+    [JsonConverter(typeof(Vector2Converter))]
+    public Vector2 Direction { get; private set; }
+    public float Size { get; private set; }
+    public float Damage => Size * Velocity.Length();
+    public float Health { get; set; }
+    private static readonly Random random = new();
 
   public Asteroid(int maxX, int maxY)
   {
@@ -27,11 +27,13 @@ public class Asteroid
     else
       Size = 3;
 
-    bool isVerticalEdge = random.Next(2) == 0;
-    int edgePosition = isVerticalEdge ? random.Next(-maxY, maxY) : random.Next(-maxX, maxX);
-    Position = isVerticalEdge
-        ? new Vector2(maxX * (random.Next(2) * 2 - 1), edgePosition)
-        : new Vector2(edgePosition, maxY * (random.Next(2) * 2 - 1));
+        Health = Size * Size;
+
+        bool isVerticalEdge = random.Next(2) == 0;
+        int edgePosition = isVerticalEdge ? random.Next(-maxY, maxY) : random.Next(-maxX, maxX);
+        Position = isVerticalEdge
+            ? new Vector2(maxX * (random.Next(2) * 2 - 1), edgePosition)
+            : new Vector2(edgePosition, maxY * (random.Next(2) * 2 - 1));
 
     Vector2 boardCenter = new(0, 0);
     Direction = Vector2.Normalize(boardCenter - Position);
@@ -44,14 +46,15 @@ public class Asteroid
   }
 
 
-  [JsonConstructor]
-  public Asteroid(Vector2 position, Vector2 velocity, Vector2 direction, float size)
-  {
-    Position = position;
-    Velocity = velocity;
-    Direction = direction;
-    Size = size;
-  }
+    [JsonConstructor]
+    public Asteroid(Vector2 position, Vector2 velocity, Vector2 direction, float size, float health)
+    {
+        Position = position;
+        Velocity = velocity;
+        Direction = direction;
+        Size = size;
+        Health = health;
+    }
 
     public void Update(float timeStep)
     {

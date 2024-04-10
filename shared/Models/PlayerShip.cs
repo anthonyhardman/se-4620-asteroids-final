@@ -40,7 +40,7 @@ public class PlayerShip
   }
 
   [JsonConstructor]
-  public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction, int health, string color, int maxX, int maxY, int points)
+  public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction, int health, string color, int maxX, int maxY, int points = 0)
   {
     Position = position;
     Velocity = velocity;

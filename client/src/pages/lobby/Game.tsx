@@ -1,18 +1,19 @@
 import { OrthographicCamera } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { FC } from "react";
-import { PlayerShip } from "../../models/Lobby";
-import { PlayerShipDisplay } from "./PlayerShip";
+import { LobbyInfo } from "../../models/Lobby";
+import { PlayerShipDisplay } from "./PlayerShipDisplay";
+import { AsteroidDisplay } from "./AsteroidDisplay";
 
 interface GameProps {
-  players: { [username: string]: PlayerShip };
+  lobbyInfo: LobbyInfo;
 }
 
-export const Game: FC<GameProps> = ({ players }) => {
-  
-  
+export const Game: FC<GameProps> = ({ lobbyInfo }) => {
+  const { players, asteroids } = lobbyInfo;
+
   const Scene = () => {
-    useFrame(() => {});
+    useFrame(() => { });
 
     return (
       <>
@@ -30,9 +31,12 @@ export const Game: FC<GameProps> = ({ players }) => {
         <pointLight decay={0.0} position={[-1000, 125, 200]} />
         {Object.entries(players).map(([username, player]) => {
           return (
-           <PlayerShipDisplay key={username} player={player} username={username} />
+            <PlayerShipDisplay key={username} player={player} username={username} />
           );
         })}
+        {asteroids.map((asteroid, index) => (
+          <AsteroidDisplay key={index} asteroid={asteroid} />
+        ))}
       </>
     );
   };

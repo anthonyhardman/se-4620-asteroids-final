@@ -126,7 +126,7 @@ export const Lobby = () => {
       return (
         <div className="col-xl-auto d-flex justify-content-center">
           <Game
-            players={lobbyInfo.players}
+            lobbyInfo={lobbyInfo}
           />
         </div>
       );

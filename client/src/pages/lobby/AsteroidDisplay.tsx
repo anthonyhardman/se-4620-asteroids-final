@@ -4,9 +4,10 @@ import { Asteroid } from "../../models/Lobby";
 
 interface AsteroidDisplayProps {
   asteroid: Asteroid;
+  model: any;
 }
 
-export const AsteroidDisplay: FC<AsteroidDisplayProps> = ({ asteroid }) => {
+export const AsteroidDisplay: FC<AsteroidDisplayProps> = ({ asteroid, model }) => {
   const scaleFactor = 50; // Adjust this factor to scale the asteroid size up
 
   const asteroidGeometry = useMemo(() => {
@@ -27,9 +28,7 @@ export const AsteroidDisplay: FC<AsteroidDisplayProps> = ({ asteroid }) => {
 
   return (
     <group position={[asteroid.position.x, asteroid.position.y, 0]} scale={[scaleFactor * asteroid.size, scaleFactor * asteroid.size, scaleFactor * asteroid.size]}>
-      <mesh geometry={asteroidGeometry} quaternion={quat}>
-        <meshBasicMaterial attach="material" color={color} />
-      </mesh>
+      <primitive object={model} quaternion={quat} />
     </group>
   );
 };

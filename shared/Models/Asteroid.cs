@@ -23,13 +23,13 @@ public class Asteroid
 
         // Position the asteroid at the edge of the board
         bool isVerticalEdge = random.Next(2) == 0;
-        int edgePosition = isVerticalEdge ? random.Next(maxY) : random.Next(maxX);
+        int edgePosition = isVerticalEdge ? random.Next(-maxY, maxY) : random.Next(-maxX, maxX);
         Position = isVerticalEdge
-            ? new Vector2(random.Next(2) * maxX, edgePosition) // Left or right edge
-            : new Vector2(edgePosition, random.Next(2) * maxY); // Top or bottom edge
+            ? new Vector2(maxX * (random.Next(2) * 2 - 1), edgePosition) // Left or right edge
+            : new Vector2(edgePosition, maxY * (random.Next(2) * 2 - 1)); // Top or bottom edge
 
         // Calculate a direction vector pointed towards the center of the board
-        Vector2 boardCenter = new(maxX / 2, maxY / 2);
+        Vector2 boardCenter = new(0, 0);
         Direction = Vector2.Normalize(boardCenter - Position);
 
         // Adjust the direction to aim for the middle half of the board by applying a random deviation
@@ -37,8 +37,10 @@ public class Asteroid
         Direction = RotateVector(Direction, angleDeviation);
 
         // Random velocity
-        Velocity = Direction * (float)(random.NextDouble() * 0.5 + 0.1);
+        Velocity = Direction * (float)(random.NextDouble() * 0.5 + 0.1 + 20);  // Speed corrected
+        Console.WriteLine($"Creating asteroid at {Position} with velocity {Velocity}");
     }
+
 
     [JsonConstructor]
     public Asteroid(Vector2 position, Vector2 velocity, Vector2 direction, float size)
@@ -48,9 +50,10 @@ public class Asteroid
         Direction = direction;
         Size = size;
     }
+
     public void Update(float timeStep)
     {
-        Position += Velocity * timeStep;
+        Position += Velocity * (timeStep / 100);
     }
 
     private static Vector2 RotateVector(Vector2 vector, float angle)

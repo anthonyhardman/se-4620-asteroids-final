@@ -25,6 +25,7 @@ public class LobbyActor : ReceiveActor
 
   public LobbyActor(LobbyInfo info, ICommunicationService communicationService)
   {
+    info.TimeStep = _timeStep;
     Info = info;
     Info.AddPlayer(info.CreatedBy);
     Log.Info($"{info.CreatedBy} created and joined lobby {Info.Id}");
@@ -117,7 +118,7 @@ public class LobbyActor : ReceiveActor
       {
         player.Value.Update(_timeStep);
       }
-      // Info.HandleAsteroids();
+      Info.HandleAsteroids();
     }
     _communicationService.SendLobbyInfo(Info);
   }

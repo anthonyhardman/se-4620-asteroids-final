@@ -21,12 +21,13 @@ public class LobbyInfo
     public List<Asteroid> Asteroids { get; init; } = [];
     public LobbyState State { get; private set; }
     public int CountdownTime { get; private set; }
+    public float TimeStep { get; set; } = 16.667f;
     private const int maxX = 400 * 3;
     private const int maxY = 300 * 3;
     private static readonly Random random = new();
 
     [JsonConstructor]
-    public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime, List<Asteroid> asteroids)
+    public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime, List<Asteroid> asteroids, float timeStep = 16.667f)
     {
         Id = id;
         CreatedBy = createdBy;
@@ -35,6 +36,7 @@ public class LobbyInfo
         State = state;
         CountdownTime = countdownTime;
         Asteroids = asteroids;
+        TimeStep = timeStep;
     }
 
     public LobbyInfo(string createdBy, int maxPlayers = 5)
@@ -67,16 +69,26 @@ public class LobbyInfo
 
     public void HandleAsteroids()
     {
-        if (random.Next(100) == 1) // 10% chance to add a new asteroid
+        if (random.Next(200) == 1) // 1% chance to add a new asteroid
         {
-            Console.WriteLine("Added asteroid");
             Asteroids.Add(new Asteroid(maxX, maxY));
         }
 
+        foreach (var asteroid in Asteroids)
+        {
+            asteroid.Update(TimeStep);
+        }
+
+        var asteroidCountBefore = Asteroids.Count;
         // Remove asteroids that are off the screen, with an extra 100 units of flexibility
         Asteroids.RemoveAll(asteroid =>
             asteroid.Position.X < -maxX - 100 || asteroid.Position.X > maxX + 100 ||
             asteroid.Position.Y < -maxY - 100 || asteroid.Position.Y > maxY + 100);
+        var asteroidCountAfter = Asteroids.Count;
+        if (asteroidCountBefore != asteroidCountAfter)
+        {
+            Console.WriteLine($"Removed {asteroidCountBefore - asteroidCountAfter} asteroids");
+        }
     }
 
 

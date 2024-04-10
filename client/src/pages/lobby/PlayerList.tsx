@@ -11,6 +11,7 @@ export const PlayerList: FC<{
           <div className="row w-100">
             <div className="col fw-bold">Player</div>
             <div className="col-2 text-center fw-bold">Health</div>
+            <div className="col-2 text-center fw-bold">Points</div>
           </div>
         </li>
         {Object.entries(lobbyInfo.players)
@@ -24,6 +25,7 @@ export const PlayerList: FC<{
               <div className="row w-100">
                 <div className="col">{player}</div>
                 <div className="col-2 text-center">{ship.health}</div>
+                <div className="col-2 text-center">{ship.points}</div>
               </div>
             </li>
           ))}

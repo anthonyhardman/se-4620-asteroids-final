@@ -21,14 +21,13 @@ public class LobbyInfo
     public List<Asteroid> Asteroids { get; init; } = [];
     public LobbyState State { get; private set; }
     public int CountdownTime { get; private set; }
-    public float TimeStep { get; set; } = 16.667f;
     private const int maxX = 400 * 3;
     private const int maxY = 300 * 3;
     private static readonly Random random = new();
     private float elapsedTime = 0.0f;
 
     [JsonConstructor]
-    public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime, List<Asteroid> asteroids, float timeStep = 16.667f)
+    public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime, List<Asteroid> asteroids)
     {
         Id = id;
         CreatedBy = createdBy;
@@ -37,7 +36,6 @@ public class LobbyInfo
         State = state;
         CountdownTime = countdownTime;
         Asteroids = asteroids;
-        TimeStep = timeStep;
     }
 
     public LobbyInfo(string createdBy, int maxPlayers = 5)
@@ -68,13 +66,21 @@ public class LobbyInfo
         Players.Remove(username);
     }
 
-    public void HandleAsteroids()
+    public void UpdatePlayers(float timeStep)
     {
-        SpawnAsteroid();
+        foreach (var player in Players)
+        {
+            player.Value.Update(timeStep);
+        }
+    }
+
+    public void HandleAsteroids(float timeStep)
+    {
+        SpawnAsteroid(timeStep);
 
         foreach (var asteroid in Asteroids)
         {
-            asteroid.Update(TimeStep); // Ensure TimeStep is in seconds if using velocity in units per second
+            asteroid.Update(timeStep); // Ensure TimeStep is in seconds if using velocity in units per second
         }
 
         // Remove asteroids that are off the screen
@@ -83,11 +89,11 @@ public class LobbyInfo
             asteroid.Position.Y < -maxY - 1000 || asteroid.Position.Y > maxY + 1000);
     }
 
-    private void SpawnAsteroid()
+    private void SpawnAsteroid(float timeStep)
     {
-        elapsedTime += TimeStep / 1000.0f;
+        elapsedTime += timeStep / 1000.0f;
         float spawnProbability = 0.002f + (elapsedTime / 10000.0f);
-        int desiredAsteroidCount = 1 + (int)(elapsedTime / 180);
+        int desiredAsteroidCount = 2 + (int)(elapsedTime / 180);
 
         if (Asteroids.Count < desiredAsteroidCount)
         {

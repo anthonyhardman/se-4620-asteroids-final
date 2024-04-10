@@ -23,6 +23,7 @@ public class PlayerShip
   private static readonly string[] colors = ["blue", "red", "green", "yellow", "purple", "orange"];
   public int MaxX { get; private set; }
   public int MaxY { get; private set; }
+  public int Points { get; set; } = 0;
 
   public PlayerShip(int maxX, int maxY)
   {
@@ -39,7 +40,7 @@ public class PlayerShip
   }
 
   [JsonConstructor]
-  public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction, int health, string color, int maxX, int maxY)
+  public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction, int health, string color, int maxX, int maxY, int points)
   {
     Position = position;
     Velocity = velocity;
@@ -48,6 +49,7 @@ public class PlayerShip
     Color = color;
     MaxX = maxX;
     MaxY = maxY;
+    Points = points;
   }
 
   public void Update(float timeStep)
@@ -82,6 +84,10 @@ public class PlayerShip
         WrapValue(Position.X, -MaxX, MaxX),
         WrapValue(Position.Y, -MaxY, MaxY)
     );
+    if (Health > 0)
+    {
+      Points += 1;
+    }
   }
 
   private float WrapValue(float value, float min, float max)

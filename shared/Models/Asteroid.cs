@@ -19,7 +19,13 @@ public class Asteroid
 
     public Asteroid(int maxX, int maxY)
     {
-        Size = random.Next(1, 4);
+        int rand = random.Next(1, 11);
+        if (rand <= 5)
+            Size = 1;
+        else if (rand <= 8)
+            Size = 2;
+        else
+            Size = 3;
 
         bool isVerticalEdge = random.Next(2) == 0;
         int edgePosition = isVerticalEdge ? random.Next(-maxY, maxY) : random.Next(-maxX, maxX);

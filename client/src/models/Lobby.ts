@@ -29,6 +29,7 @@ export interface PlayerShip {
   health: number;
   maxHealth: number;
   color: string;
+  points: number;
 }
 
 export interface Asteroid {

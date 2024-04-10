@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using actorSystem.Services;
 using Akka.Actor;
+using Akka.Dispatch.SysMsg;
 using Akka.Event;
 using shared.Models;
 
@@ -12,7 +13,6 @@ public record GetLobbyInfoQuery();
 public record Tick();
 public record StartGameCommand(string Username, Guid LobbyId);
 public record GameStartedCommand(DateTime StartedAt);
-public record StopGameCommand(string Username, Guid LobbyId);
 public record PlayerInput(string Username, InputState InputState);
 
 public class LobbyActor : ReceiveActor
@@ -34,7 +34,6 @@ public class LobbyActor : ReceiveActor
     Receive<GetLobbyInfoQuery>(_ => Sender.Tell(Info));
     Receive<Tick>(_ => UpdateGame());
     Receive<StartGameCommand>(StartGame);
-    Receive<StopGameCommand>(StopGame);
     Receive<PlayerInput>(UpdatePlayerInput);
   }
 
@@ -94,9 +93,10 @@ public class LobbyActor : ReceiveActor
     }
   }
 
-  public void StopGame(StopGameCommand command)
+  public void StopGame()
   {
     _gameLoop?.Cancel();
+    Info.StopGame();
     Sender.Tell(new Status.Success("Game stopped."));
   }
 
@@ -116,6 +116,10 @@ public class LobbyActor : ReceiveActor
       Info.HandleCollision();
       Info.UpdatePlayers(_timeStep);
       Info.HandleAsteroids(_timeStep);
+      if (Info.PlayerCount == 0)
+      {
+        StopGame();
+      }
     }
     _communicationService.SendLobbyInfo(Info);
   }

@@ -23,7 +23,6 @@ public class LobbySupervisor : ReceiveActor
     ReceiveAsync<GetLobbiesQuery>(async _ => await GetLobbies());
     Receive<StartGameCommand>(StartGame);
     Receive<Guid>(GetLobby);
-    Receive<StopGameCommand>(StopGame);
     Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
   }
 
@@ -86,18 +85,6 @@ public class LobbySupervisor : ReceiveActor
     else
     {
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to start game. Lobby {command.LobbyId} not found.")));
-    }
-  }
-
-  private void StopGame(StopGameCommand command)
-  {
-    if (Lobbies.TryGetValue(command.LobbyId, out var lobby))
-    {
-      lobby.Forward(command);
-    }
-    else
-    {
-      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to stop game. Lobby {command.LobbyId} not found.")));
     }
   }
 

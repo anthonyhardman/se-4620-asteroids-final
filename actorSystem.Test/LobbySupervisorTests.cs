@@ -232,30 +232,4 @@ public class LobbySupervisorTests : TestKit
 
     probe.ExpectMsg<Status.Success>();
   }
-
-  [Fact]
-  public void Lobby_Stops_Successfully()
-  {
-    var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
-    lobbySupervisor.Tell(new CreateLobbyCommand("user1"), probe.Ref);
-    var lobby1 = probe.ExpectMsg<LobbyCreated>();
-    lobbySupervisor.Tell(new StartGameCommand("user1", lobby1.Info.Id), probe.Ref);
-    probe.ExpectMsg<Status.Success>();
-
-    lobbySupervisor.Tell(new StopGameCommand("user1", lobby1.Info.Id), probe.Ref);
-
-    probe.ExpectMsg<Status.Success>();
-  }
-
-  [Fact]
-  public void Cannot_Stop_Non_Existent_Game()
-  {
-    var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
-
-    lobbySupervisor.Tell(new StopGameCommand("user1", Guid.Empty), probe.Ref);
-
-    probe.ExpectMsg<Status.Failure>();
-  }
 }

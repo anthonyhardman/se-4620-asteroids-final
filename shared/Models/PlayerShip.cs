@@ -92,24 +92,13 @@ public class PlayerShip
 
   public void HandleCollision(Asteroid asteroid)
   {
-    // Calculate the effect factor based on the asteroid's size; larger asteroids have a greater effect
-    float effectFactor = asteroid.Size;  // Larger size, greater effect
+    Direction = Vector2.Reflect(Direction, asteroid.Direction);
+    Velocity += asteroid.Velocity * asteroid.Size;
 
-    // Calculate new direction as a weighted average of the ship's current direction and the inverse of the asteroid's direction
-    Vector2 newDirection = Vector2.Normalize(Direction * (1.0f - effectFactor) + (-asteroid.Direction) * effectFactor);
-    Direction = newDirection;
-
-    // Adjust velocity based on the asteroid's velocity, modified by the effect factor
-    // Increasing the asteroid's influence on the ship based on its size
-    Velocity += asteroid.Velocity * effectFactor;
-
-    // Ensure that the ship's velocity does not exceed a maximum cap to maintain game balance
     if (Velocity.Length() > VelocityCap)
     {
       Velocity = Vector2.Normalize(Velocity) * VelocityCap;
     }
-
-    // Health -= asteroid.Damage;
   }
 
 

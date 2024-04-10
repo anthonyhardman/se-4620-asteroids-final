@@ -57,16 +57,6 @@ public class LobbyInfo
     Players.Add(username, new PlayerShip(maxX, maxY));
   }
 
-  public void RemovePlayer(string username)
-  {
-    if (PlayerCount <= 0)
-    {
-      throw new InvalidOperationException("Cannot remove players. The lobby is empty.");
-    }
-
-    Players.Remove(username);
-  }
-
   public void UpdatePlayers(float timeStep)
   {
     foreach (var player in Players)
@@ -119,6 +109,12 @@ public class LobbyInfo
     }
   }
 
+  public void StopGame()
+  {
+    State = LobbyState.Stopped;
+    Asteroids.Clear();
+  }
+
   public void StartCountdown()
   {
     if (State == LobbyState.Joining)
@@ -141,29 +137,50 @@ public class LobbyInfo
 
   public void HandleCollision()
   {
-    foreach (var player in Players.Values)
+    List<Asteroid> asteroidsToRemove = [];
+    List<string> playerKeysToRemove = [];
+
+    foreach (var playerEntry in Players)
     {
+      var player = playerEntry.Value;
       foreach (var asteroid in Asteroids)
       {
-        if (Vector2.Distance(player.Position, asteroid.Position) < 20)
+        if (Vector2.Distance(player.Position, asteroid.Position) < 100)
         {
+          var oldVelocity = player.Velocity;
+          var oldDirection = player.Direction;
+
           player.TakeDamage(asteroid.Damage);
           player.HandleCollision(asteroid);
-          asteroid.HandleCollision(player);
+          asteroid.HandleCollision(oldVelocity, oldDirection);
           asteroid.TakeDamage(1);
-        }
-        if (asteroid.Health < 0)
-        {
-          Asteroids.Remove(asteroid);
+
+          if (asteroid.Health <= 0)
+          {
+            asteroidsToRemove.Add(asteroid);
+          }
         }
       }
-      if (player.Health < 0)
-      {
 
+      if (player.Health <= 0)
+      {
+        playerKeysToRemove.Add(playerEntry.Key);
       }
     }
 
-    // Players = Players.Where(player => player.Value.Health > 0).ToDictionary(player => player.Key, player => player.Value);
-    // Asteroids = Asteroids.Where(asteroid => asteroid.Health > 0).ToList();
+    foreach (var asteroid in asteroidsToRemove)
+    {
+      Asteroids.Remove(asteroid);
+    }
+
+    foreach (var key in playerKeysToRemove)
+    {
+      Players.Remove(key);
+      Console.WriteLine($"Player {key} died");
+    }
   }
+
+
+  // Players = Players.Where(player => player.Value.Health > 0).ToDictionary(player => player.Key, player => player.Value);
+  // Asteroids = Asteroids.Where(asteroid => asteroid.Health > 0).ToList();
 }

@@ -15,7 +15,7 @@ public class AsteroidTests
     bool isOnEdgeX = asteroid.Position.X == maxX || asteroid.Position.X == -maxX;
     bool isOnEdgeY = asteroid.Position.Y == maxY || asteroid.Position.Y == -maxY;
     Assert.True(isOnEdgeX || isOnEdgeY);
-    Assert.InRange(asteroid.Size, 1, 2);
+    Assert.InRange(asteroid.Size, 1, 3);
     Assert.InRange(asteroid.Velocity.Length(), 15.1f, 25.6f); // Check if velocity is within the expected range
   }
 

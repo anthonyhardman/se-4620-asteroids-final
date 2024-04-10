@@ -117,7 +117,7 @@ public class LobbyActor : ReceiveActor
       {
         player.Value.Update(_timeStep);
       }
-      Info.HandleAsteroids();
+      // Info.HandleAsteroids();
     }
     _communicationService.SendLobbyInfo(Info);
   }

@@ -26,8 +26,8 @@ export const Game: FC<GameProps> = ({ players }) => {
           near={0.1}
           far={1000}
         />
-        <ambientLight intensity={0.5} />
-        <pointLight decay={0.0} position={[-1000, 5, 500]} />
+        <ambientLight intensity={0.0} />
+        <pointLight decay={0.0} position={[-1000, 125, 200]} />
         {Object.entries(players).map(([username, player]) => {
           return (
            <PlayerShipDisplay key={username} player={player} username={username} />

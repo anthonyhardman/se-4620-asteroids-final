@@ -27,7 +27,7 @@ export const PlayerShipDisplay: FC<PlayerShipDisplayProps> = ({
     if (!spaceShipRef.current) return;
     spaceShipRef.current.traverse((child: any) => {
       if (child instanceof Mesh) {
-        child.material = new MeshPhongMaterial({ color: player.color })
+        child.material = new MeshPhongMaterial({ color: player.color });
       }
     });
   }, [player.color]);
@@ -41,7 +41,12 @@ export const PlayerShipDisplay: FC<PlayerShipDisplayProps> = ({
         <planeGeometry args={[100, 10]} />
         <meshBasicMaterial attach="material" color="green" />
       </mesh>
-      <primitive ref={spaceShipRef} object={model} scale={10} quaternion={quat} />
+      <primitive
+        ref={spaceShipRef}
+        object={model}
+        scale={10}
+        quaternion={quat}
+      />
       <Text
         position={[0, 90, 0]}
         fontSize={25}

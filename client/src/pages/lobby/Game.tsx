@@ -5,6 +5,7 @@ import { LobbyInfo } from "../../models/Lobby";
 import { PlayerShipDisplay } from "./PlayerShipDisplay";
 import { AsteroidDisplay } from "./AsteroidDisplay";
 import shipModelPath from "../../3dModels/Fighter_01.glb?url";
+import asteroidpModelPath from "../../3dModels/asteroid_1.glb?url";
 
 interface GameProps {
   lobbyInfo: LobbyInfo;
@@ -15,7 +16,8 @@ export const Game: FC<GameProps> = ({ lobbyInfo }) => {
 
   const Scene = () => {
     useFrame(() => {});
-    const { scene } = useGLTF(shipModelPath, true);
+    const { scene: shipModel } = useGLTF(shipModelPath, true);
+    const { scene: asteroidModel } = useGLTF(asteroidpModelPath, true);
 
     return (
       <>
@@ -32,20 +34,21 @@ export const Game: FC<GameProps> = ({ lobbyInfo }) => {
         <ambientLight intensity={0.0} />
         <pointLight decay={0.0} position={[-1000, 125, 400]} />
         {Object.entries(players).map(([username, player]) => {
-          const clonedScene = scene.clone(true);
+          const clonedShipModel = shipModel.clone(true);
 
           return (
             <PlayerShipDisplay
               key={username}
               player={player}
               username={username}
-              model={clonedScene}
+              model={clonedShipModel}
             />
           );
         })}
-        {asteroids.map((asteroid, index) => (
-          <AsteroidDisplay key={index} asteroid={asteroid} />
-        ))}
+        {asteroids.map((asteroid, index) => {
+          const clonedAsteroidModel = asteroidModel.clone(true);
+          return <AsteroidDisplay key={index} asteroid={asteroid} model={clonedAsteroidModel} />;
+        })}
       </>
     );
   };

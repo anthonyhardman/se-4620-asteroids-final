@@ -19,7 +19,7 @@ public class Asteroid
 
     public Asteroid(int maxX, int maxY)
     {
-        Size = random.Next(1, 3);
+        Size = random.Next(1, 4);
 
         bool isVerticalEdge = random.Next(2) == 0;
         int edgePosition = isVerticalEdge ? random.Next(-maxY, maxY) : random.Next(-maxX, maxX);
@@ -33,7 +33,8 @@ public class Asteroid
         float angleDeviation = (float)(random.NextDouble() * Math.PI / 2 - Math.PI / 4);
         Direction = RotateVector(Direction, angleDeviation);
 
-        Velocity = Direction * (float)(random.NextDouble() * 0.5 + 0.1 + 20);
+        float baseSpeed = 30 - 5 * Size;
+        Velocity = Direction * (float)(random.NextDouble() * 0.5 + 0.1 + baseSpeed);
     }
 
 

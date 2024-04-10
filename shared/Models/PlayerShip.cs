@@ -18,7 +18,7 @@ public class PlayerShip
   public string Color { get; private set; }
   private const float acceleration = 0.0005f;
   private const float rotationAmount = 0.05f;
-  public float VelocityCap { get; init; } = 0.3f;
+  public float VelocityCap { get; init; } = 0.2f;
   private static readonly Random random = new();
   private static readonly string[] colors = ["blue", "red", "green", "yellow", "purple", "orange"];
   public int MaxX { get; private set; }

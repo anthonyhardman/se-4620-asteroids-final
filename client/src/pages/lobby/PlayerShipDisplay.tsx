@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef } from "react";
 import { PlayerShip } from "../../models/Lobby";
 import { Quaternion, Vector3, Mesh, MeshPhongMaterial } from "three";
-import { Text, useGLTF } from "@react-three/drei";
+import { Text } from "@react-three/drei";
 
 interface PlayerShipDisplayProps {
   player: PlayerShip;

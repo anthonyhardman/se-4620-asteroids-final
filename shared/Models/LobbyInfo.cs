@@ -79,8 +79,8 @@ public class LobbyInfo
 
         // Remove asteroids that are off the screen
         Asteroids.RemoveAll(asteroid =>
-            asteroid.Position.X < -maxX - 100 || asteroid.Position.X > maxX + 100 ||
-            asteroid.Position.Y < -maxY - 100 || asteroid.Position.Y > maxY + 100);
+            asteroid.Position.X < -maxX - 1000 || asteroid.Position.X > maxX + 1000 ||
+            asteroid.Position.Y < -maxY - 1000 || asteroid.Position.Y > maxY + 1000);
     }
 
     private void SpawnAsteroid()
@@ -94,7 +94,7 @@ public class LobbyInfo
             spawnProbability *= 1.1f;
         }
 
-        if (random.NextDouble() < spawnProbability)
+        if (Asteroids.Count < 30 && random.NextDouble() < spawnProbability)
         {
             Asteroids.Add(new Asteroid(maxX, maxY));
         }

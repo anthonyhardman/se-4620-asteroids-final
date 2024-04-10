@@ -17,15 +17,15 @@ public class Asteroid
     public float Health { get; set; }
     private static readonly Random random = new();
 
-  public Asteroid(int maxX, int maxY)
-  {
-    int rand = random.Next(1, 11);
-    if (rand <= 5)
-      Size = 1;
-    else if (rand <= 8)
-      Size = 2;
-    else
-      Size = 3;
+    public Asteroid(int maxX, int maxY)
+    {
+        int rand = random.Next(1, 11);
+        if (rand <= 5)
+            Size = 1;
+        else if (rand <= 8)
+            Size = 2;
+        else
+            Size = 3;
 
         Health = Size * Size;
 
@@ -35,25 +35,25 @@ public class Asteroid
             ? new Vector2(maxX * (random.Next(2) * 2 - 1), edgePosition)
             : new Vector2(edgePosition, maxY * (random.Next(2) * 2 - 1));
 
-    Vector2 boardCenter = new(0, 0);
-    Direction = Vector2.Normalize(boardCenter - Position);
+        Vector2 boardCenter = new(0, 0);
+        Direction = Vector2.Normalize(boardCenter - Position);
 
-    float angleDeviation = (float)(random.NextDouble() * Math.PI / 2 - Math.PI / 4);
-    Direction = RotateVector(Direction, angleDeviation);
+        float angleDeviation = (float)(random.NextDouble() * Math.PI / 2 - Math.PI / 4);
+        Direction = RotateVector(Direction, angleDeviation);
 
-    float baseSpeed = 30 - 5 * Size;
-    Velocity = Direction * (float)(random.NextDouble() * 0.5 + 0.1 + baseSpeed);
-  }
+        float baseSpeed = 30 - 5 * Size;
+        Velocity = Direction * (float)(random.NextDouble() * 0.5 + 0.1 + baseSpeed);
+    }
 
 
     [JsonConstructor]
-    public Asteroid(Vector2 position, Vector2 velocity, Vector2 direction, float size, float health)
+    public Asteroid(Vector2 position, Vector2 velocity, Vector2 direction, float size, float? health = null)
     {
         Position = position;
         Velocity = velocity;
         Direction = direction;
         Size = size;
-        Health = health;
+        Health = health is null ? Size * Size : (float)health;
     }
 
     public void Update(float timeStep)
@@ -84,18 +84,18 @@ public class Asteroid
     }
 
 
-  private static Vector2 RotateVector(Vector2 vector, float angle)
-  {
-    float cosAngle = (float)Math.Cos(angle);
-    float sinAngle = (float)Math.Sin(angle);
-    return new Vector2(
-        vector.X * cosAngle - vector.Y * sinAngle,
-        vector.X * sinAngle + vector.Y * cosAngle
-    );
-  }
+    private static Vector2 RotateVector(Vector2 vector, float angle)
+    {
+        float cosAngle = (float)Math.Cos(angle);
+        float sinAngle = (float)Math.Sin(angle);
+        return new Vector2(
+            vector.X * cosAngle - vector.Y * sinAngle,
+            vector.X * sinAngle + vector.Y * cosAngle
+        );
+    }
 
-  public void TakeDamage(float damage)
-  {
-    // Size -= damage;
-  }
+    public void TakeDamage(float damage)
+    {
+        // Size -= damage;
+    }
 }

@@ -123,7 +123,7 @@ public class PlayerShip
 
   public void TakeDamage(float damage)
   {
-    Health -= damage;
+    Health = Math.Max(0, Health - damage);
   }
 }
 

@@ -145,9 +145,11 @@ public class LobbyInfo
     {
       foreach (var asteroid in Asteroids)
       {
-        if (Vector2.Distance(player.Position, asteroid.Position) < 500)
+        if (Vector2.Distance(player.Position, asteroid.Position) < 20)
         {
           player.TakeDamage(asteroid.Damage);
+          player.HandleCollision(asteroid);
+          asteroid.HandleCollision(player);
           asteroid.TakeDamage(1);
         }
       }

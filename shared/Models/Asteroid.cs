@@ -14,7 +14,7 @@ public class Asteroid
     public Vector2 Direction { get; private set; }
     public float Size { get; private set; }
     public float Damage => Size * Velocity.Length();
-    public float Health => Size * Size;
+    public float Health { get; set; }
     private static readonly Random random = new();
 
     public Asteroid(int maxX, int maxY)
@@ -26,6 +26,8 @@ public class Asteroid
             Size = 2;
         else
             Size = 3;
+
+        Health = Size * Size;
 
         bool isVerticalEdge = random.Next(2) == 0;
         int edgePosition = isVerticalEdge ? random.Next(-maxY, maxY) : random.Next(-maxX, maxX);
@@ -45,12 +47,13 @@ public class Asteroid
 
 
     [JsonConstructor]
-    public Asteroid(Vector2 position, Vector2 velocity, Vector2 direction, float size)
+    public Asteroid(Vector2 position, Vector2 velocity, Vector2 direction, float size, float health)
     {
         Position = position;
         Velocity = velocity;
         Direction = direction;
         Size = size;
+        Health = health;
     }
 
     public void Update(float timeStep)

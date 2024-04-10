@@ -19,7 +19,7 @@ public class Asteroid
 
     public Asteroid(int maxX, int maxY)
     {
-        Size = random.Next(10, 51);
+        Size = random.Next(1, 3);
 
         // Position the asteroid at the edge of the board
         bool isVerticalEdge = random.Next(2) == 0;

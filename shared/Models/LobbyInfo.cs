@@ -76,20 +76,22 @@ public class LobbyInfo
 
         foreach (var asteroid in Asteroids)
         {
-            asteroid.Update(TimeStep);
+            asteroid.Update(TimeStep); // Ensure TimeStep is in seconds if using velocity in units per second
         }
 
         var asteroidCountBefore = Asteroids.Count;
-        // Remove asteroids that are off the screen, with an extra 100 units of flexibility
+        // Remove asteroids that are off the screen
         Asteroids.RemoveAll(asteroid =>
-            asteroid.Position.X < -maxX - 100 || asteroid.Position.X > maxX + 100 ||
-            asteroid.Position.Y < -maxY - 100 || asteroid.Position.Y > maxY + 100);
+            asteroid.Position.X < -maxX || asteroid.Position.X > maxX ||
+            asteroid.Position.Y < -maxY || asteroid.Position.Y > maxY);
         var asteroidCountAfter = Asteroids.Count;
+
         if (asteroidCountBefore != asteroidCountAfter)
         {
             Console.WriteLine($"Removed {asteroidCountBefore - asteroidCountAfter} asteroids");
         }
     }
+
 
 
     public void StartPlaying()

@@ -12,10 +12,10 @@ export const AsteroidDisplay: FC<AsteroidDisplayProps> = ({ asteroid, model }) =
 
   const direction = new Vector3(asteroid.direction.x, asteroid.direction.y, 0);
   const quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), direction.normalize());
-
+  const shipScale = [scaleFactor * asteroid.size, scaleFactor * asteroid.size, scaleFactor * asteroid.size]
   return (
-    <group position={[asteroid.position.x, asteroid.position.y, 0]} scale={[scaleFactor * asteroid.size, scaleFactor * asteroid.size, scaleFactor * asteroid.size]}>
-      <primitive object={model} quaternion={quat} />
+    <group position={[asteroid.position.x, asteroid.position.y, 0]}>
+      <primitive object={model} quaternion={quat}  scale={shipScale}/>
     </group>
   );
 };

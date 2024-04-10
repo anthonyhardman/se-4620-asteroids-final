@@ -42,7 +42,6 @@ export const PlayerShipDisplay: FC<PlayerShipDisplayProps> = ({
         <meshBasicMaterial attach="material" color="green" />
       </mesh>
       <primitive ref={spaceShipRef} object={model} scale={10} quaternion={quat} />
-      <circleGeometry args={[20, 50]} attach="geometry" />
       <Text
         position={[0, 90, 0]}
         fontSize={25}

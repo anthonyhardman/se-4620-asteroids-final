@@ -21,23 +21,19 @@ public class Asteroid
     {
         Size = random.Next(1, 3);
 
-        // Position the asteroid at the edge of the board
         bool isVerticalEdge = random.Next(2) == 0;
         int edgePosition = isVerticalEdge ? random.Next(-maxY, maxY) : random.Next(-maxX, maxX);
         Position = isVerticalEdge
-            ? new Vector2(maxX * (random.Next(2) * 2 - 1), edgePosition) // Left or right edge
-            : new Vector2(edgePosition, maxY * (random.Next(2) * 2 - 1)); // Top or bottom edge
+            ? new Vector2(maxX * (random.Next(2) * 2 - 1), edgePosition)
+            : new Vector2(edgePosition, maxY * (random.Next(2) * 2 - 1));
 
-        // Calculate a direction vector pointed towards the center of the board
         Vector2 boardCenter = new(0, 0);
         Direction = Vector2.Normalize(boardCenter - Position);
 
-        // Adjust the direction to aim for the middle half of the board by applying a random deviation
-        float angleDeviation = (float)(random.NextDouble() * Math.PI / 2 - Math.PI / 4); // Deviate up to 45 degrees
+        float angleDeviation = (float)(random.NextDouble() * Math.PI / 2 - Math.PI / 4);
         Direction = RotateVector(Direction, angleDeviation);
 
-        // Random velocity
-        Velocity = Direction * (float)(random.NextDouble() * 0.5 + 0.1 + 20);  // Speed corrected
+        Velocity = Direction * (float)(random.NextDouble() * 0.5 + 0.1 + 20);
     }
 
 

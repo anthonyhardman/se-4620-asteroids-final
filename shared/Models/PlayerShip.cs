@@ -13,8 +13,8 @@ public class PlayerShip
   [JsonConverter(typeof(Vector2Converter))]
   public Vector2 Direction { get; private set; }
   public InputState? InputState { get; set; }
-  public int Health { get; private set; }
-  public int MaxHealth { get; } = 100;
+  public float Health { get; private set; }
+  public float MaxHealth { get; } = 100;
   public string Color { get; private set; }
   private const float acceleration = 0.0005f;
   private const float rotationAmount = 0.05f;
@@ -40,7 +40,7 @@ public class PlayerShip
   }
 
   [JsonConstructor]
-  public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction, int health, string color, int maxX, int maxY, int points = 0)
+  public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction, float health, string color, int maxX, int maxY, int points = 0)
   {
     Position = position;
     Velocity = velocity;
@@ -96,6 +96,11 @@ public class PlayerShip
     while (value < min) value += range;
     while (value > max) value -= range;
     return value;
+  }
+
+  public void TakeDamage(float damage)
+  {
+    Health -= damage;
   }
 }
 

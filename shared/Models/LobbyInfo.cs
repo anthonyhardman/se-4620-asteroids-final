@@ -101,11 +101,11 @@ public class LobbyInfo
       spawnProbability *= 1.1f;
     }
 
-        if (Asteroids.Count < 2 || (Asteroids.Count < 30 && random.NextDouble() < spawnProbability))
-        {
-            Asteroids.Add(new Asteroid(maxX, maxY));
-        }
+    if (Asteroids.Count < 2 || (Asteroids.Count < 30 && random.NextDouble() < spawnProbability))
+    {
+      Asteroids.Add(new Asteroid(maxX, maxY));
     }
+  }
 
   public void StartPlaying()
   {
@@ -152,6 +152,14 @@ public class LobbyInfo
           asteroid.HandleCollision(player);
           asteroid.TakeDamage(1);
         }
+        if (asteroid.Health < 0)
+        {
+          Asteroids.Remove(asteroid);
+        }
+      }
+      if (player.Health < 0)
+      {
+
       }
     }
 

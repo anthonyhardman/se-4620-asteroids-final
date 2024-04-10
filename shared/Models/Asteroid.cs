@@ -47,13 +47,13 @@ public class Asteroid
 
 
     [JsonConstructor]
-    public Asteroid(Vector2 position, Vector2 velocity, Vector2 direction, float size, float? health = null)
+    public Asteroid(Vector2 position, Vector2 velocity, Vector2 direction, float size, float health = 1)
     {
         Position = position;
         Velocity = velocity;
         Direction = direction;
         Size = size;
-        Health = health is null ? Size * Size : (float)health;
+        Health = health;
     }
 
     public void Update(float timeStep)
@@ -79,8 +79,6 @@ public class Asteroid
         {
             Velocity = Vector2.Normalize(Velocity) * 20;
         }
-
-        Health -= 1;
     }
 
 

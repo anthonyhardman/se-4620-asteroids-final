@@ -49,10 +49,10 @@ public class AsteroidTests
   }
 
   [Fact]
-  public void Damage_IsCalculatedAsSizeTimesVelocityLength()
+  public void Damage_IsCalculatedAsSizeTimesVelocityLengthTimes20()
   {
     var asteroid = new Asteroid(new Vector2(0, 0), new Vector2(3, 4), new Vector2(0, 1), 2); // Velocity length = 5
-    Assert.Equal(10, asteroid.Damage);
+    Assert.Equal(200, asteroid.Damage);
   }
 
 

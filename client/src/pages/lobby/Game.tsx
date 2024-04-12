@@ -18,6 +18,7 @@ export const Game: FC<GameProps> = ({ lobbyInfo }) => {
     useFrame(() => {});
     const { scene: shipModel } = useGLTF(shipModelPath, true);
     const { scene: asteroidModel } = useGLTF(asteroidpModelPath, true);
+    const playersThatArentDead = Object.entries(players).filter(([_, player]) => player.health > 0);
 
     return (
       <>
@@ -33,7 +34,7 @@ export const Game: FC<GameProps> = ({ lobbyInfo }) => {
         />
         <ambientLight intensity={0.1} />
         <pointLight decay={0.0} position={[-1000, 125, 500]} />
-        {Object.entries(players).map(([username, player]) => {
+        {playersThatArentDead.map(([username, player]) => {
           const clonedShipModel = shipModel.clone(true);
 
           return (

@@ -134,6 +134,10 @@ export const Lobby = () => {
       return (
         <div className="text-center fs-3">Game Over!</div>
       )
+    } else if (lobbyInfo.state === LobbyState.GameOver) {
+      return (
+        <div className="text-center fs-3">Game Over!</div>
+      )
     } else {
       return <div>Unknown state</div>;
     }

@@ -6,7 +6,8 @@ export enum LobbyState {
   Joining,
   Countdown,
   Playing,
-  Stopped
+  Stopped,
+  GameOver,
 }
 
 export interface LobbyInfo {

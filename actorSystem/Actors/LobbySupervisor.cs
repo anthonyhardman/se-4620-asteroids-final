@@ -47,7 +47,7 @@ public class LobbySupervisor : ReceiveActor
       return;
     }
 
-    var lobbies = (await Task.WhenAll(lobbiesTasks)).ToList();
+    var lobbies = (await Task.WhenAll(lobbiesTasks)).Where(lobby => lobby.State != LobbyState.GameOver).ToList();
     var lobbyList = new LobbyList();
     lobbyList.AddRange(lobbies);
     Sender.Tell(lobbyList);

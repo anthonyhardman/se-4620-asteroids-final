@@ -121,6 +121,7 @@ public class LobbyActor : ReceiveActor
         StopGame();
       }
     }
+    Info.EndGameIfAllPlayersDead();
     _communicationService.SendLobbyInfo(Info);
   }
 

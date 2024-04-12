@@ -8,7 +8,8 @@ public enum LobbyState
   Joining,
   Countdown,
   Playing,
-  Stopped
+  Stopped,
+  GameOver
 }
 
 // Secure Coding DDD demonstrating immutability
@@ -19,6 +20,7 @@ public class LobbyInfo
   public int PlayerCount => Players.Count;
   public int MaxPlayers { get; }
   public Dictionary<string, PlayerShip> Players { get; init; } = [];
+  public IEnumerable<PlayerShip> PlayersThatArentDead => Players.Where(player => player.Value.Health > 0).Select(player => player.Value);
   public List<Asteroid> Asteroids { get; init; } = [];
   public LobbyState State { get; private set; }
   public int CountdownTime { get; private set; }
@@ -59,9 +61,9 @@ public class LobbyInfo
 
   public void UpdatePlayers(float timeStep)
   {
-    foreach (var player in Players)
+    foreach (var player in PlayersThatArentDead)
     {
-      player.Value.Update(timeStep);
+      player.Update(timeStep);
     }
   }
 
@@ -138,11 +140,9 @@ public class LobbyInfo
   public void HandleCollision()
   {
     List<Asteroid> asteroidsToRemove = [];
-    List<string> playerKeysToRemove = [];
 
-    foreach (var playerEntry in Players)
+    foreach (var player in PlayersThatArentDead)
     {
-      var player = playerEntry.Value;
       foreach (var asteroid in Asteroids)
       {
         if (Vector2.Distance(player.Position, asteroid.Position) < 100)
@@ -161,26 +161,20 @@ public class LobbyInfo
           }
         }
       }
-
-      if (player.Health <= 0)
-      {
-        playerKeysToRemove.Add(playerEntry.Key);
-      }
     }
 
     foreach (var asteroid in asteroidsToRemove)
     {
       Asteroids.Remove(asteroid);
     }
-
-    foreach (var key in playerKeysToRemove)
-    {
-      Players.Remove(key);
-      Console.WriteLine($"Player {key} died");
-    }
   }
 
-
-  // Players = Players.Where(player => player.Value.Health > 0).ToDictionary(player => player.Key, player => player.Value);
-  // Asteroids = Asteroids.Where(asteroid => asteroid.Health > 0).ToList();
+  public void EndGameIfAllPlayersDead()
+  {
+    var allPlayersAreDead = Players.All(player => player.Value.Health <= 0);
+    if (allPlayersAreDead)
+    {
+      State = LobbyState.GameOver;
+    }
+  }
 }

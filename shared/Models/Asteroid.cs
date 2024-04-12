@@ -13,7 +13,7 @@ public class Asteroid
     [JsonConverter(typeof(Vector2Converter))]
     public Vector2 Direction { get; private set; }
     public float Size { get; private set; }
-    public float Damage => Size * Velocity.Length();
+    public float Damage => Size * Velocity.Length() * 20;
     public float Health { get; set; }
     private static readonly Random random = new();
 

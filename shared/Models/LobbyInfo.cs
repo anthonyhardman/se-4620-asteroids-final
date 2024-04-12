@@ -137,7 +137,7 @@ public class LobbyInfo
     }
   }
 
-  public void HandleCollision()
+  public void HandleCollision(float timeStep)
   {
     List<Asteroid> asteroidsToRemove = [];
 
@@ -150,7 +150,7 @@ public class LobbyInfo
           var oldVelocity = player.Velocity;
           var oldDirection = player.Direction;
 
-          player.TakeDamage(asteroid.Damage);
+          player.TakeDamage(asteroid.Damage, timeStep);
           player.HandleCollision(asteroid);
           asteroid.HandleCollision(oldVelocity, oldDirection);
           asteroid.TakeDamage(1);

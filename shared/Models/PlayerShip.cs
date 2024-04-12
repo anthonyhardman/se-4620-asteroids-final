@@ -110,8 +110,9 @@ public class PlayerShip
     return value;
   }
 
-  public void TakeDamage(float damage)
+  public void TakeDamage(float damagePerSecond, float timeStep)
   {
+    var damage = damagePerSecond * timeStep / 1000;
     Health = Math.Max(0, Health - damage);
   }
 }

@@ -64,7 +64,7 @@ public class LobbyActor : ReceiveActor
 
   public void StartGame(StartGameCommand command)
   {
-    if (Info.State == LobbyState.Joining)
+    if (Info.State == LobbyState.Joining && command.Username == Info.CreatedBy)
     {
       try
       {
@@ -89,7 +89,7 @@ public class LobbyActor : ReceiveActor
     }
     else
     {
-      Sender.Tell(new Status.Failure(new InvalidOperationException("Cannot start game. Wrong state.")));
+      Sender.Tell(new Status.Failure(new InvalidOperationException("Cannot start game.")));
     }
   }
 

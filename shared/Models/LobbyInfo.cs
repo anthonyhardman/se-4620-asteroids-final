@@ -147,14 +147,11 @@ public class LobbyInfo
       {
         foreach (var asteroid in Asteroids)
         {
-          if (Vector2.Distance(player.Position, asteroid.Position) < 50 * asteroid.Size)
+          if (Vector2.Distance(player.Position, asteroid.Position) < (50 * asteroid.Size))
           {
-            var oldVelocity = player.Velocity;
-            var oldDirection = player.Direction;
-
             player.TakeDamage(asteroid.Damage, timeStep);
             player.HandleCollision(asteroid);
-            asteroid.HandleCollision(oldVelocity, oldDirection);
+            asteroid.HandleCollision();
             asteroid.TakeDamage(1);
 
             if (asteroid.Health <= 0)

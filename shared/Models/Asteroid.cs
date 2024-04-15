@@ -61,16 +61,33 @@ public class Asteroid
         Position += Velocity * (timeStep / 100);
     }
 
-    public void HandleCollision(Vector2 velocity, Vector2 direction)
-    {
-        Direction = Vector2.Reflect(Direction, direction);
-        Velocity += velocity;
+    public void HandleCollision(Vector2 playerVelocity, Vector2 playerDirection)
+{
+    // Normalize the player velocity vector
+    var normalizedPlayerVelocity = Vector2.Normalize(playerVelocity);
 
-        if (Velocity.Length() > 20)
-        {
-            Velocity = Vector2.Normalize(Velocity) * 20;
-        }
+    // Calculate the relative velocity between the asteroid and the player ship
+    var relativeVelocity = Velocity - playerVelocity;
+
+    // Calculate the projection of the relative velocity onto the player direction
+    var projection = Vector2.Dot(relativeVelocity, normalizedPlayerVelocity) * normalizedPlayerVelocity;
+
+    // Calculate the reflected velocity using the projection
+    var reflectedVelocity = relativeVelocity - 2 * projection;
+
+    // Update the asteroid's velocity with the reflected velocity
+    Velocity = playerVelocity + reflectedVelocity;
+
+    // Update the asteroid's direction to match its new velocity direction
+    Direction = Vector2.Normalize(Velocity) * (30 - 5 * Size);
+
+    // Cap the velocity magnitude
+    if (Velocity.Length() > 20)
+    {
+        Velocity = Vector2.Normalize(Velocity) * 20;
     }
+}
+
 
 
     private static Vector2 RotateVector(Vector2 vector, float angle)

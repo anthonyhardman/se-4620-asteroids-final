@@ -15,7 +15,7 @@ services:
       - ./.bashrc:/home/developer/.bashrc
       - ./.bash-git-prompt:/home/developer/.bash-git-prompt
     environment:
-      - TZ=America/Denver
+      TZ: "America/Denver"
     working_dir: /app
     command: tail -f /dev/null
 
@@ -35,8 +35,8 @@ services:
         npm run dev
       "
     ports:
-      - 8080:8080
-  
+      - "8080:8080"
+
   actor-system:
     image: nginx:latest
     container_name: asteroids_actor_system_reverse_proxy
@@ -59,27 +59,27 @@ services:
         dotnet watch run
       "
     environment:
-      - DOTNET_WATCH_AUTO_RELOAD: true
-      - DOTNET_USE_POLLING_FILE_WATCHER: true
-      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT: true
-      - ASPNETCORE_ENVIRONMENT: Development
-      - SIGNALR_URL: http://asteroids_signalr:8081/ws
-      - CLUSTER_CONFIG: |
-          akka {
-            actor {
-              provider = cluster
-            }
-            remote {
-              dot-netty.tcp {
-                hostname = "actor-system-1"
-                port = 2551
-              }
-            }
-            cluster {
-              seed-nodes = ["akka.tcp://asteroids-actor-system@node-1:2551"]
-              roles = ["lobby"]
+      DOTNET_WATCH_AUTO_RELOAD: "true"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+      DOTNET_WATCH_RESTART_ON_RUDE_EDIT: "true"
+      ASPNETCORE_ENVIRONMENT: Development
+      SIGNALR_URL: http://asteroids_signalr:8081/ws
+      CLUSTER_CONFIG: |
+        akka {
+          actor {
+            provider = cluster
+          }
+          remote {
+            dot-netty.tcp {
+              hostname = "actor-system-1"
+              port = 2551
             }
           }
+          cluster {
+            seed-nodes = ["akka.tcp://asteroids-actor-system@node-1:2551"]
+            roles = ["lobby"]
+          }
+        }
 
   actor-system-2:
     container_name: asteroids_actor_system_2
@@ -94,28 +94,28 @@ services:
         dotnet watch run
       "
     environment:
-      - DOTNET_WATCH_AUTO_RELOAD: true
-      - DOTNET_USE_POLLING_FILE_WATCHER: true
-      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT: true
-      - ASPNETCORE_ENVIRONMENT: Development
-      - SIGNALR_URL: http://asteroids_signalr:8081/ws
-      - CLUSTER_CONFIG: |
-          akka {
-            actor {
-              provider = cluster
-            }
-            remote {
-              dot-netty.tcp {
-                hostname = "actor-system-2"
-                port = 2551
-              }
-            }
-            cluster {
-              seed-nodes = ["akka.tcp://asteroids-actor-system@node-1:2551"]
-              roles = ["lobby"]
+      DOTNET_WATCH_AUTO_RELOAD: "true"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+      DOTNET_WATCH_RESTART_ON_RUDE_EDIT: "true"
+      ASPNETCORE_ENVIRONMENT: Development
+      SIGNALR_URL: http://asteroids_signalr:8081/ws
+      CLUSTER_CONFIG: |
+        akka {
+          actor {
+            provider = cluster
+          }
+          remote {
+            dot-netty.tcp {
+              hostname = "actor-system-2"
+              port = 2551
             }
           }
-  
+          cluster {
+            seed-nodes = ["akka.tcp://asteroids-actor-system@node-1:2551"]
+            roles = ["lobby"]
+          }
+        }
+
   # raft-gateway:
   #   container_name: asteroids_raft_gateway
   #   build:
@@ -136,7 +136,7 @@ services:
   #     - PEER_ADDRESSES=http://raft-node-2:8080,http://raft-node-3:8080
   #     - PEER_IDS=asteroids_node_2,asteroids_node_3
 
-  
+
   # raft-node-2:
   #   container_name: asteroids_node_2
   #   image: raft-node:latest
@@ -169,20 +169,20 @@ services:
         dotnet watch run
       "
     environment:
-      - DOTNET_WATCH_AUTO_RELOAD=true
-      - DOTNET_USE_POLLING_FILE_WATCHER=true
-      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
-      - ASPNETCORE_URLS=http://+:8081
-      - ASPNETCORE_ENVIRONMENT=Development
+      DOTNET_WATCH_AUTO_RELOAD: "true"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+      DOTNET_WATCH_RESTART_ON_RUDE_EDIT: "true"
+      ASPNETCORE_URLS: http://+:8081
+      ASPNETCORE_ENVIRONMENT: Development
     ports:
-      - 8081:8081
+      - "8081:8081"
 
   asteroids_grafana:
     image: grafana/grafana:latest
     container_name: asteroids_grafana
-    user: 1000:1000
+    user: "1000:1000"
     ports:
-      - 3000:3000
+      - "3000:3000"
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
@@ -194,24 +194,22 @@ services:
     image: prom/prometheus:latest
     container_name: asteroids_prometheus
     ports:
-      - 9090:9090
+      - "9090:9090"
     volumes:
       - ../dev-ops/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
-    # depends_on:
-    #   - asteroids_actor_system
 
   asteroids_loki:
     image: grafana/loki:latest
     container_name: asteroids_loki
     ports:
-      - 3100:3100
+      - "3100:3100"
 
   asteroids_zipkin:
     image: openzipkin/zipkin:latest
     container_name: asteroids_zipkin
     ports:
-      - 9411:9411
+      - "9411:9411"
 
   asteroids_otel-collector:
     image: otel/opentelemetry-collector-contrib
@@ -219,14 +217,13 @@ services:
     volumes:
       - ../dev-ops/otel-collector-config.yml:/etc/otelcol-contrib/config.yaml
     ports:
-      - 1888:1888 # pprof extension
-      - 8888:8888 # Prometheus metrics exposed by the Collector
-      - 8889:8889 # Prometheus exporter metrics
-      - 13133:13133 # health_check extension
-      - 4317:4317 # OTLP gRPC receiver
-      - 4318:4318 # OTLP http receiver
-      - 55679:55679 # zpages extension
-
+      - "1888:1888" # pprof extension
+      - "8888:8888" # Prometheus metrics exposed by the Collector
+      - "8889:8889" # Prometheus exporter metrics
+      - "13133:13133" # health_check extension
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+      - "55679:55679" # zpages extension
 
 volumes:
   developer_home:

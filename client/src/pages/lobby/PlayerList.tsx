@@ -16,6 +16,8 @@ export const PlayerList: FC<{
         </li>
         {Object.entries(lobbyInfo.players)
           .sort(([playerA, shipA], [playerB, shipB]) => {
+            if (shipA.points > shipB.points) return -1;
+            if (shipA.points < shipB.points) return 1;
             if (shipA.health > shipB.health) return -1;
             if (shipA.health < shipB.health) return 1;
             return playerA.localeCompare(playerB);
@@ -24,7 +26,7 @@ export const PlayerList: FC<{
             <li key={player} className="list-group-item">
               <div className="row w-100">
                 <div className="col">{player}</div>
-                <div className="col-2 text-center">{ship.health}</div>
+                <div className="col-2 text-center">{Math.round(ship.health)}</div>
                 <div className="col-2 text-center">{ship.points}</div>
               </div>
             </li>

@@ -113,9 +113,10 @@ public class LobbyActor : ReceiveActor
     }
     else if (Info.State == LobbyState.Playing)
     {
-      Info.HandleCollision(_timeStep);
       Info.UpdatePlayers(_timeStep);
+      Info.UpdateBullets(_timeStep);
       Info.HandleAsteroids(_timeStep);
+      Info.HandleCollision(_timeStep);
       if (Info.PlayerCount == 0)
       {
         StopGame();

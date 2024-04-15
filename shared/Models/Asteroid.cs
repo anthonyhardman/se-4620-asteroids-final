@@ -80,7 +80,7 @@ public class Asteroid
         );
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage = 1)
     {
         Health = Math.Max(0, Health - damage);
     }

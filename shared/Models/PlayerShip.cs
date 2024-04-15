@@ -25,6 +25,9 @@ public class PlayerShip
   public int MaxY { get; private set; }
   public int Points { get; set; } = 0;
   public float CollisionCooldown { get; private set; } = 0f;
+  public List<Bullet> Bullets { get; init; } = [];
+  public float FireCooldown { get; private set; } = 0f;
+  private const float FireCooldownDuration = 500f;
 
   public PlayerShip(int maxX, int maxY)
   {
@@ -41,7 +44,7 @@ public class PlayerShip
   }
 
   [JsonConstructor]
-  public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction, float health, string color, int maxX, int maxY, int points = 0)
+  public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction, List<Bullet> bullets, float health, string color, int maxX, int maxY, int points = 0)
   {
     Position = position;
     Velocity = velocity;
@@ -51,6 +54,7 @@ public class PlayerShip
     MaxX = maxX;
     MaxY = maxY;
     Points = points;
+    Bullets = bullets;
   }
 
   public void Update(float timeStep)
@@ -58,6 +62,10 @@ public class PlayerShip
     if (CollisionCooldown > 0)
     {
       CollisionCooldown -= timeStep;
+    }
+    if (FireCooldown > 0)
+    {
+      FireCooldown -= timeStep;
     }
     if (InputState != null && InputState.RotationDirection == RotationDirection.Left)
     {
@@ -95,6 +103,14 @@ public class PlayerShip
     }
   }
 
+  public void UpdateBullets(float timeStep)
+  {
+    foreach (var bullet in Bullets)
+    {
+      bullet.Update(timeStep);
+    }
+  }
+
   public void HandleCollision(Asteroid asteroid)
   {
     CollisionCooldown = 1000.0f;
@@ -120,6 +136,16 @@ public class PlayerShip
   {
     var damage = damagePerSecond * timeStep / 1000;
     Health = Math.Max(0, Health - damage);
+  }
+
+  public void Fire()
+  {
+    if (FireCooldown <= 0)
+    {
+      var bullet = new Bullet(Position, Direction);
+      Bullets.Add(bullet);
+      FireCooldown = FireCooldownDuration;
+    }
   }
 }
 

@@ -99,7 +99,7 @@ public class PlayerShip
   {
     CollisionCooldown = 1000.0f;
     Direction = Vector2.Reflect(Direction, asteroid.Direction);
-    Velocity += asteroid.Velocity * asteroid.Size;
+    Velocity += asteroid.Velocity;
 
     if (Velocity.Length() > VelocityCap)
     {

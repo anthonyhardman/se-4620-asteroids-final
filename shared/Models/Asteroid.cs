@@ -64,7 +64,7 @@ public class Asteroid
     public void HandleCollision(Vector2 velocity, Vector2 direction)
     {
         Direction = Vector2.Reflect(Direction, direction);
-        Velocity += velocity * (1 / Size);
+        Velocity += velocity;
 
         if (Velocity.Length() > 20)
         {

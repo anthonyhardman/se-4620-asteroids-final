@@ -147,7 +147,7 @@ public class LobbyInfo
       {
         foreach (var asteroid in Asteroids)
         {
-          if (Vector2.Distance(player.Position, asteroid.Position) < 100)
+          if (Vector2.Distance(player.Position, asteroid.Position) < 50 * asteroid.Size)
           {
             var oldVelocity = player.Velocity;
             var oldDirection = player.Direction;

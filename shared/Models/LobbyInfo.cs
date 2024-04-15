@@ -143,21 +143,24 @@ public class LobbyInfo
 
     foreach (var player in PlayersThatArentDead)
     {
-      foreach (var asteroid in Asteroids)
+      if (player.CollisionCooldown <= 0)
       {
-        if (Vector2.Distance(player.Position, asteroid.Position) < 100)
+        foreach (var asteroid in Asteroids)
         {
-          var oldVelocity = player.Velocity;
-          var oldDirection = player.Direction;
-
-          player.TakeDamage(asteroid.Damage, timeStep);
-          player.HandleCollision(asteroid);
-          asteroid.HandleCollision(oldVelocity, oldDirection);
-          asteroid.TakeDamage(1);
-
-          if (asteroid.Health <= 0)
+          if (Vector2.Distance(player.Position, asteroid.Position) < 100)
           {
-            asteroidsToRemove.Add(asteroid);
+            var oldVelocity = player.Velocity;
+            var oldDirection = player.Direction;
+
+            player.TakeDamage(asteroid.Damage, timeStep);
+            player.HandleCollision(asteroid);
+            asteroid.HandleCollision(oldVelocity, oldDirection);
+            asteroid.TakeDamage(1);
+
+            if (asteroid.Health <= 0)
+            {
+              asteroidsToRemove.Add(asteroid);
+            }
           }
         }
       }

@@ -24,6 +24,7 @@ public class PlayerShip
   public int MaxX { get; private set; }
   public int MaxY { get; private set; }
   public int Points { get; set; } = 0;
+  public float CollisionCooldown { get; private set; } = 0f;
 
   public PlayerShip(int maxX, int maxY)
   {
@@ -54,6 +55,10 @@ public class PlayerShip
 
   public void Update(float timeStep)
   {
+    if (CollisionCooldown > 0)
+    {
+      CollisionCooldown -= timeStep;
+    }
     if (InputState != null && InputState.RotationDirection == RotationDirection.Left)
     {
       Direction = Vector2.Transform(Direction, Matrix3x2.CreateRotation(rotationAmount));
@@ -92,6 +97,7 @@ public class PlayerShip
 
   public void HandleCollision(Asteroid asteroid)
   {
+    CollisionCooldown = 1000.0f;
     Direction = Vector2.Reflect(Direction, asteroid.Direction);
     Velocity += asteroid.Velocity * asteroid.Size;
 

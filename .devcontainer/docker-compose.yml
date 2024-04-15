@@ -36,9 +36,18 @@ services:
       "
     ports:
       - 8080:8080
-
+  
   actor-system:
-    container_name: asteroids_actor_system
+    image: nginx:latest
+    container_name: asteroids_actor_system_reverse_proxy
+    volumes:
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - actor-system-1
+      - actor-system-2
+
+  actor-system-1:
+    container_name: asteroids_actor_system_1
     build:
       context: .
     user: developer
@@ -50,11 +59,62 @@ services:
         dotnet watch run
       "
     environment:
-      - DOTNET_WATCH_AUTO_RELOAD=true
-      - DOTNET_USE_POLLING_FILE_WATCHER=true
-      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
-      - ASPNETCORE_ENVIRONMENT=Development
-      - SIGNALR_URL=http://asteroids_signalr:8081/ws
+      - DOTNET_WATCH_AUTO_RELOAD: true
+      - DOTNET_USE_POLLING_FILE_WATCHER: true
+      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT: true
+      - ASPNETCORE_ENVIRONMENT: Development
+      - SIGNALR_URL: http://asteroids_signalr:8081/ws
+      - CLUSTER_CONFIG: |
+          akka {
+            actor {
+              provider = cluster
+            }
+            remote {
+              dot-netty.tcp {
+                hostname = "actor-system-1"
+                port = 2551
+              }
+            }
+            cluster {
+              seed-nodes = ["akka.tcp://asteroids-actor-system@node-1:2551"]
+              roles = ["lobby"]
+            }
+          }
+
+  actor-system-2:
+    container_name: asteroids_actor_system_2
+    build:
+      context: .
+    user: developer
+    volumes:
+      - ../:/app/:z
+    command: >
+      sh -c "
+        cd actorSystem
+        dotnet watch run
+      "
+    environment:
+      - DOTNET_WATCH_AUTO_RELOAD: true
+      - DOTNET_USE_POLLING_FILE_WATCHER: true
+      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT: true
+      - ASPNETCORE_ENVIRONMENT: Development
+      - SIGNALR_URL: http://asteroids_signalr:8081/ws
+      - CLUSTER_CONFIG: |
+          akka {
+            actor {
+              provider = cluster
+            }
+            remote {
+              dot-netty.tcp {
+                hostname = "actor-system-2"
+                port = 2551
+              }
+            }
+            cluster {
+              seed-nodes = ["akka.tcp://asteroids-actor-system@node-1:2551"]
+              roles = ["lobby"]
+            }
+          }
   
   # raft-gateway:
   #   container_name: asteroids_raft_gateway
@@ -166,6 +226,7 @@ services:
       - 4317:4317 # OTLP gRPC receiver
       - 4318:4318 # OTLP http receiver
       - 55679:55679 # zpages extension
+
 
 volumes:
   developer_home:

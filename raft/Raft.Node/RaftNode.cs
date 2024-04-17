@@ -110,12 +110,14 @@ public class RaftNode : IRaftNode
         }
 
         var json = File.ReadAllText(StateFile);
+        var state = JsonSerializer.Deserialize<RaftState>(json);
         return state;
     }
 
     private void SaveState()
     {
         var state = new RaftState { CurrentTerm = CurrentTerm, VotedFor = VotedFor };
+        var json = JsonSerializer.Serialize(state);
         File.WriteAllText(StateFile, json);
     }
 

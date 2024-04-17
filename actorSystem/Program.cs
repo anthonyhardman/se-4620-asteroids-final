@@ -17,6 +17,9 @@ builder.Services.AddAkka("asteroid-system", (cb) =>
 {
   cb.WithActors((system, registry) =>
      {
+       var raftProps = DependencyResolver.For(system).Props<RaftActor>();
+       var raftActor = system.ActorOf(raftProps, "raft-actor");
+       registry.TryRegister<RaftActor>(raftActor);
        var lobbySupervisorActor = system.ActorOf(LobbySupervisor.Props(), "lobby-supervisor");
        registry.TryRegister<LobbySupervisor>(lobbySupervisorActor);
      });
@@ -28,6 +31,11 @@ builder.Services.AddHostedService<AkkaService>(
 builder.Services.AddHostedService<CommunicationService>(
   sp => (CommunicationService)sp.GetRequiredService<ICommunicationService>()
 );
+
+var raftGatewayUrl = Environment.GetEnvironmentVariable("RAFT_GATEWAY_URL") ?? "http://raft-gateway:8080";
+builder.Services.AddSingleton<HttpClient>(new HttpClient { BaseAddress = new Uri(raftGatewayUrl) });
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

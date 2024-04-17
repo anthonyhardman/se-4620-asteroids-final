@@ -22,6 +22,9 @@ public class LobbyActor : ReceiveActor
   private ICommunicationService _communicationService;
   private const float _timeStep = 16.667f;
   private float countdown = 10000;
+  public IActorRef RaftActor { get; set; }
+  public DateTime LastPersisted { get; set; }
+
 
   public LobbyActor(LobbyInfo info, ICommunicationService communicationService)
   {
@@ -35,6 +38,7 @@ public class LobbyActor : ReceiveActor
     Receive<Tick>(_ => UpdateGame());
     Receive<StartGameCommand>(StartGame);
     Receive<PlayerInput>(UpdatePlayerInput);
+    RaftActor = Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
   }
 
   public void JoinLobby(JoinLobbyCommand command)
@@ -124,6 +128,12 @@ public class LobbyActor : ReceiveActor
     }
     Info.EndGameIfAllPlayersDead();
     _communicationService.SendLobbyInfo(Info);
+
+    if (DateTime.Now - LastPersisted > TimeSpan.FromSeconds(3))
+    {
+      RaftActor.Tell(new StoreLobbyCommand(Info));
+      LastPersisted = DateTime.Now;
+    }
   }
 
   public void UpdatePlayerInput(PlayerInput input)

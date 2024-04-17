@@ -42,7 +42,7 @@ public class RaftActor : ReceiveActor
       {
         Key = key,
         NewValue = newValue,
-        ExpectedValue = cachedData.Value,
+        ExpectedValue = cachedData.Value ?? "null",
         Version = cachedData.Version
       };
 
@@ -113,7 +113,7 @@ public class RaftActor : ReceiveActor
   }
   protected ILoggingAdapter Log { get; } = Context.GetLogger();
 
-  public static Props Props()
+  public static Props Props(HttpClient httpClient)
   {
     return Akka.Actor.Props.Create<RaftActor>();
   }

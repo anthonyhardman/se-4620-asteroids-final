@@ -15,6 +15,7 @@ public record UpdatePlayerInputStateCommand(string Username, Guid LobbyId, Input
 public class LobbySupervisor : ReceiveActor
 {
   public Dictionary<Guid, IActorRef> Lobbies { get; set; } = new Dictionary<Guid, IActorRef>();
+  public IActorRef RaftActor { get; set; }
 
   public LobbySupervisor()
   {
@@ -24,6 +25,7 @@ public class LobbySupervisor : ReceiveActor
     Receive<StartGameCommand>(StartGame);
     Receive<Guid>(GetLobby);
     Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
+    RaftActor = Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;  
   }
 
   private void GetLobby(Guid lobbyId)

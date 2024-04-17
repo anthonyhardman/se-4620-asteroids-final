@@ -109,6 +109,7 @@ public class RaftActor : ReceiveActor
 
     if (cachedData.Value == null)
     {
+      Log.Error("Raft Actor: Lobby not found");
       Sender.Tell(new OperationFailed("Lobby not found."));
       return;
     }

@@ -36,7 +36,8 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
-      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Lobby {lobbyId} not found.")));
+      Log.Error($"Lobby Supervisor: Failed to get lobby. Lobby {lobbyId} not found.");
+      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Failed to get lobby. Lobby {lobbyId} not found.")));
     }
   }
 
@@ -52,6 +53,7 @@ public class LobbySupervisor : ReceiveActor
     var lobbies = (await Task.WhenAll(lobbiesTasks)).Where(lobby => lobby.State != LobbyState.GameOver).ToList();
     var lobbyList = new LobbyList();
     lobbyList.AddRange(lobbies);
+    Log.Info("Lobby Supervisor: Got lobbies");
     Sender.Tell(lobbyList);
   }
 
@@ -63,7 +65,8 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
-      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Lobby {command.LobbyId} not found.")));
+      Log.Error($"Lobby Supervisor: Failed to join. Lobby {command.LobbyId} not found.");
+      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Failed to join. Lobby {command.LobbyId} not found.")));
     }
   }
 
@@ -75,7 +78,7 @@ public class LobbySupervisor : ReceiveActor
     var lobbyActor = Context.ActorOf(props, $"lobby_{lobbyInfo.Id}");
     Lobbies.Add(lobbyInfo.Id, lobbyActor);
     Sender.Tell(new LobbyCreated(lobbyInfo, lobbyActor.Path.ToString()));
-    Log.Info($"Lobby created: {lobbyActor.Path}");
+    Log.Info($"Lobby Supervisor: Lobby created: {lobbyActor.Path}");
   }
 
   private void StartGame(StartGameCommand command)
@@ -86,6 +89,7 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
+      Log.Error($"Lobby Supervisor: Unable to start game. Lobby {command.LobbyId} not found.");
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to start game. Lobby {command.LobbyId} not found.")));
     }
   }
@@ -98,6 +102,7 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
+      Log.Error($"Lobby Supervisor: Unable to update player input state. Lobby {command.LobbyId} not found.");
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to update player input state. Lobby {command.LobbyId} not found.")));
     }
   }

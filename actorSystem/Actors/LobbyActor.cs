@@ -60,6 +60,7 @@ public class LobbyActor : ReceiveActor
     }
     else
     {
+      Log.Error("Lobby Actor: Cannot join game. Wrong state.");
       Sender.Tell(new Status.Failure(new InvalidOperationException("Cannot join game. Wrong state.")));
     }
   }
@@ -82,8 +83,8 @@ public class LobbyActor : ReceiveActor
           new Tick(),
           Self
         );
-        Sender.Tell(new Status.Success("Game started."));
         Log.Info($"Started game {command.LobbyId}");
+        Sender.Tell(new Status.Success("Game started."));
       }
       catch (InvalidOperationException exception)
       {
@@ -93,6 +94,7 @@ public class LobbyActor : ReceiveActor
     }
     else
     {
+      Log.Error("Lobby Actor: Cannot start game. Not joining or not creator.");
       Sender.Tell(new Status.Failure(new InvalidOperationException("Cannot start game.")));
     }
   }
@@ -101,6 +103,7 @@ public class LobbyActor : ReceiveActor
   {
     _gameLoop?.Cancel();
     Info.StopGame();
+    Log.Info("Lobby Actor: Game Stopped.");
     Sender.Tell(new Status.Success("Game stopped."));
   }
 

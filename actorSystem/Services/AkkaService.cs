@@ -1,5 +1,7 @@
 ﻿
 using Akka.Actor;
+using Akka.Cluster.Tools.Singleton;
+using Akka.Configuration;
 using Akka.DependencyInjection;
 using DotNetty.Common.Utilities;
 using shared.Models;
@@ -26,14 +28,40 @@ public class AkkaService : IHostedService, IActorBridge
 
   public async Task StartAsync(CancellationToken cancellationToken)
   {
-    // var bootstrap = BootstrapSetup.Create();
+    var diSetup = DependencyResolverSetup.Create(_serviceProvider);
 
-    // var diSetup = DependencyResolverSetup.Create(_serviceProvider);
+    var configVar = Environment.GetEnvironmentVariable("CLUSTER_CONFIG") ?? "";
+    var config = ConfigurationFactory.ParseString(configVar);
 
-    // var actorSystemSetup = bootstrap.And(diSetup);
+    var bootstrap = BootstrapSetup.Create().WithConfig(config);
 
-    _actorSystem = _serviceProvider.GetRequiredService<ActorSystem>();
-    _lobbySupervisor = _actorSystem.ActorSelection("/user/lobby-supervisor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+    var actorSystemSetup = bootstrap.And(diSetup);
+
+    _actorSystem = ActorSystem.Create("asteroid-system", actorSystemSetup);
+
+    var cluster = Akka.Cluster.Cluster.Get(_actorSystem);
+
+    Console.WriteLine("Here -------------------------------------------------------------------------------");
+
+    var lobbySupervisorProps = DependencyResolver.For(_actorSystem).Props<LobbySupervisor>();
+    var singletonProps = ClusterSingletonManager.Props(
+      singletonProps: lobbySupervisorProps,
+      settings: ClusterSingletonManagerSettings.Create(_actorSystem).WithRole("lobby")
+    );
+
+    Console.WriteLine("Here -------------------------------------------------------------------------------");
+
+    var x = _actorSystem.ActorOf(singletonProps, "lobbies-singleton-manager");
+
+    Console.WriteLine(x.Path.ToString());
+
+    // var proxyProps = ClusterSingletonProxy.Props(
+    //   singletonManagerPath: "/user/lobbies-singleton-manager",
+    //   settings: ClusterSingletonProxySettings.Create(_actorSystem)
+    // );
+
+    // _lobbySupervisor = _actorSystem.ActorOf(proxyProps, "lobby-supervisor-proxy");
+    // Console.WriteLine($"Lobby supervisor proxy created {_lobbySupervisor.Path.ToString()}");
 
 #pragma warning disable CS4014
     _actorSystem.WhenTerminated.ContinueWith(_ =>

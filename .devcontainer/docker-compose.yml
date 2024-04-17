@@ -76,7 +76,7 @@ services:
             }
           }
           cluster {
-            seed-nodes = ["akka.tcp://asteroids-actor-system@node-1:2551"]
+            seed-nodes = ["akka.tcp://asteroid-system@actor-system-1:2551"]
             roles = ["lobby"]
           }
         }
@@ -112,7 +112,7 @@ services:
             }
           }
           cluster {
-            seed-nodes = ["akka.tcp://asteroids-actor-system@node-1:2551"]
+            seed-nodes = ["akka.tcp://asteroid-system@actor-system-1:2551"]
             roles = ["lobby"]
           }
         }

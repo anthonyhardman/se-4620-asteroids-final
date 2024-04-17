@@ -26,6 +26,7 @@ public class LobbyController : ControllerBase
   [HttpPost]
   public async Task<ActionResult<string>> CreateLobby([FromBody] CreateLobbyCommand command)
   {
+    Console.WriteLine("Creating lobby");
     var lobbyId = await _communicationService.CreateLobby(command.Username);
     return Ok(lobbyId);
   }

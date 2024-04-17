@@ -13,18 +13,6 @@ builder.Services.AddSingleton<ICommunicationService, CommunicationService>();
 builder.Services.AddSingleton<IActorBridge, AkkaService>();
 builder.Services.AddControllers();
 
-builder.Services.AddAkka("asteroid-system", (cb) =>
-{
-  cb.WithActors((system, registry) =>
-     {
-       var raftProps = DependencyResolver.For(system).Props<RaftActor>();
-       var raftActor = system.ActorOf(raftProps, "raft-actor");
-       registry.TryRegister<RaftActor>(raftActor);
-       var lobbySupervisorActor = system.ActorOf(LobbySupervisor.Props(), "lobby-supervisor");
-       registry.TryRegister<LobbySupervisor>(lobbySupervisorActor);
-     });
-});
-
 builder.Services.AddHostedService<AkkaService>(
   sp => (AkkaService)sp.GetRequiredService<IActorBridge>()
 );

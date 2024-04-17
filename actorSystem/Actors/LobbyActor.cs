@@ -38,7 +38,7 @@ public class LobbyActor : ReceiveActor
     Receive<Tick>(_ => UpdateGame());
     Receive<StartGameCommand>(StartGame);
     Receive<PlayerInput>(UpdatePlayerInput);
-    RaftActor = Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+    // RaftActor = Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
   }
 
   public void JoinLobby(JoinLobbyCommand command)
@@ -131,7 +131,7 @@ public class LobbyActor : ReceiveActor
 
     if (DateTime.Now - LastPersisted > TimeSpan.FromSeconds(3))
     {
-      RaftActor.Tell(new StoreLobbyCommand(Info));
+      // RaftActor.Tell(new StoreLobbyCommand(Info));
       LastPersisted = DateTime.Now;
     }
   }

@@ -70,6 +70,7 @@ public class LobbySupervisor : ReceiveActor
 
   private void CreateLobby(CreateLobbyCommand command)
   {
+    Log.Info($"Creating lobby for {command.Username}");
     var lobbyInfo = new LobbyInfo(command.Username);
     var props = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo);
     var lobbyActor = Context.ActorOf(props, $"lobby_{lobbyInfo.Id}");

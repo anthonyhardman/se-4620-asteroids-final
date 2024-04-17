@@ -8,8 +8,8 @@ processors:
   batch:
 
 exporters:
-  # prometheus:
-  #   endpoint: 0.0.0.0:5221
+  prometheus:
+    endpoint: 0.0.0.0:8889
   zipkin:
     endpoint: http://asteroids_zipkin:9411/api/v2/spans
   loki:
@@ -27,10 +27,10 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [zipkin]
-    # metrics:
-    #   receivers: [otlp]
-    #   processors: [batch]
-    #   exporters: [prometheus]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]
     logs:   
       receivers: [otlp]
       processors: [batch]

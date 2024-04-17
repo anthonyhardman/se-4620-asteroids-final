@@ -3,6 +3,7 @@ using actorSystem.Services;
 using Akka.DependencyInjection;
 using Akka.Hosting;
 using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +46,17 @@ builder.Logging.AddOpenTelemetry(options =>
   {
     options.Endpoint = new Uri("http://asteroids_otel-collector:4317");
   }).SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName));
+});
+
+builder.Services.AddOpenTelemetry().WithMetrics(metrics =>
+{
+  metrics.AddMeter("Microsoft.AspNetCore.Hosting");
+  metrics.AddMeter("Microsoft.AspNetCore.Http");
+  metrics.AddPrometheusExporter();
+  metrics.AddOtlpExporter(options =>
+  {
+    options.Endpoint = new Uri("http://asteroids_otel-collector:4317");
+  });
 });
 
 var app = builder.Build();

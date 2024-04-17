@@ -193,6 +193,7 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ../dev-ops/grafana-datasource.yml:/etc/grafana/provisioning/datasources/grafana-datasource.yml
+      - ../dashboards:/var/lib/grafana/dashboards
 
   asteroids_prometheus:
     image: prom/prometheus:latest

@@ -3,13 +3,13 @@
   scrape_timeout: 10s  # Set the scrape timeout to 10 seconds. Default is 10 seconds.
   evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
 
-scrape_configs:
-- job_name: 'ApiMetrics'
-  static_configs:
-    - targets: 
-      - asteroids_actor_system:1234
+# scrape_configs:
+# - job_name: 'ApiMetrics'
+#   static_configs:
+#     - targets: 
+#       - asteroids_actor_system:1234
 
 - job_name: 'OtelCollector'
   static_configs:
     - targets: 
-      - asteroids_otel-collector:8888
+      - asteroids_otel-collector:8889

@@ -8,6 +8,7 @@ using Moq;
 using actorSystem.Services;
 using Akka.Actor.Setup;
 using Akka.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace actorSystem.Test;
 public class LobbySupervisorTests : TestKit
@@ -17,6 +18,12 @@ public class LobbySupervisorTests : TestKit
     var mockServiceProvider = new Mock<IServiceProvider>();
     mockServiceProvider.Setup(x => x.GetService(typeof(ICommunicationService)))
       .Returns(new Mock<ICommunicationService>().Object);
+    mockServiceProvider.Setup(x => x.GetService(typeof(ILogger<LobbySupervisor>)))
+      .Returns(new Mock<ILogger<LobbySupervisor>>().Object);
+    mockServiceProvider.Setup(x => x.GetService(typeof(ILogger<LobbyActor>)))
+      .Returns(new Mock<ILogger<LobbyActor>>().Object);
+    mockServiceProvider.Setup(x => x.GetService(typeof(ILogger<RaftActor>)))
+      .Returns(new Mock<ILogger<RaftActor>>().Object);
 
     return mockServiceProvider.Object;
   }
@@ -33,7 +40,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
 
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
 
@@ -52,7 +59,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
     var lobbyId = new Guid();
 
@@ -75,7 +82,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
 
     LobbyList list = (LobbyList)await lobbySupervisor.Ask(new GetLobbiesQuery());
 
@@ -87,7 +94,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
 
     probe.ExpectMsg<LobbyCreated>();
@@ -102,7 +109,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser1"), probe.Ref);
     probe.ExpectMsg<LobbyCreated>();
 
@@ -119,7 +126,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
     Guid lobbyId = Guid.Empty;
 
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
@@ -143,7 +150,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
     var nonExistentLobbyId = Guid.NewGuid(); // Using a GUID that hasn't been associated with a lobby
 
     lobbySupervisor.Tell(new JoinLobbyCommand("randomUser", nonExistentLobbyId), probe.Ref);
@@ -159,7 +166,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
     var nonExistentLobbyId = Guid.NewGuid(); // A GUID that hasn't been used to create a lobby
 
     lobbySupervisor.Tell(nonExistentLobbyId, probe.Ref);
@@ -175,7 +182,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("hostUser"), probe.Ref);
     var lobbyCreated = probe.ExpectMsg<LobbyCreated>();
     var lobbyId = lobbyCreated.Info.Id;
@@ -192,7 +199,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
     var nonExistentLobbyId = Guid.NewGuid();
 
     lobbySupervisor.Tell(new StartGameCommand("no_one", nonExistentLobbyId), probe.Ref);
@@ -208,7 +215,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
 
     lobbySupervisor.Tell(new object(), probe.Ref);
 
@@ -220,7 +227,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("user1"), probe.Ref);
     var lobby1 = probe.ExpectMsg<LobbyCreated>();
     lobbySupervisor.Tell(new CreateLobbyCommand("user2"), probe.Ref);
@@ -237,7 +244,7 @@ public class LobbySupervisorTests : TestKit
   {
     var probe = CreateTestProbe();
     var raftProbe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
+    var lobbySupervisor = Sys.ActorOf(DependencyResolver.For(Sys).Props<LobbySupervisor>(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("user1"), probe.Ref);
     var lobby1 = probe.ExpectMsg<LobbyCreated>();
 

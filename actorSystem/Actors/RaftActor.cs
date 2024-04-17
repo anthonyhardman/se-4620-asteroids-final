@@ -115,7 +115,7 @@ public class RaftActor : ReceiveActor
 
     if (cachedData.Value == null)
     {
-      Log.Error("Raft Actor: Lobby not found");
+      _logger.LogError("Raft Actor: Lobby not found");
       Sender.Tell(new OperationFailed("Lobby not found."));
       return;
     }
@@ -123,8 +123,8 @@ public class RaftActor : ReceiveActor
     Sender.Tell(JsonSerializer.Deserialize<LobbyInfo>(cachedData.Value));
   }
 
-  public static Props Props(HttpClient httpClient)
+  public static Props Props(HttpClient httpClient, ILogger<RaftActor> logger)
   {
-    return Akka.Actor.Props.Create<RaftActor>(() => new RaftActor(httpClient));
+    return Akka.Actor.Props.Create<RaftActor>(() => new RaftActor(httpClient, logger));
   }
 }

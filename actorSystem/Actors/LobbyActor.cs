@@ -29,7 +29,12 @@ public class LobbyActor : ReceiveActor
   public LobbyActor(LobbyInfo info, ICommunicationService communicationService, IActorRef? raftActor = null)
   {
     Info = info;
-    Info.AddPlayer(info.CreatedBy);
+
+    if (info.Players.Count == 0)
+    {
+      Info.AddPlayer(info.CreatedBy);
+    }
+
     Log.Info($"{info.CreatedBy} created and joined lobby {Info.Id}");
     _communicationService = communicationService;
 

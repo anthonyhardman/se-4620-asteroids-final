@@ -25,6 +25,7 @@ public class LobbySupervisor : ReceiveActor
     Receive<StartGameCommand>(StartGame);
     Receive<Guid>(GetLobby);
     Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
+    ReceiveAsync<Terminated>(async (t) => await RehydrateLobby(t.ActorRef));
     RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
   }
 
@@ -76,9 +77,20 @@ public class LobbySupervisor : ReceiveActor
     var lobbyInfo = new LobbyInfo(command.Username);
     var props = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo, RaftActor);
     var lobbyActor = Context.ActorOf(props, $"lobby_{lobbyInfo.Id}");
+    Context.Watch(lobbyActor);
     Lobbies.Add(lobbyInfo.Id, lobbyActor);
     Sender.Tell(new LobbyCreated(lobbyInfo, lobbyActor.Path.ToString()));
     Log.Info($"Lobby Supervisor: Lobby created: {lobbyActor.Path}");
+  }
+
+  private async Task RehydrateLobby(IActorRef oldLobby)
+  {
+    var lobby = Lobbies.FirstOrDefault(x => x.Value == oldLobby);
+    var lobbyInfo = (LobbyInfo)await RaftActor.Ask(new GetLobbyCommand(lobby.Key));
+    var lobbyProps = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo, RaftActor);
+    var newLobbyActor = Context.ActorOf(lobbyProps, $"lobby_{lobbyInfo.Id}");
+    Context.Watch(newLobbyActor);
+    Lobbies[lobbyInfo.Id] = newLobbyActor;
   }
 
   private void StartGame(StartGameCommand command)

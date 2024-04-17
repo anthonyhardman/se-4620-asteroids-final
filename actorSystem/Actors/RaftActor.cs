@@ -87,7 +87,7 @@ public class RaftActor : ReceiveActor
     return new CompareAndSwapResponse { Success = false, Value = $"HTTP error: {response.StatusCode}" };
   }
 
-  private async Task HandleGetLobbyCommand(GetLobbyCommand command)
+  public async Task HandleGetLobbyCommand(GetLobbyCommand command)
   {
     var key = command.LobbyId.ToString();
     var data = await FetchCurrentData(key);

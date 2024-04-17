@@ -115,6 +115,7 @@ public class RaftActor : ReceiveActor
 
     if (cachedData.Value == null)
     {
+      Log.Error("Raft Actor: Lobby not found");
       Sender.Tell(new OperationFailed("Lobby not found."));
       return;
     }
@@ -124,6 +125,6 @@ public class RaftActor : ReceiveActor
 
   public static Props Props(HttpClient httpClient)
   {
-    return Akka.Actor.Props.Create<RaftActor>();
+    return Akka.Actor.Props.Create<RaftActor>(() => new RaftActor(httpClient));
   }
 }

@@ -26,7 +26,7 @@ public class LobbyActor : ReceiveActor
   public DateTime LastPersisted { get; set; }
 
 
-  public LobbyActor(LobbyInfo info, ICommunicationService communicationService)
+  public LobbyActor(LobbyInfo info, ICommunicationService communicationService, IActorRef? raftActor = null)
   {
     Info = info;
     Info.AddPlayer(info.CreatedBy);
@@ -38,7 +38,7 @@ public class LobbyActor : ReceiveActor
     Receive<Tick>(_ => UpdateGame());
     Receive<StartGameCommand>(StartGame);
     Receive<PlayerInput>(UpdatePlayerInput);
-    RaftActor = Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+    RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
   }
 
   public void JoinLobby(JoinLobbyCommand command)
@@ -60,6 +60,7 @@ public class LobbyActor : ReceiveActor
     }
     else
     {
+      Log.Error("Lobby Actor: Cannot join game. Wrong state.");
       Sender.Tell(new Status.Failure(new InvalidOperationException("Cannot join game. Wrong state.")));
     }
   }
@@ -82,8 +83,8 @@ public class LobbyActor : ReceiveActor
           new Tick(),
           Self
         );
-        Sender.Tell(new Status.Success("Game started."));
         Log.Info($"Started game {command.LobbyId}");
+        Sender.Tell(new Status.Success("Game started."));
       }
       catch (InvalidOperationException exception)
       {
@@ -93,6 +94,7 @@ public class LobbyActor : ReceiveActor
     }
     else
     {
+      Log.Error("Lobby Actor: Cannot start game. Not joining or not creator.");
       Sender.Tell(new Status.Failure(new InvalidOperationException("Cannot start game.")));
     }
   }
@@ -101,6 +103,7 @@ public class LobbyActor : ReceiveActor
   {
     _gameLoop?.Cancel();
     Info.StopGame();
+    Log.Info("Lobby Actor: Game Stopped.");
     Sender.Tell(new Status.Success("Game stopped."));
   }
 
@@ -149,8 +152,8 @@ public class LobbyActor : ReceiveActor
     return Akka.Actor.Props.Create<LobbyActor>(info);
   }
 
-  public static Props Props(LobbyInfo info, ICommunicationService communicationService)
+  public static Props Props(LobbyInfo info, ICommunicationService communicationService, IActorRef? raftActor = null)
   {
-    return Akka.Actor.Props.Create<LobbyActor>(() => new LobbyActor(info, communicationService));
+    return Akka.Actor.Props.Create<LobbyActor>(() => new LobbyActor(info, communicationService, raftActor));
   }
 }

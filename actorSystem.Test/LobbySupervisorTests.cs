@@ -32,7 +32,8 @@ public class LobbySupervisorTests : TestKit
   public void LobbySupervisor_ShouldCreateLobby_WhenCreateLobbyCommandReceived()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
 
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
 
@@ -50,7 +51,8 @@ public class LobbySupervisorTests : TestKit
   public void User_Joins_Created_Lobby()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
     var lobbyId = new Guid();
 
@@ -72,7 +74,8 @@ public class LobbySupervisorTests : TestKit
   public async Task No_lobbies()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
 
     LobbyList list = (LobbyList)await lobbySupervisor.Ask(new GetLobbiesQuery());
 
@@ -83,7 +86,8 @@ public class LobbySupervisorTests : TestKit
   public async Task Can_Get_Lobbies()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
 
     probe.ExpectMsg<LobbyCreated>();
@@ -97,7 +101,8 @@ public class LobbySupervisorTests : TestKit
   public async Task Can_Get_Two_Lobbies()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser1"), probe.Ref);
     probe.ExpectMsg<LobbyCreated>();
 
@@ -113,7 +118,8 @@ public class LobbySupervisorTests : TestKit
   public void LobbySupervisor_ShouldThrowInvalidOperationException_WhenInvalidOperationOccurs()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
     Guid lobbyId = Guid.Empty;
 
     lobbySupervisor.Tell(new CreateLobbyCommand("testUser"), probe.Ref);
@@ -136,7 +142,8 @@ public class LobbySupervisorTests : TestKit
   public void Attempt_To_Join_Non_Existent_Lobby_Returns_Failure()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
     var nonExistentLobbyId = Guid.NewGuid(); // Using a GUID that hasn't been associated with a lobby
 
     lobbySupervisor.Tell(new JoinLobbyCommand("randomUser", nonExistentLobbyId), probe.Ref);
@@ -151,7 +158,8 @@ public class LobbySupervisorTests : TestKit
   public void Request_Info_For_Non_Existent_Lobby_Returns_Failure()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
     var nonExistentLobbyId = Guid.NewGuid(); // A GUID that hasn't been used to create a lobby
 
     lobbySupervisor.Tell(nonExistentLobbyId, probe.Ref);
@@ -166,7 +174,8 @@ public class LobbySupervisorTests : TestKit
   public void Multiple_Users_Join_Same_Lobby()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("hostUser"), probe.Ref);
     var lobbyCreated = probe.ExpectMsg<LobbyCreated>();
     var lobbyId = lobbyCreated.Info.Id;
@@ -182,7 +191,8 @@ public class LobbySupervisorTests : TestKit
   public void Start_Game_In_Non_Existent_Lobby_Returns_Failure()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
     var nonExistentLobbyId = Guid.NewGuid();
 
     lobbySupervisor.Tell(new StartGameCommand("no_one", nonExistentLobbyId), probe.Ref);
@@ -197,7 +207,8 @@ public class LobbySupervisorTests : TestKit
   public void LobbySupervisor_Receives_Unexpected_Command()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
 
     lobbySupervisor.Tell(new object(), probe.Ref);
 
@@ -208,7 +219,8 @@ public class LobbySupervisorTests : TestKit
   public async Task Query_Lobbies_After_Game_Starts()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("user1"), probe.Ref);
     var lobby1 = probe.ExpectMsg<LobbyCreated>();
     lobbySupervisor.Tell(new CreateLobbyCommand("user2"), probe.Ref);
@@ -224,7 +236,8 @@ public class LobbySupervisorTests : TestKit
   public void Lobby_Starts_Successfully()
   {
     var probe = CreateTestProbe();
-    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+    var raftProbe = CreateTestProbe();
+    var lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(raftProbe.Ref), "lobbySupervisor");
     lobbySupervisor.Tell(new CreateLobbyCommand("user1"), probe.Ref);
     var lobby1 = probe.ExpectMsg<LobbyCreated>();
 

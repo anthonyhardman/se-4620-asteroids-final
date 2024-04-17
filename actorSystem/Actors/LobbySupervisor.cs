@@ -14,10 +14,10 @@ public record UpdatePlayerInputStateCommand(string Username, Guid LobbyId, Input
 
 public class LobbySupervisor : ReceiveActor
 {
-  public Dictionary<Guid, IActorRef> Lobbies { get; set; } = new Dictionary<Guid, IActorRef>();
+  public Dictionary<Guid, IActorRef> Lobbies { get; set; } = [];
   public IActorRef RaftActor { get; set; }
 
-  public LobbySupervisor()
+  public LobbySupervisor(IActorRef? raftActor = null)
   {
     Receive<CreateLobbyCommand>(CreateLobby);
     Receive<JoinLobbyCommand>(JoinLobby);
@@ -25,7 +25,7 @@ public class LobbySupervisor : ReceiveActor
     Receive<StartGameCommand>(StartGame);
     Receive<Guid>(GetLobby);
     Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
-    RaftActor = Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;  
+    RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
   }
 
   private void GetLobby(Guid lobbyId)
@@ -71,7 +71,7 @@ public class LobbySupervisor : ReceiveActor
   private void CreateLobby(CreateLobbyCommand command)
   {
     var lobbyInfo = new LobbyInfo(command.Username);
-    var props = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo);
+    var props = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo, RaftActor);
     var lobbyActor = Context.ActorOf(props, $"lobby_{lobbyInfo.Id}");
     Lobbies.Add(lobbyInfo.Id, lobbyActor);
     Sender.Tell(new LobbyCreated(lobbyInfo, lobbyActor.Path.ToString()));
@@ -105,8 +105,8 @@ public class LobbySupervisor : ReceiveActor
 
   protected ILoggingAdapter Log { get; } = Context.GetLogger();
 
-  public static Props Props()
+  public static Props Props(IActorRef? raftActor = null)
   {
-    return Akka.Actor.Props.Create<LobbySupervisor>();
+    return Akka.Actor.Props.Create(() => new LobbySupervisor(raftActor));
   }
 }

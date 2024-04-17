@@ -26,7 +26,7 @@ public class LobbyActor : ReceiveActor
   public DateTime LastPersisted { get; set; }
 
 
-  public LobbyActor(LobbyInfo info, ICommunicationService communicationService)
+  public LobbyActor(LobbyInfo info, ICommunicationService communicationService, IActorRef? raftActor = null)
   {
     Info = info;
     Info.AddPlayer(info.CreatedBy);
@@ -38,7 +38,7 @@ public class LobbyActor : ReceiveActor
     Receive<Tick>(_ => UpdateGame());
     Receive<StartGameCommand>(StartGame);
     Receive<PlayerInput>(UpdatePlayerInput);
-    RaftActor = Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+    RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
   }
 
   public void JoinLobby(JoinLobbyCommand command)
@@ -149,8 +149,8 @@ public class LobbyActor : ReceiveActor
     return Akka.Actor.Props.Create<LobbyActor>(info);
   }
 
-  public static Props Props(LobbyInfo info, ICommunicationService communicationService)
+  public static Props Props(LobbyInfo info, ICommunicationService communicationService, IActorRef? raftActor = null)
   {
-    return Akka.Actor.Props.Create<LobbyActor>(() => new LobbyActor(info, communicationService));
+    return Akka.Actor.Props.Create<LobbyActor>(() => new LobbyActor(info, communicationService, raftActor));
   }
 }

@@ -78,6 +78,11 @@ public class PlayerShip
       Direction = Vector2.Normalize(Direction);
     }
 
+    if (InputState != null && InputState.ShootPressed)
+    {
+      Fire();
+    }
+
     if (InputState != null && InputState.Thrusting)
     {
       Vector2 oldPosition = Position;
@@ -160,5 +165,5 @@ public class InputState
 {
   public bool Thrusting { get; set; }
   public RotationDirection RotationDirection { get; set; }
-  public int ShootPressed { get; set; }
+  public bool ShootPressed { get; set; }
 }

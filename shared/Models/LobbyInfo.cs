@@ -51,14 +51,6 @@ public class LobbyInfo
     State = LobbyState.Joining;
   }
 
-  public void Fire(string username)
-  {
-    if (Players.TryGetValue(username, out PlayerShip? player))
-    {
-      player.Fire();
-    }
-  }
-
   public void AddPlayer(string username)
   {
     if (PlayerCount >= MaxPlayers && State == LobbyState.Joining)

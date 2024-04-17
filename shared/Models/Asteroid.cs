@@ -27,7 +27,7 @@ public class Asteroid
         else
             Size = 3;
 
-        Health = Size * Size;
+        Health = Size;
 
         bool isVerticalEdge = random.Next(2) == 0;
         int edgePosition = isVerticalEdge ? random.Next(-maxY, maxY) : random.Next(-maxX, maxX);

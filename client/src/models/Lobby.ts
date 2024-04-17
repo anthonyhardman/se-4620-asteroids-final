@@ -31,6 +31,7 @@ export interface PlayerShip {
   maxHealth: number;
   color: string;
   points: number;
+  bullets: Bullet[];
 }
 
 export interface Asteroid {
@@ -42,6 +43,12 @@ export interface Asteroid {
   health: number;
 }
 
+export interface Bullet {
+  position: Vector;
+  velocity: Vector;
+  direction: Vector;
+}
+
 export interface Vector {
   x: number;
   y: number;
@@ -50,7 +57,7 @@ export interface Vector {
 export interface InputState {
   thrusting: boolean;
   rotationDirection: RotationDirection;
-  shootPressed: number;
+  shootPressed: boolean;
 }
 
 export enum RotationDirection {

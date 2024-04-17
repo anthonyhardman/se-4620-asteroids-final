@@ -58,7 +58,7 @@ public class LobbyInfoTests
   private LobbyInfo SetupLobby()
   {
     var lobby = new LobbyInfo("test_user", 5);
-    lobby.Players.Add("player1", new PlayerShip(new Vector2(100, 100), new Vector2(1, 0), new Vector2(1, 0), 100, "blue", 1200, 900));
+    lobby.Players.Add("player1", new PlayerShip(new Vector2(100, 100), new Vector2(1, 0), new Vector2(1, 0), [], 100, "blue", 1200, 900));
     return lobby;
   }
 

@@ -19,10 +19,8 @@ export const Lobby = () => {
   const [inputState, _] = useState<InputState>({
     thrusting: false,
     rotationDirection: RotationDirection.None,
-    shootPressed: 0,
+    shootPressed: false,
   });
-
-  console.log("asteroids", lobbyInfo?.asteroids)
 
   useEffect(() => {
     if (lobbyId && signalRContext?.isConnected) {
@@ -55,6 +53,10 @@ export const Lobby = () => {
         inputState.rotationDirection = RotationDirection.Right;
       }
 
+      if (e.key === " ") {
+        inputState.shootPressed = true;
+      }
+
       if (lobbyId && signalRContext?.isConnected) {
         signalRContext?.updatePlayerInput(lobbyId, inputState);
       }
@@ -70,6 +72,10 @@ export const Lobby = () => {
 
       if (e.key === "a" || e.key === "d") {
         inputState.rotationDirection = RotationDirection.None;
+      }
+
+      if (e.key === " ") {
+        inputState.shootPressed = false;
       }
 
       if (lobbyId && signalRContext?.isConnected) {

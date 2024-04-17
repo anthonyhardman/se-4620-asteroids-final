@@ -6,6 +6,7 @@ import { PlayerShipDisplay } from "./PlayerShipDisplay";
 import { AsteroidDisplay } from "./AsteroidDisplay";
 import shipModelPath from "../../3dModels/Fighter_01.glb?url";
 import asteroidpModelPath from "../../3dModels/asteroid_1.glb?url";
+import { BulletDisplay } from "./BulletDisplay";
 
 interface GameProps {
   lobbyInfo: LobbyInfo;
@@ -15,10 +16,11 @@ export const Game: FC<GameProps> = ({ lobbyInfo }) => {
   const { players, asteroids } = lobbyInfo;
 
   const Scene = () => {
-    useFrame(() => {});
+    useFrame(() => { });
     const { scene: shipModel } = useGLTF(shipModelPath, true);
     const { scene: asteroidModel } = useGLTF(asteroidpModelPath, true);
     const playersThatArentDead = Object.entries(players).filter(([_, player]) => player.health > 0);
+    const allPlayers = Object.entries(players);
 
     return (
       <>
@@ -46,6 +48,16 @@ export const Game: FC<GameProps> = ({ lobbyInfo }) => {
             />
           );
         })}
+        {allPlayers.map(([_, player]) => (
+          <>
+            {player.bullets.map(b => {
+              const clonedShipModel = shipModel.clone(true);
+              return (
+                <BulletDisplay bullet={b} model={clonedShipModel} />
+              )
+            })}
+          </>
+        ))}
         {asteroids.map((asteroid, index) => {
           const clonedAsteroidModel = asteroidModel.clone(true);
           return <AsteroidDisplay key={index} asteroid={asteroid} model={clonedAsteroidModel} />;

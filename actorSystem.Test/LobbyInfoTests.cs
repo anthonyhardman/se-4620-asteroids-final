@@ -55,6 +55,70 @@ public class LobbyInfoTests
     Assert.NotEqual(initialVelocityAfterCooldown, player.Velocity);
   }
 
+  [Fact]
+  public void BulletKillsAsteroid()
+  {
+    var lobby = SetupLobby();
+    var player = lobby.Players["player1"];
+    var asteroid = SetupAsteroid(player.Position, 2);
+    lobby.Asteroids.Add(asteroid);
+    float timestep = 16.667f;
+
+    player.Fire();
+    lobby.HandleCollision(timestep);
+
+    Assert.True(lobby.Asteroids.Count == 0);
+  }
+
+  [Fact]
+  public void GameEnds()
+  {
+    var lobby = SetupLobby();
+    var player = lobby.Players["player1"];
+    Assert.NotEqual(LobbyState.GameOver, lobby.State);
+    player.TakeDamage(100, 1000);
+    lobby.EndGameIfAllPlayersDead();
+    Assert.Equal(LobbyState.GameOver, lobby.State);
+  }
+
+  [Fact]
+  public void CountdownStarts()
+  {
+    var lobby = SetupLobby();
+    Assert.Equal(LobbyState.Joining, lobby.State);
+    lobby.StartCountdown();
+    Assert.Equal(LobbyState.Countdown, lobby.State);
+  }
+
+  [Fact]
+  public void CountdownDoesntStartIfNotJoining()
+  {
+    var lobby = SetupLobby();
+    Assert.Equal(LobbyState.Joining, lobby.State);
+    lobby.StartCountdown();
+    Assert.Throws<InvalidOperationException>(lobby.StartCountdown);
+  }
+
+  [Fact]
+  public void UpdateCountdownTime_UpdatesTime_WhenStateIsCountdown()
+  {
+    var lobby = SetupLobby();
+    lobby.StartCountdown();
+    var expectedTime = 9000;
+    lobby.UpdateCountdownTime(expectedTime);
+    Assert.Equal(9, lobby.CountdownTime);
+  }
+
+  [Fact]
+  public void UpdateCountdownTime_DoesNotUpdateTime_WhenStateIsNotCountdown()
+  {
+    var lobby = SetupLobby();
+    var initialTime = lobby.CountdownTime;
+    lobby.UpdateCountdownTime(10000);
+    Assert.Equal(initialTime, lobby.CountdownTime);
+  }
+
+
   private LobbyInfo SetupLobby()
   {
     var lobby = new LobbyInfo("test_user", 5);
@@ -62,8 +126,8 @@ public class LobbyInfoTests
     return lobby;
   }
 
-  private Asteroid SetupAsteroid(Vector2 position)
+  private Asteroid SetupAsteroid(Vector2 position, int health = 3)
   {
-    return new Asteroid(position, new Vector2(-0.1f, 0), new Vector2(-1, 0), 2, 3);
+    return new Asteroid(position, new Vector2(-0.1f, 0), new Vector2(-1, 0), 2, health);
   }
 }

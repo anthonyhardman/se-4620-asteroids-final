@@ -27,7 +27,7 @@ public class PlayerShip
   public float CollisionCooldown { get; private set; } = 0f;
   public List<Bullet> Bullets { get; init; } = [];
   public float FireCooldown { get; private set; } = 0f;
-  private const float FireCooldownDuration = 500f;
+  public const float FireCooldownDuration = 500f;
 
   public PlayerShip(int maxX, int maxY)
   {

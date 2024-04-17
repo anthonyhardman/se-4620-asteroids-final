@@ -23,7 +23,8 @@ builder.Services.AddAkka("asteroid-system", (cb) =>
        var raftProps = DependencyResolver.For(system).Props<RaftActor>();
        var raftActor = system.ActorOf(raftProps, "raft-actor");
        registry.TryRegister<RaftActor>(raftActor);
-       var lobbySupervisorActor = system.ActorOf(LobbySupervisor.Props(), "lobby-supervisor");
+       var lobbySuperProps = DependencyResolver.For(system).Props<LobbySupervisor>();
+       var lobbySupervisorActor = system.ActorOf(lobbySuperProps, "lobby-supervisor");
        registry.TryRegister<LobbySupervisor>(lobbySupervisorActor);
      });
 });

@@ -20,13 +20,14 @@ public class LobbyActor : ReceiveActor
   public LobbyInfo Info { get; set; }
   private ICancelable? _gameLoop;
   private ICommunicationService _communicationService;
+  private readonly ILogger<LobbyActor> logger;
   private const float _timeStep = 16.667f;
   private float countdown = 10000;
   public IActorRef RaftActor { get; set; }
   public DateTime LastPersisted { get; set; }
 
 
-  public LobbyActor(LobbyInfo info, ICommunicationService communicationService, IActorRef? raftActor = null)
+  public LobbyActor(LobbyInfo info, ICommunicationService communicationService, ILogger<LobbyActor> logger, IActorRef? raftActor = null)
   {
     Info = info;
 
@@ -35,9 +36,9 @@ public class LobbyActor : ReceiveActor
       Info.AddPlayer(info.CreatedBy);
     }
 
-    Log.Info($"{info.CreatedBy} created and joined lobby {Info.Id}");
+    logger.LogInformation($"{info.CreatedBy} created and joined lobby {Info.Id}");
     _communicationService = communicationService;
-
+    this.logger = logger;
     Receive<JoinLobbyCommand>(JoinLobby);
     Receive<GetLobbyInfoQuery>(_ => Sender.Tell(Info));
     Receive<Tick>(_ => UpdateGame());
@@ -54,23 +55,21 @@ public class LobbyActor : ReceiveActor
       {
         Info.AddPlayer(command.Username);
         Sender.Tell(new UserJoined(command.Username));
-        Log.Info($"{command.Username} joined lobby {Info.Id}");
+        logger.LogInformation($"{command.Username} joined lobby {Info.Id}");
         _communicationService.SendLobbyInfo(Info);
       }
       catch (InvalidOperationException exception)
       {
-        Log.Error(exception.Message);
+        logger.LogError(exception.Message);
         Sender.Tell(new Status.Failure(new InvalidOperationException(exception.Message)));
       }
     }
     else
     {
-      Log.Error("Lobby Actor: Cannot join game. Wrong state.");
+      logger.LogError("Lobby Actor: Cannot join game. Wrong state.");
       Sender.Tell(new Status.Failure(new InvalidOperationException("Cannot join game. Wrong state.")));
     }
   }
-
-  protected ILoggingAdapter Log { get; } = Context.GetLogger();
 
   public void StartGame(StartGameCommand command)
   {
@@ -78,7 +77,7 @@ public class LobbyActor : ReceiveActor
     {
       try
       {
-        Log.Info($"Starting game {command.LobbyId}");
+        logger.LogInformation($"Starting game {command.LobbyId}");
         countdown = 10000;
         Info.StartCountdown();
         _gameLoop = Context.System.Scheduler.ScheduleTellRepeatedlyCancelable(
@@ -88,18 +87,18 @@ public class LobbyActor : ReceiveActor
           new Tick(),
           Self
         );
-        Log.Info($"Started game {command.LobbyId}");
+        logger.LogInformation($"Started game {command.LobbyId}");
         Sender.Tell(new Status.Success("Game started."));
       }
       catch (InvalidOperationException exception)
       {
-        Log.Error(exception.Message);
+        logger.LogError(exception.Message);
         Sender.Tell(new Status.Failure(new InvalidOperationException(exception.Message)));
       }
     }
     else
     {
-      Log.Error("Lobby Actor: Cannot start game. Not joining or not creator.");
+      logger.LogError("Lobby Actor: Cannot start game. Not joining or not creator.");
       Sender.Tell(new Status.Failure(new InvalidOperationException("Cannot start game.")));
     }
   }
@@ -108,7 +107,7 @@ public class LobbyActor : ReceiveActor
   {
     _gameLoop?.Cancel();
     Info.StopGame();
-    Log.Info("Lobby Actor: Game Stopped.");
+    logger.LogInformation("Lobby Actor: Game Stopped.");
     Sender.Tell(new Status.Success("Game stopped."));
   }
 
@@ -157,8 +156,8 @@ public class LobbyActor : ReceiveActor
     return Akka.Actor.Props.Create<LobbyActor>(info);
   }
 
-  public static Props Props(LobbyInfo info, ICommunicationService communicationService, IActorRef? raftActor = null)
+  public static Props Props(LobbyInfo info, ICommunicationService communicationService, ILogger<LobbyActor> logger, IActorRef? raftActor = null)
   {
-    return Akka.Actor.Props.Create<LobbyActor>(() => new LobbyActor(info, communicationService, raftActor));
+    return Akka.Actor.Props.Create<LobbyActor>(() => new LobbyActor(info, communicationService, logger, raftActor));
   }
 }

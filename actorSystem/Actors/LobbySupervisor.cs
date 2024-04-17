@@ -14,10 +14,12 @@ public record UpdatePlayerInputStateCommand(string Username, Guid LobbyId, Input
 
 public class LobbySupervisor : ReceiveActor
 {
+  private readonly ILogger<LobbySupervisor> logger;
+
   public Dictionary<Guid, IActorRef> Lobbies { get; set; } = [];
   public IActorRef RaftActor { get; set; }
 
-  public LobbySupervisor(IActorRef? raftActor = null)
+  public LobbySupervisor(ILogger<LobbySupervisor> logger, IActorRef? raftActor = null)
   {
     Receive<CreateLobbyCommand>(CreateLobby);
     Receive<JoinLobbyCommand>(JoinLobby);
@@ -25,6 +27,7 @@ public class LobbySupervisor : ReceiveActor
     Receive<StartGameCommand>(StartGame);
     Receive<Guid>(GetLobby);
     Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
+    this.logger = logger;
     ReceiveAsync<Terminated>(async (t) => await RehydrateLobby(t.ActorRef));
     RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
   }
@@ -37,7 +40,7 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
-      Log.Error($"Lobby Supervisor: Failed to get lobby. Lobby {lobbyId} not found.");
+      logger.LogError($"Lobby Supervisor: Failed to get lobby. Lobby {lobbyId} not found.");
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Failed to get lobby. Lobby {lobbyId} not found.")));
     }
   }
@@ -54,7 +57,7 @@ public class LobbySupervisor : ReceiveActor
     var lobbies = (await Task.WhenAll(lobbiesTasks)).Where(lobby => lobby.State != LobbyState.GameOver).ToList();
     var lobbyList = new LobbyList();
     lobbyList.AddRange(lobbies);
-    Log.Info("Lobby Supervisor: Got lobbies");
+    logger.LogInformation("Lobby Supervisor: Got lobbies");
     Sender.Tell(lobbyList);
   }
 
@@ -66,7 +69,7 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
-      Log.Error($"Lobby Supervisor: Failed to join. Lobby {command.LobbyId} not found.");
+      logger.LogError($"Lobby Supervisor: Failed to join. Lobby {command.LobbyId} not found.");
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Failed to join. Lobby {command.LobbyId} not found.")));
     }
   }
@@ -80,7 +83,7 @@ public class LobbySupervisor : ReceiveActor
     Context.Watch(lobbyActor);
     Lobbies.Add(lobbyInfo.Id, lobbyActor);
     Sender.Tell(new LobbyCreated(lobbyInfo, lobbyActor.Path.ToString()));
-    Log.Info($"Lobby Supervisor: Lobby created: {lobbyActor.Path}");
+    logger.LogInformation($"Lobby Supervisor: Lobby created: {lobbyActor.Path}");
   }
 
   private async Task RehydrateLobby(IActorRef oldLobby)
@@ -93,6 +96,7 @@ public class LobbySupervisor : ReceiveActor
     Lobbies[lobbyInfo.Id] = newLobbyActor;
   }
 
+
   private void StartGame(StartGameCommand command)
   {
     if (Lobbies.TryGetValue(command.LobbyId, out var lobby))
@@ -101,7 +105,7 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
-      Log.Error($"Lobby Supervisor: Unable to start game. Lobby {command.LobbyId} not found.");
+      logger.LogError($"Lobby Supervisor: Unable to start game. Lobby {command.LobbyId} not found.");
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to start game. Lobby {command.LobbyId} not found.")));
     }
   }
@@ -114,16 +118,13 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
-      Log.Error($"Lobby Supervisor: Unable to update player input state. Lobby {command.LobbyId} not found.");
+      logger.LogError($"Lobby Supervisor: Unable to update player input state. Lobby {command.LobbyId} not found.");
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to update player input state. Lobby {command.LobbyId} not found.")));
     }
   }
 
-
-  protected ILoggingAdapter Log { get; } = Context.GetLogger();
-
-  public static Props Props(IActorRef? raftActor = null)
+  public static Props Props(ILogger<LobbySupervisor> logger, IActorRef? raftActor = null)
   {
-    return Akka.Actor.Props.Create(() => new LobbySupervisor(raftActor));
+    return Akka.Actor.Props.Create(() => new LobbySupervisor(logger, raftActor));
   }
 }

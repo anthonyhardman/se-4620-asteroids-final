@@ -161,5 +161,39 @@ public class PlayerShipTests
     Assert.True(Math.Abs(ship.Position.Y - expectedPositionY) < 20, "Ship's position not as expected after continuous thrusting at max velocity.");
   }
 
+  [Fact]
+  public void Fire_ShouldAddBullet_WhenFireCooldownIsZero()
+  {
+    var ship = new PlayerShip(100, 100);
+    ship.Fire();
+    Assert.Single(ship.Bullets);
+  }
 
+  [Fact]
+  public void Fire_ShouldNotAddBullet_WhenFireCooldownIsGreaterThanZero()
+  {
+    var ship = new PlayerShip(100, 100);
+    ship.Fire();
+    ship.Fire();
+    Assert.Single(ship.Bullets);
+  }
+
+  [Fact]
+  public void Fire_ShouldResetFireCooldown_WhenFireCooldownIsZero()
+  {
+    var ship = new PlayerShip(100, 100);
+    ship.Fire();
+    Assert.Equal(PlayerShip.FireCooldownDuration, ship.FireCooldown);
+  }
+
+  [Fact]
+  public void Bullets_StartAtShipPosition_AndUpdate()
+  {
+    var ship = new PlayerShip(100, 100);
+    ship.Fire();
+    Assert.Single(ship.Bullets);
+    Assert.Equal(ship.Position, ship.Bullets[0].Position);
+    ship.UpdateBullets(1);
+    Assert.NotEqual(ship.Position, ship.Bullets[0].Position);
+  }
 }

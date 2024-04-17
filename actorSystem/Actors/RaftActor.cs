@@ -47,7 +47,7 @@ public class RaftActor : ReceiveActor
       };
 
       var casResult = await TryCompareAndSwap(casUri, casRequest);
-      if (!casResult.Success && casResult.Version == -1)
+      if (!casResult.Success)
       {
         cachedData = await FetchCurrentData(key);
         _lobbyCache[command.Info.Id] = cachedData;
@@ -70,25 +70,29 @@ public class RaftActor : ReceiveActor
 
   private async Task<(string Value, int Version)> FetchCurrentData(string key)
   {
-    var getUri = $"/api/storage/strong?key={Uri.EscapeDataString(key)}";
-    var response = await _httpClient.GetAsync(getUri);
-    if (response.IsSuccessStatusCode)
+    try
     {
-      var responseData = await JsonSerializer.DeserializeAsync<StrongGetResponse>(await response.Content.ReadAsStreamAsync());
-      return (responseData.Value, responseData.Version);
-    }
+      var getUri = $"/api/Storage/strong?key={Uri.EscapeDataString(key)}";
+      var response = await _httpClient.GetFromJsonAsync<StrongGetResponse>(getUri);
 
-    Log.Error("Failed to retrieve current state.");
-    return (null, -1);
+      return (response.Value, response.Version);
+    }
+    catch
+    {
+      Log.Error("Failed to retrieve current state.");
+      return (null, -1);
+    }
   }
 
   private async Task<CompareAndSwapResponse> TryCompareAndSwap(string uri, CompareAndSwapRequest request)
   {
-    var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-    var response = await _httpClient.PostAsync(uri, requestContent);
+    var response = await _httpClient.PostAsJsonAsync(uri, request);
     if (response.IsSuccessStatusCode)
     {
-      return await JsonSerializer.DeserializeAsync<CompareAndSwapResponse>(await response.Content.ReadAsStreamAsync());
+      var result = await JsonSerializer.DeserializeAsync<CompareAndSwapResponse>(await response.Content.ReadAsStreamAsync());
+      if (result.Success == false)
+        return new CompareAndSwapResponse { Success = false, Value = $"CAS failed: Version or Expected value must not have matched" };
+      return result;
     }
     return new CompareAndSwapResponse { Success = false, Value = $"HTTP error: {response.StatusCode}" };
   }

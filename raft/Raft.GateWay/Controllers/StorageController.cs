@@ -28,7 +28,6 @@ public class StorageController : ControllerBase
       try
       {
         var response = await leader.StrongGet(key);
-        Console.WriteLine($"Response: {response.Value} {response.Version}");
         return response switch
         {
           { Version: int.MinValue, Value: "NOT_FOUND" } => NotFound(),
@@ -67,7 +66,6 @@ public class StorageController : ControllerBase
         Console.WriteLine($"Leader is {leaderId}");
         var leader = _raftNodes.FirstOrDefault(x => x.Id == leaderId);
         var response = await leader.CompareAndSwap(request);
-
         if (response.Version >= 0)
         {
           return Ok(response);

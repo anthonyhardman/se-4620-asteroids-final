@@ -16,9 +16,11 @@ public class RaftActor : ReceiveActor
   private readonly HttpClient _httpClient;
   private readonly Dictionary<Guid, (string Value, int Version)> _lobbyCache = new();
 
-  public RaftActor(HttpClient httpClient)
+  private readonly ILogger<RaftActor> _logger;
+  public RaftActor(HttpClient httpClient, ILogger<RaftActor> logger)
   {
     _httpClient = httpClient;
+    _logger = logger;
 
     ReceiveAsync<StoreLobbyCommand>(HandleStoreLobbyCommand);
     ReceiveAsync<GetLobbyCommand>(HandleGetLobbyCommand);
@@ -58,13 +60,17 @@ public class RaftActor : ReceiveActor
       }
 
       if (casResult.Success)
-        Log.Info($"Store operation completed for Lobby {command.Info.Id}, Version: {casResult.Version}");
+      {
+        _logger.LogInformation($"Store operation completed for Lobby {command.Info.Id}, Version: {casResult.Version}");
+      }
       else
-        Log.Error($"Store operation failed for Lobby {command.Info.Id}, Reason: {casResult.Value}");
+      {
+        _logger.LogError($"Store operation failed for Lobby {command.Info.Id}, Reason: {casResult.Value}");
+      }
     }
     catch (Exception e)
     {
-      Log.Error($"Error communicating with storage API: {e.Message}");
+      _logger.LogError(e, "Error communicating with storage API");
     }
   }
 
@@ -79,7 +85,7 @@ public class RaftActor : ReceiveActor
     }
     catch
     {
-      Log.Error("Failed to retrieve current state.");
+      _logger.LogError("Failed to retrieve current state.");
       return (null, -1);
     }
   }
@@ -115,7 +121,6 @@ public class RaftActor : ReceiveActor
 
     Sender.Tell(JsonSerializer.Deserialize<LobbyInfo>(cachedData.Value));
   }
-  protected ILoggingAdapter Log { get; } = Context.GetLogger();
 
   public static Props Props(HttpClient httpClient)
   {

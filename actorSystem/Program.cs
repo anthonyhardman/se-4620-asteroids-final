@@ -2,6 +2,8 @@ using actorSystem;
 using actorSystem.Services;
 using Akka.DependencyInjection;
 using Akka.Hosting;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +37,15 @@ builder.Services.AddHostedService<CommunicationService>(
 var raftGatewayUrl = Environment.GetEnvironmentVariable("RAFT_GATEWAY_URL") ?? "http://raft-gateway:8080";
 builder.Services.AddSingleton<HttpClient>(new HttpClient { BaseAddress = new Uri(raftGatewayUrl) });
 
+var serviceName = "actorSystem";
+
+builder.Logging.AddOpenTelemetry(options =>
+{
+  options.AddOtlpExporter(options =>
+  {
+    options.Endpoint = new Uri("http://asteroids_otel-collector:4317");
+  }).SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName));
+});
 
 var app = builder.Build();
 

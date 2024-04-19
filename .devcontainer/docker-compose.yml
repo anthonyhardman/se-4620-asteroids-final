@@ -143,12 +143,12 @@ services:
           }
           remote {
             dot-netty.tcp {
-              hostname = "actor-system-3
+              hostname = "actor-system-3"
               port = 2551
             }
           }
           cluster {
-            seed-nodes = ["akka.tcp://asteroid-system@actor-system-3:2551"]
+            seed-nodes = ["akka.tcp://asteroid-system@actor-system-1:2551"]
             roles = ["lobby"]
           }
         }

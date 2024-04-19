@@ -109,4 +109,9 @@ public class CommunicationService : ICommunicationService, IHostedService
   {
     _akkaService.UpdatePlayerInputState(username, lobbyId, inputState);
   }
+
+  public void KillLobby(Guid lobbyId)
+  {
+    _akkaService.KillLobby(lobbyId);
+  }
 }

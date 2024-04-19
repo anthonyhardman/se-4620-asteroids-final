@@ -36,6 +36,18 @@ public class LobbyActor : ReceiveActor
       Info.AddPlayer(info.CreatedBy);
     }
 
+    if (Info.State == LobbyState.Playing)
+    {
+      _gameLoop = Context.System.Scheduler.ScheduleTellRepeatedlyCancelable(
+          TimeSpan.FromMilliseconds(_timeStep),
+          TimeSpan.FromMicroseconds(_timeStep),
+          Self,
+          new Tick(),
+          Self
+        );
+      logger.LogInformation($"Restarted lobby {Info.Id}. Keep playing.");
+    }
+
     logger.LogInformation($"{info.CreatedBy} created and joined lobby {Info.Id}");
     _communicationService = communicationService;
     this.logger = logger;

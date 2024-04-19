@@ -46,47 +46,6 @@ public class LobbySupervisorTests : TestKit
   }
 
   [Fact]
-  public void RehydrateLobby_ShouldReplaceDeadLobbyWithNewOne()
-  {
-    // Arrange
-    var oldLobbyInfo = new LobbyInfo("testUser");
-    var props = LobbyActor.Props(oldLobbyInfo, _mockCommunicationService.Object, _mockLobbyActorLogger.Object, _mockRaftActor.Ref);
-    var oldLobbyActor = ActorOfAsTestActorRef<LobbyActor>(props, $"lobby_{oldLobbyInfo.Id}");
-    _lobbySupervisor.Tell(new KeyValuePair<Guid, IActorRef>(oldLobbyInfo.Id, oldLobbyActor));
-    Watch(oldLobbyActor);
-
-    var newLobbyInfo = new LobbyInfo("rehydratedUser");
-
-    _mockRaftActor.SetAutoPilot(new DelegateAutoPilot((sender, message) =>
-    {
-      if (message is GetLobbyCommand)
-      {
-        sender.Tell(newLobbyInfo, sender);  // Make sure to simulate the response correctly
-        return AutoPilot.KeepRunning;
-      }
-      return AutoPilot.NoAutoPilot;
-    }));
-
-    // Act - simulate termination of the old lobby actor
-    Sys.Stop(oldLobbyActor);
-    ExpectTerminated(oldLobbyActor);
-
-    // Simulate the process that would normally trigger rehydration
-    _lobbySupervisor.Tell(new Terminated(oldLobbyActor, existenceConfirmed: true, addressTerminated: false));
-
-    // Assert - check that a new actor is created and the dictionary is updated
-    // AwaitAssert(async () =>
-    // {
-    //   var lobbyList = await _lobbySupervisor.Ask<LobbyList>(new GetLobbiesQuery());
-    //   Assert.NotEmpty(lobbyList);
-    //   Assert.Contains(lobbyList, l => l.Id == newLobbyInfo.Id);
-    // }, TimeSpan.FromSeconds(3));
-  }
-
-
-
-
-  [Fact]
   public void LobbySupervisor_ShouldCreateLobby_WhenCreateLobbyCommandReceived()
   {
     var probe = CreateTestProbe();

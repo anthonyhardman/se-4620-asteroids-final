@@ -31,7 +31,7 @@ public class LobbyController : ControllerBase
   }
 
   [HttpPut]
-  public async Task StartGame([FromBody] StartGameCommand command)
+  public void StartGame([FromBody] StartGameCommand command)
   {
     _communicationService.StartGame(command);
   }
@@ -44,9 +44,15 @@ public class LobbyController : ControllerBase
   }
 
   [HttpPut("join")]
-  public async Task<IActionResult> JoinLobby([FromBody] JoinLobbyCommand command)
+  public IActionResult JoinLobby([FromBody] JoinLobbyCommand command)
   {
     _communicationService.JoinLobby(command.Username, command.LobbyId);
     return Ok();
+  }
+
+  [HttpPut("kill/{lobbyId}")]
+  public void KillLobby(Guid lobbyId)
+  {
+    _communicationService.KillLobby(lobbyId);
   }
 }

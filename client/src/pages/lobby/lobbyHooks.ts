@@ -38,3 +38,13 @@ export const useStartGameMutation = () => {
     },
   });
 };
+
+export const useKillLobbyMutation = () => {
+  return useMutation({
+    mutationFn: async (lobbyId: string) => {
+      const url = `/api/lobby/kill/${lobbyId}`;
+      const response = await axios.put(url);
+      return response.data;
+    }
+  });
+};

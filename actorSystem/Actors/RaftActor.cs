@@ -42,15 +42,6 @@ public class RaftActor : ReceiveActor
       };
 
       var casResult = await TryCompareAndSwap(casUri, casRequest);
-
-      if (casResult.Success)
-      {
-        _logger.LogInformation($"Store operation completed for Lobby {command.Info.Id}, Version: {casResult.Version}");
-      }
-      else
-      {
-        _logger.LogError($"Store operation failed for Lobby {command.Info.Id}, Reason: {casResult.Value}");
-      }
     }
     catch (Exception e)
     {

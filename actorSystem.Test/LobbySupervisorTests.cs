@@ -14,7 +14,7 @@ namespace actorSystem.Test;
 public class LobbySupervisorTests : TestKit
 {
   private readonly Mock<ICommunicationService> _mockCommunicationService;
-  private readonly Mock<ILogger<LobbySupervisor>> _mockLobbySupervisorLogger;
+  private readonly Mock<IServiceProvider> _mockLobbySupervisorServiceProvider;
   private readonly Mock<ILogger<LobbyActor>> _mockLobbyActorLogger;
   private IActorRef _lobbySupervisor;
   private TestProbe _mockRaftActor;  // Use TestProbe instead of Mock<IActorRef>
@@ -24,10 +24,10 @@ public class LobbySupervisorTests : TestKit
             .And(DependencyResolverSetup.Create(SetupMockServiceProvider())))
   {
     _mockCommunicationService = new Mock<ICommunicationService>();
-    _mockLobbySupervisorLogger = new Mock<ILogger<LobbySupervisor>>();
+    _mockLobbySupervisorServiceProvider = new Mock<IServiceProvider>();
     _mockLobbyActorLogger = new Mock<ILogger<LobbyActor>>();
     _mockRaftActor = CreateTestProbe();  // This replaces the Mock<RaftActor>
-    _lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(_mockLobbySupervisorLogger.Object, _mockRaftActor.Ref));
+    _lobbySupervisor = Sys.ActorOf(LobbySupervisor.Props(_mockLobbySupervisorServiceProvider.Object, _mockRaftActor.Ref));
   }
 
   private static IServiceProvider SetupMockServiceProvider()

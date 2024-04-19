@@ -14,6 +14,7 @@ public record UpdatePlayerInputStateCommand(string Username, Guid LobbyId, Input
 public class LobbySupervisor : ReceiveActor
 {
   private readonly ILogger<LobbySupervisor> logger;
+  private readonly IServiceScope scope;
 
   public Dictionary<Guid, IActorRef> Lobbies { get; set; } = [];
   public IActorRef RaftActor { get; set; }
@@ -22,7 +23,7 @@ public class LobbySupervisor : ReceiveActor
 
   public static readonly Meter meter = new("LobbySupervisor");
 
-  public LobbySupervisor(ILogger<LobbySupervisor> logger, IActorRef? raftActor = null)
+  public LobbySupervisor(IServiceProvider serviceProvider, IActorRef? raftActor = null)
   {
     Receive<CreateLobbyCommand>(CreateLobby);
     Receive<JoinLobbyCommand>(JoinLobby);
@@ -30,9 +31,11 @@ public class LobbySupervisor : ReceiveActor
     Receive<StartGameCommand>(StartGame);
     Receive<Guid>(GetLobby);
     Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
-    this.logger = logger;
     ReceiveAsync<Terminated>(async (t) => await RehydrateLobby(t.ActorRef));
     RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+
+    scope = serviceProvider.CreateScope();
+    this.logger = scope.ServiceProvider.GetRequiredService<ILogger<LobbySupervisor>>();
 
     meter.CreateObservableGauge<int>("LobbyCount", () => Lobbies.Count, "Number of lobbies");
     meter.CreateObservableGauge<int>("JoiningLobbies", () => {
@@ -100,7 +103,7 @@ public class LobbySupervisor : ReceiveActor
 
   private void CreateLobby(CreateLobbyCommand command)
   {
-    Log.Info($"Creating lobby for {command.Username}");
+    logger.LogInformation("Creating lobby via lobby supervisor");
     var lobbyInfo = new LobbyInfo(command.Username);
     var props = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo, RaftActor);
     var lobbyActor = Context.ActorOf(props, $"lobby_{lobbyInfo.Id}");
@@ -147,8 +150,8 @@ public class LobbySupervisor : ReceiveActor
     }
   }
 
-  public static Props Props(ILogger<LobbySupervisor> logger, IActorRef? raftActor = null)
+  public static Props Props(IServiceProvider serviceProvider, IActorRef? raftActor = null)
   {
-    return Akka.Actor.Props.Create(() => new LobbySupervisor(logger, raftActor));
+    return Akka.Actor.Props.Create<LobbySupervisor>(() => new LobbySupervisor(serviceProvider, raftActor));
   }
 }

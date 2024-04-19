@@ -71,6 +71,7 @@ public class CommunicationService : ICommunicationService, IHostedService
 
   public async Task<Guid> CreateLobby(string username)
   {
+    logger.LogInformation("Creating lobby via communication service.");
     var lobbyId = await _akkaService.CreateLobby(username);
     var lobbies = await _akkaService.GetLobbies();
     await EnsureConnectedAsync();

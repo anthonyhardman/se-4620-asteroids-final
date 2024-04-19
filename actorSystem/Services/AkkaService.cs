@@ -4,6 +4,7 @@ using Akka.Cluster.Tools.Singleton;
 using Akka.Configuration;
 using Akka.DependencyInjection;
 using DotNetty.Common.Utilities;
+using Polly;
 using shared.Models;
 
 namespace actorSystem.Services;
@@ -17,6 +18,7 @@ public class AkkaService : IHostedService, IActorBridge
   private readonly IServiceProvider _serviceProvider;
   private readonly IHostApplicationLifetime _applicationLifetime;
   private IActorRef? _lobbySupervisor;
+  private IActorRef? _raftActor;
 
   public AkkaService(IServiceProvider serviceProvider, IHostApplicationLifetime appLifetime, IConfiguration configuration, ILogger<AkkaService> logger)
   {
@@ -41,27 +43,23 @@ public class AkkaService : IHostedService, IActorBridge
 
     var cluster = Akka.Cluster.Cluster.Get(_actorSystem);
 
-    Console.WriteLine("Here -------------------------------------------------------------------------------");
+    var raftActorProps = DependencyResolver.For(_actorSystem).Props<RaftActor>();
+    var _raftActor = _actorSystem.ActorOf(raftActorProps, "raft-actor");
 
-    var lobbySupervisorProps = DependencyResolver.For(_actorSystem).Props<LobbySupervisor>();
+    var lobbySupervisorProps = LobbySupervisor.Props(_serviceProvider);
     var singletonProps = ClusterSingletonManager.Props(
       singletonProps: lobbySupervisorProps,
       settings: ClusterSingletonManagerSettings.Create(_actorSystem).WithRole("lobby")
     );
 
-    Console.WriteLine("Here -------------------------------------------------------------------------------");
+    _actorSystem.ActorOf(singletonProps, "lobbies-singleton-manager");
 
-    var x = _actorSystem.ActorOf(singletonProps, "lobbies-singleton-manager");
+    var proxyProps = ClusterSingletonProxy.Props(
+      singletonManagerPath: "/user/lobbies-singleton-manager",
+      settings: ClusterSingletonProxySettings.Create(_actorSystem).WithRole("lobby")
+    );
 
-    Console.WriteLine(x.Path.ToString());
-
-    // var proxyProps = ClusterSingletonProxy.Props(
-    //   singletonManagerPath: "/user/lobbies-singleton-manager",
-    //   settings: ClusterSingletonProxySettings.Create(_actorSystem)
-    // );
-
-    // _lobbySupervisor = _actorSystem.ActorOf(proxyProps, "lobby-supervisor-proxy");
-    // Console.WriteLine($"Lobby supervisor proxy created {_lobbySupervisor.Path.ToString()}");
+    _lobbySupervisor = _actorSystem.ActorOf(proxyProps, "lobby-supervisor-proxy");
 
 #pragma warning disable CS4014
     _actorSystem.WhenTerminated.ContinueWith(_ =>
@@ -89,6 +87,8 @@ public class AkkaService : IHostedService, IActorBridge
 
   public async Task<Guid> CreateLobby(string username)
   {
+    logger.LogInformation("Creating lobby via Akka service.");
+    logger.LogInformation($"Lobby Supervisor: {_lobbySupervisor.Path}");
     var result = await _lobbySupervisor.Ask<LobbyCreated>(new CreateLobbyCommand(username));
     return result.Info.Id;
   }

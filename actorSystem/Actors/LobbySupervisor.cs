@@ -9,7 +9,7 @@ public record CreateLobbyCommand(string Username);
 public record LobbyCreated(LobbyInfo Info, string ActorPath);
 public record GetLobbiesQuery();
 public record UpdatePlayerInputStateCommand(string Username, Guid LobbyId, InputState InputState);
-
+public record KillLobbyCommand(Guid LobbyId);
 
 public class LobbySupervisor : ReceiveActor
 {
@@ -31,6 +31,8 @@ public class LobbySupervisor : ReceiveActor
     Receive<StartGameCommand>(StartGame);
     Receive<Guid>(GetLobby);
     Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
+    Receive<KillLobbyCommand>(KillLobby);
+    this.logger = logger;
     ReceiveAsync<Terminated>(async (t) => await RehydrateLobby(t.ActorRef));
     RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
 
@@ -38,24 +40,30 @@ public class LobbySupervisor : ReceiveActor
     this.logger = scope.ServiceProvider.GetRequiredService<ILogger<LobbySupervisor>>();
 
     meter.CreateObservableGauge<int>("LobbyCount", () => Lobbies.Count, "Number of lobbies");
-    meter.CreateObservableGauge<int>("JoiningLobbies", () => {
+    meter.CreateObservableGauge<int>("JoiningLobbies", () =>
+    {
       return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Joining);
-    }, "Number of Lobbies in the Joining State" );
-    meter.CreateObservableGauge<int>("PlayingLobbies", () => {
+    }, "Number of Lobbies in the Joining State");
+    meter.CreateObservableGauge<int>("PlayingLobbies", () =>
+    {
       return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Playing);
-    }, "Number of Lobbies in the Playing State" );
-    meter.CreateObservableGauge<int>("GameOverLobbies", () => {
+    }, "Number of Lobbies in the Playing State");
+    meter.CreateObservableGauge<int>("GameOverLobbies", () =>
+    {
       return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.GameOver);
-    }, "Number of Lobbies in the GameOver State" );
-    meter.CreateObservableGauge<int>("StoppedLobbies", () => {
+    }, "Number of Lobbies in the GameOver State");
+    meter.CreateObservableGauge<int>("StoppedLobbies", () =>
+    {
       return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Stopped);
-    }, "Number of Lobbies in the Stopped State" );
-    meter.CreateObservableGauge<int>("CountdownLobbies", () => {
+    }, "Number of Lobbies in the Stopped State");
+    meter.CreateObservableGauge<int>("CountdownLobbies", () =>
+    {
       return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Countdown);
-    }, "Number of Lobbies in the Countdown State" ); 
-    meter.CreateObservableGauge<int>("PlayerCount", () => {
+    }, "Number of Lobbies in the Countdown State");
+    meter.CreateObservableGauge<int>("PlayerCount", () =>
+    {
       return Lobbies.Values.Select(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.Players.Count).Sum();
-    }, "Number of Players in Lobbies" );
+    }, "Number of Players in Lobbies");
   }
 
   private void GetLobby(Guid lobbyId)
@@ -68,6 +76,20 @@ public class LobbySupervisor : ReceiveActor
     {
       logger.LogError($"Lobby Supervisor: Failed to get lobby. Lobby {lobbyId} not found.");
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Failed to get lobby. Lobby {lobbyId} not found.")));
+    }
+  }
+
+  private void KillLobby(KillLobbyCommand command)
+  {
+    if (Lobbies.TryGetValue(command.LobbyId, out var lobby))
+    {
+      logger.LogInformation($"Killing lobby {command.LobbyId}");
+      lobby.Tell(PoisonPill.Instance);
+    }
+    else
+    {
+      logger.LogError($"Lobby Supervisor: Failed to kill lobby. Lobby {command.LobbyId} not found.");
+      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Failed to kill lobby. Lobby {command.LobbyId} not found.")));
     }
   }
 
@@ -115,12 +137,17 @@ public class LobbySupervisor : ReceiveActor
 
   private async Task RehydrateLobby(IActorRef oldLobby)
   {
+    logger.LogInformation("RehydrateLobby");
     var lobby = Lobbies.FirstOrDefault(x => x.Value == oldLobby);
     var lobbyInfo = (LobbyInfo)await RaftActor.Ask(new GetLobbyCommand(lobby.Key));
-    var lobbyProps = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo, RaftActor);
-    var newLobbyActor = Context.ActorOf(lobbyProps, $"lobby_{lobbyInfo.Id}");
-    Context.Watch(newLobbyActor);
-    Lobbies[lobbyInfo.Id] = newLobbyActor;
+    if (lobbyInfo.PlayerCount > 0)
+    {
+      logger.LogInformation($"Rehyrdating lobby {lobby.Key}");
+      var lobbyProps = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo, RaftActor);
+      var newLobbyActor = Context.ActorOf(lobbyProps, $"lobby_{lobbyInfo.Id}");
+      Context.Watch(newLobbyActor);
+      Lobbies[lobbyInfo.Id] = newLobbyActor;
+    }
   }
 
 

@@ -221,6 +221,7 @@ public class LobbyInfo
             if (asteroid.Health <= 0)
             {
               asteroidsToRemove.Add(asteroid);
+              player.Points += (int)asteroid.Size * 100;
             }
           }
         }

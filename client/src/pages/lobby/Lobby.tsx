@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { PlayerList } from "./PlayerList";
-import { useGetLobbyInfoQuery, useStartGameMutation } from "./lobbyHooks";
+import { useGetLobbyInfoQuery, useKillLobbyMutation, useStartGameMutation } from "./lobbyHooks";
 import { Spinner } from "../../components/Spinner";
 import { InputState, LobbyState, RotationDirection } from "../../models/Lobby";
 import { SignalRContext } from "../../signalR/SignalRContext";
@@ -13,6 +13,7 @@ export const Lobby = () => {
   const signalRContext = useContext(SignalRContext);
   const lobbyId = useParams<{ id: string }>().id;
   const startGameMutation = useStartGameMutation();
+  const killLobbyMutation = useKillLobbyMutation();
   const lobbyInfoQuery = useGetLobbyInfoQuery(lobbyId);
   const lobbyInfo = lobbyInfoQuery.data;
   const [keysPressed, setKeysPressed] = useState([] as string[])
@@ -130,10 +131,16 @@ export const Lobby = () => {
       );
     } else if (lobbyInfo.state === LobbyState.Playing) {
       return (
-        <div className="col-xl-auto d-flex justify-content-center">
-          <Game
-            lobbyInfo={lobbyInfo}
-          />
+        <div className="col-xl-auto">
+          <div className="d-flex justify-content-center">
+            <Game
+              lobbyInfo={lobbyInfo}
+            />
+          </div>
+          <div className="mt-2">
+            <button className="btn btn-outline-danger w-50"
+              onClick={() => killLobbyMutation.mutate(lobbyInfo.id)}>Kill</button>
+          </div>
         </div>
       );
     } else if (lobbyInfo.state === LobbyState.Stopped) {

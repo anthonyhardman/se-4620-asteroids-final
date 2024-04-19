@@ -119,4 +119,9 @@ public class AkkaService : IHostedService, IActorBridge
   {
     _lobbySupervisor.Tell(new UpdatePlayerInputStateCommand(username, lobbyId, inputState));
   }
+  public void KillLobby(Guid lobbyId)
+  {
+    _lobbySupervisor.Tell(new KillLobbyCommand(lobbyId));
+  }
+
 }

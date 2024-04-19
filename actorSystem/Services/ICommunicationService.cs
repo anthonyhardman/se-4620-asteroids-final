@@ -10,4 +10,5 @@ public interface ICommunicationService
   void StartGame(StartGameCommand command);
   Task<LobbyInfo> GetLobbyInfo(Guid lobbyId);
   Task SendLobbyInfo(LobbyInfo info);
+  void KillLobby(Guid lobbyId);
 }

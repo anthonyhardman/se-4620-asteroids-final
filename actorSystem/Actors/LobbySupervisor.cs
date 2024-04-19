@@ -32,7 +32,6 @@ public class LobbySupervisor : ReceiveActor
     Receive<Guid>(GetLobby);
     Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
     Receive<KillLobbyCommand>(KillLobby);
-    this.logger = logger;
     ReceiveAsync<Terminated>(async (t) => await RehydrateLobby(t.ActorRef));
     RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
 

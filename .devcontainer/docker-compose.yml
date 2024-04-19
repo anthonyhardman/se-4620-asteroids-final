@@ -118,6 +118,42 @@ services:
         }
       RAFT_GATEWAY_URL: http://raft-gateway:8080
 
+  actor-system-3:
+    container_name: asteroids_actor_system_3
+    build:
+      context: .
+    user: developer
+    volumes:
+      - ../:/app/:z
+    command: >
+      sh -c "
+        cd actorSystem
+        dotnet watch run
+      "
+    environment:
+      DOTNET_WATCH_AUTO_RELOAD: "true"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+      DOTNET_WATCH_RESTART_ON_RUDE_EDIT: "true"
+      ASPNETCORE_ENVIRONMENT: Development
+      SIGNALR_URL: http://asteroids_signalr:8081/ws
+      CLUSTER_CONFIG: |
+        akka {
+          actor {
+            provider = cluster
+          }
+          remote {
+            dot-netty.tcp {
+              hostname = "actor-system-3
+              port = 2551
+            }
+          }
+          cluster {
+            seed-nodes = ["akka.tcp://asteroid-system@actor-system-3:2551"]
+            roles = ["lobby"]
+          }
+        }
+      RAFT_GATEWAY_URL: http://raft-gateway:8080
+
   raft-gateway:
     container_name: asteroids_raft_gateway
     build:

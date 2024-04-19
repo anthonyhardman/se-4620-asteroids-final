@@ -5,6 +5,7 @@ using Akka.Hosting;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using shared.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,7 +54,8 @@ builder.Services.AddOpenTelemetry().WithMetrics(metrics =>
 {
   metrics.AddMeter("Microsoft.AspNetCore.Hosting");
   metrics.AddMeter("Microsoft.AspNetCore.Http");
-  metrics.AddPrometheusExporter();
+  metrics.AddMeter(LobbySupervisor.meter.Name);
+  metrics.AddMeter(PlayerShip.meter.Name);
   metrics.AddOtlpExporter(options =>
   {
     options.Endpoint = new Uri("http://asteroids_otel-collector:4317");

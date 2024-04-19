@@ -1,7 +1,6 @@
-﻿using Akka.Actor;
+﻿using System.Diagnostics.Metrics;
+using Akka.Actor;
 using Akka.DependencyInjection;
-using Akka.Event;
-using Microsoft.AspNet.SignalR.Messaging;
 using shared.Models;
 
 namespace actorSystem;
@@ -19,6 +18,10 @@ public class LobbySupervisor : ReceiveActor
   public Dictionary<Guid, IActorRef> Lobbies { get; set; } = [];
   public IActorRef RaftActor { get; set; }
 
+
+
+  public static readonly Meter meter = new("LobbySupervisor");
+
   public LobbySupervisor(ILogger<LobbySupervisor> logger, IActorRef? raftActor = null)
   {
     Receive<CreateLobbyCommand>(CreateLobby);
@@ -30,6 +33,26 @@ public class LobbySupervisor : ReceiveActor
     this.logger = logger;
     ReceiveAsync<Terminated>(async (t) => await RehydrateLobby(t.ActorRef));
     RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+
+    meter.CreateObservableGauge<int>("LobbyCount", () => Lobbies.Count, "Number of lobbies");
+    meter.CreateObservableGauge<int>("JoiningLobbies", () => {
+      return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Joining);
+    }, "Number of Lobbies in the Joining State" );
+    meter.CreateObservableGauge<int>("PlayingLobbies", () => {
+      return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Playing);
+    }, "Number of Lobbies in the Playing State" );
+    meter.CreateObservableGauge<int>("GameOverLobbies", () => {
+      return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.GameOver);
+    }, "Number of Lobbies in the GameOver State" );
+    meter.CreateObservableGauge<int>("StoppedLobbies", () => {
+      return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Stopped);
+    }, "Number of Lobbies in the Stopped State" );
+    meter.CreateObservableGauge<int>("CountdownLobbies", () => {
+      return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Countdown);
+    }, "Number of Lobbies in the Countdown State" ); 
+    meter.CreateObservableGauge<int>("PlayerCount", () => {
+      return Lobbies.Values.Select(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.Players.Count).Sum();
+    }, "Number of Players in Lobbies" );
   }
 
   private void GetLobby(Guid lobbyId)

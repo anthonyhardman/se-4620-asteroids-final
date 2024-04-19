@@ -1,4 +1,5 @@
 using System.Data;
+using System.Diagnostics.Metrics;
 using System.Numerics;
 using System.Text.Json.Serialization;
 
@@ -27,7 +28,14 @@ public class PlayerShip
   public float CollisionCooldown { get; private set; } = 0f;
   public List<Bullet> Bullets { get; init; } = [];
   public float FireCooldown { get; private set; } = 0f;
-  private const float FireCooldownDuration = 500f;
+  public const float FireCooldownDuration = 500f;
+  public static int totalShotsFired = 0;
+  public static Meter meter = new("PlayerShip");
+  
+  static PlayerShip()
+  {
+    meter.CreateObservableGauge<int>("TotalShotsFired", () => totalShotsFired, "Total shots fired by all players");
+  }
 
   public PlayerShip(int maxX, int maxY)
   {
@@ -150,6 +158,7 @@ public class PlayerShip
       var bullet = new Bullet(Position, Direction);
       Bullets.Add(bullet);
       FireCooldown = FireCooldownDuration;
+      totalShotsFired++;
     }
   }
 }

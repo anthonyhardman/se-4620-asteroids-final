@@ -14,11 +14,11 @@ public record OperationFailed(string Reason);
 public class RaftActor : ReceiveActor
 {
   private readonly HttpClient _httpClient;
-  private readonly Dictionary<Guid, (string Value, int Version)> _lobbyCache = new();
-
-  public RaftActor(HttpClient httpClient)
+  private readonly ILogger<RaftActor> _logger;
+  public RaftActor(HttpClient httpClient, ILogger<RaftActor> logger)
   {
     _httpClient = httpClient;
+    _logger = logger;
 
     ReceiveAsync<StoreLobbyCommand>(HandleStoreLobbyCommand);
     ReceiveAsync<GetLobbyCommand>(HandleGetLobbyCommand);
@@ -32,54 +32,44 @@ public class RaftActor : ReceiveActor
 
     try
     {
-      if (!_lobbyCache.TryGetValue(command.Info.Id, out var cachedData))
-      {
-        cachedData = await FetchCurrentData(key);
-        _lobbyCache[command.Info.Id] = cachedData;
-      }
-
+      var data = await FetchCurrentData(key);
       var casRequest = new CompareAndSwapRequest
       {
         Key = key,
         NewValue = newValue,
-        ExpectedValue = cachedData.Value ?? "null",
-        Version = cachedData.Version
+        ExpectedValue = data.Value ?? "null",
+        Version = data.Version
       };
 
       var casResult = await TryCompareAndSwap(casUri, casRequest);
-      if (!casResult.Success)
-      {
-        cachedData = await FetchCurrentData(key);
-        _lobbyCache[command.Info.Id] = cachedData;
-
-        casRequest.ExpectedValue = cachedData.Value;
-        casRequest.Version = cachedData.Version;
-        casResult = await TryCompareAndSwap(casUri, casRequest);
-      }
 
       if (casResult.Success)
-        Log.Info($"Store operation completed for Lobby {command.Info.Id}, Version: {casResult.Version}");
+      {
+        _logger.LogInformation($"Store operation completed for Lobby {command.Info.Id}, Version: {casResult.Version}");
+      }
       else
-        Log.Error($"Store operation failed for Lobby {command.Info.Id}, Reason: {casResult.Value}");
+      {
+        _logger.LogError($"Store operation failed for Lobby {command.Info.Id}, Reason: {casResult.Value}");
+      }
     }
     catch (Exception e)
     {
-      Log.Error($"Error communicating with storage API: {e.Message}");
+      _logger.LogError(e, "Error communicating with storage API");
     }
   }
 
-  private async Task<(string Value, int Version)> FetchCurrentData(string key)
+  private async Task<(string? Value, int Version)> FetchCurrentData(string key)
   {
     try
     {
       var getUri = $"/api/Storage/strong?key={Uri.EscapeDataString(key)}";
       var response = await _httpClient.GetFromJsonAsync<StrongGetResponse>(getUri);
 
-      return (response.Value, response.Version);
+      return (response?.Value, response?.Version ?? -1);
     }
     catch
     {
-      Log.Error("Failed to retrieve current state.");
+      _logger.LogError("Failed to retrieve current state.");
       return (null, -1);
     }
   }
@@ -90,35 +80,29 @@ public class RaftActor : ReceiveActor
     if (response.IsSuccessStatusCode)
     {
       var result = await JsonSerializer.DeserializeAsync<CompareAndSwapResponse>(await response.Content.ReadAsStreamAsync());
-      if (result.Success == false)
+      if (result is null || result.Success == false)
         return new CompareAndSwapResponse { Success = false, Value = $"CAS failed: Version or Expected value must not have matched" };
       return result;
     }
     return new CompareAndSwapResponse { Success = false, Value = $"HTTP error: {response.StatusCode}" };
   }
 
-  private async Task HandleGetLobbyCommand(GetLobbyCommand command)
+  public async Task HandleGetLobbyCommand(GetLobbyCommand command)
   {
     var key = command.LobbyId.ToString();
-
-    if (!_lobbyCache.TryGetValue(command.LobbyId, out var cachedData) || cachedData.Value == null)
+    var data = await FetchCurrentData(key);
+    if (data.Value == null)
     {
-      cachedData = await FetchCurrentData(key);
-      _lobbyCache[command.LobbyId] = cachedData;
-    }
-
-    if (cachedData.Value == null)
-    {
+      _logger.LogError("Raft Actor: Lobby not found");
       Sender.Tell(new OperationFailed("Lobby not found."));
       return;
     }
 
-    Sender.Tell(JsonSerializer.Deserialize<LobbyInfo>(cachedData.Value));
+    Sender.Tell(JsonSerializer.Deserialize<LobbyInfo>(data.Value));
   }
-  protected ILoggingAdapter Log { get; } = Context.GetLogger();
 
-  public static Props Props(HttpClient httpClient)
+  public static Props Props(HttpClient httpClient, ILogger<RaftActor> logger)
   {
-    return Akka.Actor.Props.Create<RaftActor>();
+    return Akka.Actor.Props.Create<RaftActor>(() => new RaftActor(httpClient, logger));
   }
 }

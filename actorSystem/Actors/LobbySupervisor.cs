@@ -1,7 +1,6 @@
-﻿using Akka.Actor;
+﻿using System.Diagnostics.Metrics;
+using Akka.Actor;
 using Akka.DependencyInjection;
-using Akka.Event;
-using Microsoft.AspNet.SignalR.Messaging;
 using shared.Models;
 
 namespace actorSystem;
@@ -14,10 +13,16 @@ public record UpdatePlayerInputStateCommand(string Username, Guid LobbyId, Input
 
 public class LobbySupervisor : ReceiveActor
 {
-  public Dictionary<Guid, IActorRef> Lobbies { get; set; } = new Dictionary<Guid, IActorRef>();
+  private readonly ILogger<LobbySupervisor> logger;
+
+  public Dictionary<Guid, IActorRef> Lobbies { get; set; } = [];
   public IActorRef RaftActor { get; set; }
 
-  public LobbySupervisor()
+
+
+  public static readonly Meter meter = new("LobbySupervisor");
+
+  public LobbySupervisor(ILogger<LobbySupervisor> logger, IActorRef? raftActor = null)
   {
     Receive<CreateLobbyCommand>(CreateLobby);
     Receive<JoinLobbyCommand>(JoinLobby);
@@ -25,7 +30,29 @@ public class LobbySupervisor : ReceiveActor
     Receive<StartGameCommand>(StartGame);
     Receive<Guid>(GetLobby);
     Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
-    RaftActor = Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;  
+    this.logger = logger;
+    ReceiveAsync<Terminated>(async (t) => await RehydrateLobby(t.ActorRef));
+    RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+
+    meter.CreateObservableGauge<int>("LobbyCount", () => Lobbies.Count, "Number of lobbies");
+    meter.CreateObservableGauge<int>("JoiningLobbies", () => {
+      return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Joining);
+    }, "Number of Lobbies in the Joining State" );
+    meter.CreateObservableGauge<int>("PlayingLobbies", () => {
+      return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Playing);
+    }, "Number of Lobbies in the Playing State" );
+    meter.CreateObservableGauge<int>("GameOverLobbies", () => {
+      return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.GameOver);
+    }, "Number of Lobbies in the GameOver State" );
+    meter.CreateObservableGauge<int>("StoppedLobbies", () => {
+      return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Stopped);
+    }, "Number of Lobbies in the Stopped State" );
+    meter.CreateObservableGauge<int>("CountdownLobbies", () => {
+      return Lobbies.Values.Count(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.State == LobbyState.Countdown);
+    }, "Number of Lobbies in the Countdown State" ); 
+    meter.CreateObservableGauge<int>("PlayerCount", () => {
+      return Lobbies.Values.Select(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.Players.Count).Sum();
+    }, "Number of Players in Lobbies" );
   }
 
   private void GetLobby(Guid lobbyId)
@@ -36,7 +63,8 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
-      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Lobby {lobbyId} not found.")));
+      logger.LogError($"Lobby Supervisor: Failed to get lobby. Lobby {lobbyId} not found.");
+      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Failed to get lobby. Lobby {lobbyId} not found.")));
     }
   }
 
@@ -52,6 +80,7 @@ public class LobbySupervisor : ReceiveActor
     var lobbies = (await Task.WhenAll(lobbiesTasks)).Where(lobby => lobby.State != LobbyState.GameOver).ToList();
     var lobbyList = new LobbyList();
     lobbyList.AddRange(lobbies);
+    logger.LogInformation("Lobby Supervisor: Got lobbies");
     Sender.Tell(lobbyList);
   }
 
@@ -63,7 +92,8 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
-      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Lobby {command.LobbyId} not found.")));
+      logger.LogError($"Lobby Supervisor: Failed to join. Lobby {command.LobbyId} not found.");
+      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Failed to join. Lobby {command.LobbyId} not found.")));
     }
   }
 
@@ -72,12 +102,24 @@ public class LobbySupervisor : ReceiveActor
   {
     Log.Info($"Creating lobby for {command.Username}");
     var lobbyInfo = new LobbyInfo(command.Username);
-    var props = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo);
+    var props = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo, RaftActor);
     var lobbyActor = Context.ActorOf(props, $"lobby_{lobbyInfo.Id}");
+    Context.Watch(lobbyActor);
     Lobbies.Add(lobbyInfo.Id, lobbyActor);
     Sender.Tell(new LobbyCreated(lobbyInfo, lobbyActor.Path.ToString()));
-    Log.Info($"Lobby created: {lobbyActor.Path}");
+    logger.LogInformation($"Lobby Supervisor: Lobby created: {lobbyActor.Path}");
   }
+
+  private async Task RehydrateLobby(IActorRef oldLobby)
+  {
+    var lobby = Lobbies.FirstOrDefault(x => x.Value == oldLobby);
+    var lobbyInfo = (LobbyInfo)await RaftActor.Ask(new GetLobbyCommand(lobby.Key));
+    var lobbyProps = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo, RaftActor);
+    var newLobbyActor = Context.ActorOf(lobbyProps, $"lobby_{lobbyInfo.Id}");
+    Context.Watch(newLobbyActor);
+    Lobbies[lobbyInfo.Id] = newLobbyActor;
+  }
+
 
   private void StartGame(StartGameCommand command)
   {
@@ -87,6 +129,7 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
+      logger.LogError($"Lobby Supervisor: Unable to start game. Lobby {command.LobbyId} not found.");
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to start game. Lobby {command.LobbyId} not found.")));
     }
   }
@@ -99,15 +142,13 @@ public class LobbySupervisor : ReceiveActor
     }
     else
     {
+      logger.LogError($"Lobby Supervisor: Unable to update player input state. Lobby {command.LobbyId} not found.");
       Sender.Tell(new Status.Failure(new KeyNotFoundException($"Unable to update player input state. Lobby {command.LobbyId} not found.")));
     }
   }
 
-
-  protected ILoggingAdapter Log { get; } = Context.GetLogger();
-
-  public static Props Props()
+  public static Props Props(ILogger<LobbySupervisor> logger, IActorRef? raftActor = null)
   {
-    return Akka.Actor.Props.Create<LobbySupervisor>();
+    return Akka.Actor.Props.Create(() => new LobbySupervisor(logger, raftActor));
   }
 }

@@ -52,6 +52,7 @@ public class PlayerShip
   }
 
   [JsonConstructor]
+  [Newtonsoft.Json.JsonConstructor]
   public PlayerShip(Vector2 position, Vector2 velocity, Vector2 direction, List<Bullet> bullets, float health, string color, int maxX, int maxY, int points = 0)
   {
     Position = position;

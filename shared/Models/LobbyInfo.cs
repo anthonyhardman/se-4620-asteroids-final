@@ -20,6 +20,8 @@ public class LobbyInfo
   public int PlayerCount => Players.Count;
   public int MaxPlayers { get; }
   public Dictionary<string, PlayerShip> Players { get; init; } = [];
+  [JsonIgnore]
+  [Newtonsoft.Json.JsonIgnore]
   public IEnumerable<PlayerShip> PlayersThatArentDead => Players.Where(player => player.Value.Health > 0).Select(player => player.Value);
   public List<Asteroid> Asteroids { get; init; } = [];
   public LobbyState State { get; private set; }
@@ -32,6 +34,7 @@ public class LobbyInfo
   private readonly SpatialHash spatialHash = new(200);
 
   [JsonConstructor]
+  [Newtonsoft.Json.JsonConstructor]
   public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime, List<Asteroid> asteroids)
   {
     Id = id;

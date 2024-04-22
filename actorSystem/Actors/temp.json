@@ -1,0 +1,227 @@
+[
+  {
+    "Id": "68d33ded-f46f-4b84-958e-e5e55105f533",
+    "CreatedBy": "anthony",
+    "PlayerCount": 1,
+    "MaxPlayers": 5,
+    "Players": {
+      "anthony": {
+        "Position": { "x": -934, "y": -351 },
+        "Velocity": { "x": 0, "y": 0 },
+        "Direction": { "x": 0, "y": -1 },
+        "InputState": null,
+        "Health": 100,
+        "MaxHealth": 100,
+        "Color": "orange",
+        "VelocityCap": 0.2,
+        "MaxX": 1200,
+        "MaxY": 900,
+        "Points": 0,
+        "CollisionCooldown": 0,
+        "Bullets": [],
+        "FireCooldown": 0
+      }
+    },
+    "PlayersThatArentDead": [
+      {
+        "Position": { "x": -934, "y": -351 },
+        "Velocity": { "x": 0, "y": 0 },
+        "Direction": { "x": 0, "y": -1 },
+        "InputState": null,
+        "Health": 100,
+        "MaxHealth": 100,
+        "Color": "orange",
+        "VelocityCap": 0.2,
+        "MaxX": 1200,
+        "MaxY": 900,
+        "Points": 0,
+        "CollisionCooldown": 0,
+        "Bullets": [],
+        "FireCooldown": 0
+      }
+    ],
+    "Asteroids": [],
+    "State": 0,
+    "CountdownTime": 0
+  },
+  {
+    "Id": "aa426e5e-91d8-4421-8be1-320c674149bf",
+    "CreatedBy": "anthony",
+    "PlayerCount": 1,
+    "MaxPlayers": 5,
+    "Players": {
+      "anthony": {
+        "Position": { "x": 851, "y": -593 },
+        "Velocity": { "x": 0, "y": 0 },
+        "Direction": { "x": 0, "y": -1 },
+        "InputState": null,
+        "Health": 100,
+        "MaxHealth": 100,
+        "Color": "green",
+        "VelocityCap": 0.2,
+        "MaxX": 1200,
+        "MaxY": 900,
+        "Points": 0,
+        "CollisionCooldown": 0,
+        "Bullets": [],
+        "FireCooldown": 0
+      }
+    },
+    "PlayersThatArentDead": [
+      {
+        "Position": { "x": 851, "y": -593 },
+        "Velocity": { "x": 0, "y": 0 },
+        "Direction": { "x": 0, "y": -1 },
+        "InputState": null,
+        "Health": 100,
+        "MaxHealth": 100,
+        "Color": "green",
+        "VelocityCap": 0.2,
+        "MaxX": 1200,
+        "MaxY": 900,
+        "Points": 0,
+        "CollisionCooldown": 0,
+        "Bullets": [],
+        "FireCooldown": 0
+      }
+    ],
+    "Asteroids": [],
+    "State": 0,
+    "CountdownTime": 0
+  },
+  {
+    "Id": "3560b10f-1dc5-47e3-a03b-308693ad80ca",
+    "CreatedBy": "anthony",
+    "PlayerCount": 1,
+    "MaxPlayers": 5,
+    "Players": {
+      "anthony": {
+        "Position": { "x": -52, "y": 869 },
+        "Velocity": { "x": 0, "y": 0 },
+        "Direction": { "x": 0, "y": -1 },
+        "InputState": null,
+        "Health": 100,
+        "MaxHealth": 100,
+        "Color": "orange",
+        "VelocityCap": 0.2,
+        "MaxX": 1200,
+        "MaxY": 900,
+        "Points": 0,
+        "CollisionCooldown": 0,
+        "Bullets": [],
+        "FireCooldown": 0
+      }
+    },
+    "PlayersThatArentDead": [
+      {
+        "Position": { "x": -52, "y": 869 },
+        "Velocity": { "x": 0, "y": 0 },
+        "Direction": { "x": 0, "y": -1 },
+        "InputState": null,
+        "Health": 100,
+        "MaxHealth": 100,
+        "Color": "orange",
+        "VelocityCap": 0.2,
+        "MaxX": 1200,
+        "MaxY": 900,
+        "Points": 0,
+        "CollisionCooldown": 0,
+        "Bullets": [],
+        "FireCooldown": 0
+      }
+    ],
+    "Asteroids": [],
+    "State": 0,
+    "CountdownTime": 0
+  },
+  {
+    "Id": "48b5cda9-ac02-4bd9-9ba8-3e2e66bd2df4",
+    "CreatedBy": "anthony",
+    "PlayerCount": 1,
+    "MaxPlayers": 5,
+    "Players": {
+      "anthony": {
+        "Position": { "x": -28, "y": 349 },
+        "Velocity": { "x": 0, "y": 0 },
+        "Direction": { "x": 0, "y": -1 },
+        "InputState": null,
+        "Health": 100,
+        "MaxHealth": 100,
+        "Color": "yellow",
+        "VelocityCap": 0.2,
+        "MaxX": 1200,
+        "MaxY": 900,
+        "Points": 0,
+        "CollisionCooldown": 0,
+        "Bullets": [],
+        "FireCooldown": 0
+      }
+    },
+    "PlayersThatArentDead": [
+      {
+        "Position": { "x": -28, "y": 349 },
+        "Velocity": { "x": 0, "y": 0 },
+        "Direction": { "x": 0, "y": -1 },
+        "InputState": null,
+        "Health": 100,
+        "MaxHealth": 100,
+        "Color": "yellow",
+        "VelocityCap": 0.2,
+        "MaxX": 1200,
+        "MaxY": 900,
+        "Points": 0,
+        "CollisionCooldown": 0,
+        "Bullets": [],
+        "FireCooldown": 0
+      }
+    ],
+    "Asteroids": [],
+    "State": 0,
+    "CountdownTime": 0
+  },
+  {
+    "Id": "5d56692d-e451-4e95-abc8-05407281a441",
+    "CreatedBy": "anthony",
+    "PlayerCount": 1,
+    "MaxPlayers": 5,
+    "Players": {
+      "anthony": {
+        "Position": { "x": 539, "y": 302 },
+        "Velocity": { "x": 0, "y": 0 },
+        "Direction": { "x": 0, "y": -1 },
+        "InputState": null,
+        "Health": 100,
+        "MaxHealth": 100,
+        "Color": "blue",
+        "VelocityCap": 0.2,
+        "MaxX": 1200,
+        "MaxY": 900,
+        "Points": 0,
+        "CollisionCooldown": 0,
+        "Bullets": [],
+        "FireCooldown": 0
+      }
+    },
+    "PlayersThatArentDead": [
+      {
+        "Position": { "x": 539, "y": 302 },
+        "Velocity": { "x": 0, "y": 0 },
+        "Direction": { "x": 0, "y": -1 },
+        "InputState": null,
+        "Health": 100,
+        "MaxHealth": 100,
+        "Color": "blue",
+        "VelocityCap": 0.2,
+        "MaxX": 1200,
+        "MaxY": 900,
+        "Points": 0,
+        "CollisionCooldown": 0,
+        "Bullets": [],
+        "FireCooldown": 0
+      }
+    ],
+    "Asteroids": [],
+    "State": 0,
+    "CountdownTime": 0
+  }
+]

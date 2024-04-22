@@ -150,7 +150,7 @@ public class LobbyActor : ReceiveActor
 
     if (DateTime.Now - LastPersisted > TimeSpan.FromSeconds(3))
     {
-      // RaftActor.Tell(new StoreLobbyCommand(Info));
+      RaftActor.Tell(new StoreLobbyCommand(Info));
       LastPersisted = DateTime.Now;
     }
   }

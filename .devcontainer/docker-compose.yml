@@ -76,7 +76,11 @@ services:
             }
           }
           cluster {
-            seed-nodes = ["akka.tcp://asteroid-system@actor-system-1:2551"]
+            seed-nodes = [
+              "akka.tcp://asteroid-system@actor-system-1:2551"
+              "akka.tcp://asteroid-system@actor-system-2:2551"
+              "akka.tcp://asteroid-system@actor-system-3:2551"
+            ]
             roles = ["lobby"]
           }
         }
@@ -112,7 +116,11 @@ services:
             }
           }
           cluster {
-            seed-nodes = ["akka.tcp://asteroid-system@actor-system-1:2551"]
+            seed-nodes = [
+              "akka.tcp://asteroid-system@actor-system-1:2551"
+              "akka.tcp://asteroid-system@actor-system-2:2551"
+              "akka.tcp://asteroid-system@actor-system-3:2551"
+            ]
             roles = ["lobby"]
           }
         }
@@ -148,7 +156,11 @@ services:
             }
           }
           cluster {
-            seed-nodes = ["akka.tcp://asteroid-system@actor-system-1:2551"]
+            seed-nodes = [
+              "akka.tcp://asteroid-system@actor-system-1:2551"
+              "akka.tcp://asteroid-system@actor-system-2:2551"
+              "akka.tcp://asteroid-system@actor-system-3:2551"
+            ]
             roles = ["lobby"]
           }
         }
@@ -175,7 +187,6 @@ services:
       - NODE_ID=asteroids_node_1
       - PEER_ADDRESSES=http://raft-node-2:8080,http://raft-node-3:8080
       - PEER_IDS=asteroids_node_2,asteroids_node_3
-
 
   raft-node-2:
     container_name: asteroids_node_2

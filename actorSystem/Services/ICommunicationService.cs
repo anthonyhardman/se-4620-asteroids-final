@@ -11,4 +11,5 @@ public interface ICommunicationService
   Task<LobbyInfo> GetLobbyInfo(Guid lobbyId);
   Task SendLobbyInfo(LobbyInfo info);
   void KillLobby(Guid lobbyId);
+  void UpdatePlayerColor(UpdateLobbiesPlayerColorCommand command);
 }

@@ -64,6 +64,14 @@ public class LobbyInfo
     Players.Add(username, new PlayerShip(maxX, maxY));
   }
 
+  public void UpdatePlayerColor(string username, string color)
+  {
+    if (Players.TryGetValue(username, out PlayerShip? player))
+    {
+      player?.UpdateColor(color);
+    }
+  }
+
   public void UpdateBullets(float timeStep)
   {
     foreach (var player in Players)

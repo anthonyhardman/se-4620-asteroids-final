@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { PlayerList } from "./PlayerList";
-import { useGetLobbyInfoQuery, useKillLobbyMutation, useStartGameMutation } from "./lobbyHooks";
+import { useGetLobbyInfoQuery, useKillLobbyMutation, useStartGameMutation, useUpdatePlayerColorMutation } from "./lobbyHooks";
 import { Spinner } from "../../components/Spinner";
 import { InputState, LobbyState, RotationDirection } from "../../models/Lobby";
 import { SignalRContext } from "../../signalR/SignalRContext";
@@ -14,6 +14,7 @@ export const Lobby = () => {
   const lobbyId = useParams<{ id: string }>().id;
   const startGameMutation = useStartGameMutation();
   const killLobbyMutation = useKillLobbyMutation();
+  const updatePlayerColorMutation = useUpdatePlayerColorMutation(lobbyId);
   const lobbyInfoQuery = useGetLobbyInfoQuery(lobbyId);
   const lobbyInfo = lobbyInfoQuery.data;
   const [keysPressed, setKeysPressed] = useState([] as string[])
@@ -22,6 +23,7 @@ export const Lobby = () => {
     rotationDirection: RotationDirection.None,
     shootPressed: false,
   });
+  const [selectedColor, setSelectedColor] = useState("");
 
   useEffect(() => {
     if (lobbyId && signalRContext?.isConnected) {
@@ -93,6 +95,33 @@ export const Lobby = () => {
     };
   }, [lobbyId, signalRContext, keysPressed, inputState]);
 
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    if (lobbyInfo?.state === LobbyState.Joining) {
+      updatePlayerColorMutation.mutate(color);
+    }
+  };
+
+  const renderColorOptions = () => {
+    const colors = ["blue", "red", "green", "yellow", "purple", "orange"];
+    return (
+      <div>
+        <h3 className="text-center">Select your color:</h3>
+        {colors.map((color) => (
+          <button
+            key={color}
+            className="me-1"
+            style={{ backgroundColor: color, color: 'white' }}
+            onClick={() => handleColorChange(color)}
+            disabled={selectedColor === color}
+          >
+            {color}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   if (lobbyInfoQuery.isLoading) return <Spinner />;
   if (lobbyInfoQuery.isError)
     return <h3 className="text-center">Error getting lobby</h3>;
@@ -113,6 +142,7 @@ export const Lobby = () => {
             The game has not started yet. Customize your ship before the game
             begins!
           </div>
+          {renderColorOptions()}
           {user?.preferred_username === lobbyInfo.createdBy && (
             <div className="mt-2">
               <button className="btn btn-success" onClick={startGame}>

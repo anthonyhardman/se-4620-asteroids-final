@@ -48,3 +48,18 @@ export const useKillLobbyMutation = () => {
     }
   });
 };
+
+export const useUpdatePlayerColorMutation = (lobbyId?: string) => {
+  const user = useUser();
+  return useMutation({
+    mutationFn: async (color: string) => {
+      const url = `/api/lobby/color`;
+      const response = await axios.put(url, {
+        username: user?.preferred_username,
+        lobbyId,
+        color
+      })
+      return response.data;
+    }
+  })
+}

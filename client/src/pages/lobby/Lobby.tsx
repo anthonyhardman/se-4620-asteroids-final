@@ -24,6 +24,7 @@ export const Lobby = () => {
     shootPressed: false,
   });
   const [selectedColor, setSelectedColor] = useState("");
+  const [maxAsteroids, setMaxAsteroids] = useState(30)
 
   useEffect(() => {
     if (lobbyId && signalRContext?.isConnected) {
@@ -130,7 +131,7 @@ export const Lobby = () => {
 
   const startGame = () => {
     if (!lobbyId) return;
-    startGameMutation.mutate(lobbyId);
+    startGameMutation.mutate({ lobbyId, maxAsteroids });
   };
 
   const renderLobbyState = () => {
@@ -144,11 +145,24 @@ export const Lobby = () => {
           </div>
           {renderColorOptions()}
           {user?.preferred_username === lobbyInfo.createdBy && (
-            <div className="mt-2">
-              <button className="btn btn-success" onClick={startGame}>
-                Start Game
-              </button>
-            </div>
+            <>
+              <div>
+                <label className="form-label">Maximum Asteroids:
+                  <input
+                    id="maxAsteroidsInput"
+                    type="number"
+                    className="form-control"
+                    value={maxAsteroids}
+                    onChange={(e) => setMaxAsteroids(Number(e.target.value))}
+                  />
+                </label>
+              </div>
+              <div className="mt-2">
+                <button className="btn btn-success" onClick={startGame}>
+                  Start Game
+                </button>
+              </div>
+            </>
           )}
         </div>
       );

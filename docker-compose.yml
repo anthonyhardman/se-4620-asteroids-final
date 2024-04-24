@@ -39,6 +39,7 @@ services:
     restart: unless-stopped
     depends_on:
       - asteroids_signalr
+    
 
   asteroids_actor_system_1:
     container_name: asteroids_actor_system_1
@@ -48,7 +49,30 @@ services:
     restart: unless-stopped
     depends_on:
       - asteroids_signalr
-
+    environment:
+      SIGNALR_URL: http://asteroids_signalr:8081/ws
+      CLUSTER_CONFIG: |
+        akka {
+          actor {
+            provider = cluster
+          }
+          remote {
+            dot-netty.tcp {
+              hostname = "actor-system-1"
+              port = 2551
+            }
+          }
+          cluster {
+            seed-nodes = [
+              "akka.tcp://asteroid-system@actor-system-1:2551"
+              "akka.tcp://asteroid-system@actor-system-2:2551"
+              "akka.tcp://asteroid-system@actor-system-3:2551"
+            ]
+            roles = ["lobby"]
+          }
+        }
+      RAFT_GATEWAY_URL: http://raft-gateway:8080
+    
   asteroids_actor_system_2:
     container_name: asteroids_actor_system_2
     build:
@@ -57,6 +81,61 @@ services:
     restart: unless-stopped
     depends_on:
       - asteroids_signalr
+    environment:
+      SIGNALR_URL: http://asteroids_signalr:8081/ws
+      CLUSTER_CONFIG: |
+        akka {
+          actor {
+            provider = cluster
+          }
+          remote {
+            dot-netty.tcp {
+              hostname = "actor-system-2"
+              port = 2551
+            }
+          }
+          cluster {
+            seed-nodes = [
+              "akka.tcp://asteroid-system@actor-system-1:2551"
+              "akka.tcp://asteroid-system@actor-system-2:2551"
+              "akka.tcp://asteroid-system@actor-system-3:2551"
+            ]
+            roles = ["lobby"]
+          }
+        }
+      RAFT_GATEWAY_URL: http://raft-gateway:8080
+
+  asteroids_actor_system_3:
+    container_name: asteroids_actor_system_3
+    build:
+      context: .
+      dockerfile: ./actorSystem/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - asteroids_signalr
+    environment:
+      SIGNALR_URL: http://asteroids_signalr:8081/ws
+      CLUSTER_CONFIG: |
+        akka {
+          actor {
+            provider = cluster
+          }
+          remote {
+            dot-netty.tcp {
+              hostname = "actor-system-2"
+              port = 2551
+            }
+          }
+          cluster {
+            seed-nodes = [
+              "akka.tcp://asteroid-system@actor-system-1:2551"
+              "akka.tcp://asteroid-system@actor-system-2:2551"
+              "akka.tcp://asteroid-system@actor-system-3:2551"
+            ]
+            roles = ["lobby"]
+          }
+        }
+      RAFT_GATEWAY_URL: http://raft-gateway:8080
 
   asteroids_signalr:
     container_name: asteroids_signalr
@@ -72,11 +151,14 @@ services:
     ports:
       - 6001:3000
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./ops/grafana-datasource.yml:/etc/grafana/provisioning/datasources/grafana-datasource.yml
+      - ./ops/grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/grafana-dashboards.yml
+      - ../dashboards:/var/lib/grafana/dashboards
     restart: unless-stopped
 
   asteroids_prometheus:
@@ -87,8 +169,6 @@ services:
     volumes:
       - ./ops/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
-    # depends_on:
-    #   - asteroids_actor_system
     restart: unless-stopped
 
   asteroids_loki:
@@ -119,6 +199,42 @@ services:
       - 4319:4318 # OTLP http receiver
       - 55678:55679 # zpages extension
     restart: unless-stopped
+
+  raft-gateway:
+    container_name: asteroids_raft_gateway
+    build:
+      context: ./raft
+      dockerfile: Raft.GateWay/Dockerfile
+    environment:
+      - NODE_ADDRESSES=http://raft-node-1:8080,http://raft-node-2:8080,http://raft-node-3:8080
+      - NODE_IDS=asteroids_node_1,asteroids_node_2,asteroids_node_3
+
+  raft-node-1:
+    container_name: asteroids_node_1
+    image: raft-node:latest
+    build:
+      context: ./raft
+      dockerfile: Raft.Node/Dockerfile
+    environment:
+      - NODE_ID=asteroids_node_1
+      - PEER_ADDRESSES=http://raft-node-2:8080,http://raft-node-3:8080
+      - PEER_IDS=asteroids_node_2,asteroids_node_3
+
+  raft-node-2:
+    container_name: asteroids_node_2
+    image: raft-node:latest
+    environment:
+      - NODE_ID=asteroids_node_2
+      - PEER_ADDRESSES=http://raft-node-1:8080,http://raft-node-3:8080
+      - PEER_IDS=asteroids_node_1,asteroids_node_3
+
+  raft-node-3:
+    container_name: asteroids_node_3
+    image: raft-node:latest
+    environment:
+      - NODE_ID=asteroids_node_3
+      - PEER_ADDRESSES=http://raft-node-1:8080,http://raft-node-2:8080
+      - PEER_IDS=asteroids_node_1,asteroids_node_2
 
 volumes:
   grafana_data:

@@ -96,7 +96,16 @@ public class LobbyInfoTests
     var lobby = SetupLobby();
     Assert.Equal(LobbyState.Joining, lobby.State);
     lobby.StartCountdown();
-    Assert.Throws<InvalidOperationException>(lobby.StartCountdown);
+    Assert.Throws<InvalidOperationException>(() => lobby.StartCountdown());
+  }
+
+  [Fact]
+  public void SetMaxAsteroids()
+  {
+    var lobby = SetupLobby();
+    Assert.Equal(LobbyState.Joining, lobby.State);
+    lobby.StartCountdown(50);
+    Assert.Equal(50, lobby.MaxAsteroids);
   }
 
   [Fact]

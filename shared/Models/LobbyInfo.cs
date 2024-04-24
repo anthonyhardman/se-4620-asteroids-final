@@ -145,7 +145,7 @@ public class LobbyInfo
     Asteroids.Clear();
   }
 
-  public void StartCountdown(int maxAsteroids)
+  public void StartCountdown(int maxAsteroids = 30)
   {
     if (State == LobbyState.Joining)
     {

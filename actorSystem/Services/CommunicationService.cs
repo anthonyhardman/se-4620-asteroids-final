@@ -115,4 +115,8 @@ public class CommunicationService : ICommunicationService, IHostedService
   {
     _akkaService.KillLobby(lobbyId);
   }
+  public void UpdatePlayerColor(UpdateLobbiesPlayerColorCommand command)
+  {
+    _akkaService.UpdatePlayerColor(command);
+  }
 }

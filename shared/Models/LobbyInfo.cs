@@ -32,10 +32,11 @@ public class LobbyInfo
   private float elapsedTime = 0.0f;
   private const int screenAdjustment = 1000;
   private readonly SpatialHash spatialHash = new(200);
+  public int MaxAsteroids { get; private set; } = 30;
 
   [JsonConstructor]
   [Newtonsoft.Json.JsonConstructor]
-  public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime, List<Asteroid> asteroids)
+  public LobbyInfo(Guid id, string createdBy, int maxPlayers, Dictionary<string, PlayerShip> players, LobbyState state, int countdownTime, List<Asteroid> asteroids, int maxAsteroids)
   {
     Id = id;
     CreatedBy = createdBy;
@@ -44,6 +45,7 @@ public class LobbyInfo
     State = state;
     CountdownTime = countdownTime;
     Asteroids = asteroids;
+    MaxAsteroids = maxAsteroids;
   }
 
   public LobbyInfo(string createdBy, int maxPlayers = 5)
@@ -62,6 +64,14 @@ public class LobbyInfo
     }
 
     Players.Add(username, new PlayerShip(maxX, maxY));
+  }
+
+  public void UpdatePlayerColor(string username, string color)
+  {
+    if (Players.TryGetValue(username, out PlayerShip? player))
+    {
+      player?.UpdateColor(color);
+    }
   }
 
   public void UpdateBullets(float timeStep)
@@ -135,11 +145,12 @@ public class LobbyInfo
     Asteroids.Clear();
   }
 
-  public void StartCountdown()
+  public void StartCountdown(int maxAsteroids)
   {
     if (State == LobbyState.Joining)
     {
       State = LobbyState.Countdown;
+      MaxAsteroids = maxAsteroids;
     }
     else
     {

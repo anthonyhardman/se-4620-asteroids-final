@@ -11,6 +11,7 @@ public record LobbyCreated(LobbyInfo Info, string ActorPath);
 public record GetLobbiesQuery();
 public record UpdatePlayerInputStateCommand(string Username, Guid LobbyId, InputState InputState);
 public record KillLobbyCommand(Guid LobbyId);
+public record UpdateLobbiesPlayerColorCommand(Guid LobbyId, string Username, string Color);
 
 public class LobbySupervisor : ReceiveActor
 {
@@ -33,6 +34,7 @@ public class LobbySupervisor : ReceiveActor
     Receive<Guid>(GetLobby);
     Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
     Receive<KillLobbyCommand>(KillLobby);
+    Receive<UpdateLobbiesPlayerColorCommand>(UpdateLobbiesPlayerColor);
     ReceiveAsync<Terminated>(async (t) => await RehydrateLobby(t.ActorRef));
     RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
 
@@ -64,6 +66,14 @@ public class LobbySupervisor : ReceiveActor
     {
       return Lobbies.Values.Select(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.Players.Count).Sum();
     }, "Number of Players in Lobbies");
+  }
+
+  public void UpdateLobbiesPlayerColor(UpdateLobbiesPlayerColorCommand command)
+  {
+    if (Lobbies.TryGetValue(command.LobbyId, out var lobby))
+    {
+      lobby.Forward(new UpdatePlayerColorCommand(command.Username, command.Color));
+    }
   }
 
   private void GetLobby(Guid lobbyId)

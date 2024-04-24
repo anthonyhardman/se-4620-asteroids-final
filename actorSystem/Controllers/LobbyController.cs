@@ -56,4 +56,10 @@ public class LobbyController : ControllerBase
   {
     _communicationService.KillLobby(lobbyId);
   }
+
+  [HttpPut("color")]
+  public void UpdatePlayerColor([FromBody] UpdateLobbiesPlayerColorCommand command)
+  {
+    _communicationService.UpdatePlayerColor(command);
+  }
 }

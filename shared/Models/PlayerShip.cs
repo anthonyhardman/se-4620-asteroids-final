@@ -31,7 +31,7 @@ public class PlayerShip
   public const float FireCooldownDuration = 500f;
   public static int totalShotsFired = 0;
   public static Meter meter = new("PlayerShip");
-  
+
   static PlayerShip()
   {
     meter.CreateObservableGauge<int>("TotalShotsFired", () => totalShotsFired, "Total shots fired by all players");
@@ -161,6 +161,11 @@ public class PlayerShip
       FireCooldown = FireCooldownDuration;
       totalShotsFired++;
     }
+  }
+
+  public void UpdateColor(string newColor)
+  {
+    Color = newColor;
   }
 }
 

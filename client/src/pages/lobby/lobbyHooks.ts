@@ -25,11 +25,12 @@ export const useGetLobbyInfoQuery = (id?: string) =>
 export const useStartGameMutation = () => {
   const user = useUser();
   return useMutation({
-    mutationFn: async (lobbyId: string) => {
+    mutationFn: async ({ lobbyId, maxAsteroids }: { lobbyId: string, maxAsteroids: number }) => {
       const url = "/api/lobby";
       const response = await axios.put(url, {
         username: user?.preferred_username,
         lobbyId,
+        maxAsteroids,
       });
       return response.data;
     },
@@ -48,3 +49,18 @@ export const useKillLobbyMutation = () => {
     }
   });
 };
+
+export const useUpdatePlayerColorMutation = (lobbyId?: string) => {
+  const user = useUser();
+  return useMutation({
+    mutationFn: async (color: string) => {
+      const url = `/api/lobby/color`;
+      const response = await axios.put(url, {
+        username: user?.preferred_username,
+        lobbyId,
+        color
+      })
+      return response.data;
+    }
+  })
+}

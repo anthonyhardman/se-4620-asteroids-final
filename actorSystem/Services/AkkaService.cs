@@ -88,7 +88,7 @@ public class AkkaService : IHostedService, IActorBridge
   public async Task<Guid> CreateLobby(string username)
   {
     logger.LogInformation("Creating lobby via Akka service.");
-    logger.LogInformation($"Lobby Supervisor: {_lobbySupervisor.Path}");
+    logger.LogInformation($"Lobby Supervisor: {_lobbySupervisor?.Path}");
     var result = await _lobbySupervisor.Ask<LobbyCreated>(new CreateLobbyCommand(username));
     return result.Info.Id;
   }
@@ -123,5 +123,8 @@ public class AkkaService : IHostedService, IActorBridge
   {
     _lobbySupervisor.Tell(new KillLobbyCommand(lobbyId));
   }
-
+  public void UpdatePlayerColor(UpdateLobbiesPlayerColorCommand command)
+  {
+    _lobbySupervisor.Tell(command);
+  }
 }

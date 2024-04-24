@@ -14,5 +14,5 @@ public interface IActorBridge
   public Task<LobbyInfo> GetLobbyInfo(Guid lobbyId);
   public void UpdatePlayerInputState(string username, Guid lobbyId, InputState inputState);
   void KillLobby(Guid lobbyId);
-
+  void UpdatePlayerColor(UpdateLobbiesPlayerColorCommand command);
 }

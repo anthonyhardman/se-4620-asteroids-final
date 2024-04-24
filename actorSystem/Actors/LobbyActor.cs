@@ -11,9 +11,10 @@ public record JoinLobbyCommand(string Username, Guid LobbyId);
 public record UserJoined(string Username);
 public record GetLobbyInfoQuery();
 public record Tick();
-public record StartGameCommand(string Username, Guid LobbyId);
+public record StartGameCommand(string Username, Guid LobbyId, int MaxAsteroids = 30);
 public record GameStartedCommand(DateTime StartedAt);
 public record PlayerInput(string Username, InputState InputState);
+public record UpdatePlayerColorCommand(string Username, string Color);
 
 public class LobbyActor : ReceiveActor
 {
@@ -56,7 +57,14 @@ public class LobbyActor : ReceiveActor
     Receive<Tick>(_ => UpdateGame());
     Receive<StartGameCommand>(StartGame);
     Receive<PlayerInput>(UpdatePlayerInput);
+    Receive<UpdatePlayerColorCommand>(UpdatePlayerColor);
     RaftActor = raftActor ?? Context.ActorSelection("/user/raft-actor").ResolveOne(TimeSpan.FromSeconds(3)).Result;
+  }
+
+  public void UpdatePlayerColor(UpdatePlayerColorCommand command)
+  {
+    Info.UpdatePlayerColor(command.Username, command.Color);
+    logger.LogInformation($"Updated player {command.Username} to color {command.Color}.");
   }
 
   public void JoinLobby(JoinLobbyCommand command)
@@ -89,9 +97,9 @@ public class LobbyActor : ReceiveActor
     {
       try
       {
-        logger.LogInformation($"Starting game {command.LobbyId}");
+        logger.LogInformation($"Starting game {command.LobbyId} with max asteroid count of {command.MaxAsteroids}");
         countdown = 10000;
-        Info.StartCountdown();
+        Info.StartCountdown(command.MaxAsteroids);
         _gameLoop = Context.System.Scheduler.ScheduleTellRepeatedlyCancelable(
           TimeSpan.FromMilliseconds(_timeStep),
           TimeSpan.FromMicroseconds(_timeStep),

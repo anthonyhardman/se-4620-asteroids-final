@@ -203,7 +203,7 @@ services:
   raft-gateway:
     container_name: asteroids_raft_gateway
     build:
-      context: ../raft
+      context: ./raft
       dockerfile: Raft.GateWay/Dockerfile
     environment:
       - NODE_ADDRESSES=http://raft-node-1:8080,http://raft-node-2:8080,http://raft-node-3:8080
@@ -213,7 +213,7 @@ services:
     container_name: asteroids_node_1
     image: raft-node:latest
     build:
-      context: ../raft
+      context: ./raft
       dockerfile: Raft.Node/Dockerfile
     environment:
       - NODE_ID=asteroids_node_1
@@ -223,9 +223,6 @@ services:
   raft-node-2:
     container_name: asteroids_node_2
     image: raft-node:latest
-    build:
-      context: ../raft
-      dockerfile: Raft.Node/Dockerfile
     environment:
       - NODE_ID=asteroids_node_2
       - PEER_ADDRESSES=http://raft-node-1:8080,http://raft-node-3:8080

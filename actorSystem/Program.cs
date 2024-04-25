@@ -27,6 +27,8 @@ builder.Services.AddHostedService<CommunicationService>(
 var raftGatewayUrl = Environment.GetEnvironmentVariable("RAFT_GATEWAY_URL") ?? "http://raft-gateway:8080";
 builder.Services.AddSingleton<HttpClient>(new HttpClient { BaseAddress = new Uri(raftGatewayUrl) });
 
+builder.Services.AddSingleton<IRaftService, RaftService>();
+
 var serviceName = "actorSystem";
 
 builder.Logging.AddOpenTelemetry(options =>

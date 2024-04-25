@@ -1,9 +1,8 @@
 ﻿using Akka.Actor;
 using shared.Models;
-using System.Text;
 using System.Text.Json;
 using Raft.Shared.Models;
-using Akka.Event;
+using Raft.Shared;
 
 namespace actorSystem;
 
@@ -13,11 +12,11 @@ public record OperationFailed(string Reason);
 
 public class RaftActor : ReceiveActor
 {
-  private readonly HttpClient _httpClient;
   private readonly ILogger<RaftActor> _logger;
-  public RaftActor(HttpClient httpClient, ILogger<RaftActor> logger)
+  private readonly IRaftService _raftService;
+  public RaftActor(IRaftService raftService, ILogger<RaftActor> logger)
   {
-    _httpClient = httpClient;
+    _raftService = raftService;
     _logger = logger;
 
     ReceiveAsync<StoreLobbyCommand>(HandleStoreLobbyCommand);
@@ -53,10 +52,9 @@ public class RaftActor : ReceiveActor
   {
     try
     {
-      var getUri = $"/api/Storage/strong?key={Uri.EscapeDataString(key)}";
-      var response = await _httpClient.GetFromJsonAsync<StrongGetResponse>(getUri);
+      var response = await _raftService.StrongGet(key);
 
-      return (response?.Value, response?.Version ?? -1);
+      return (response.value, response.version);
     }
     catch
     {
@@ -67,15 +65,8 @@ public class RaftActor : ReceiveActor
 
   private async Task<CompareAndSwapResponse> TryCompareAndSwap(string uri, CompareAndSwapRequest request)
   {
-    var response = await _httpClient.PostAsJsonAsync(uri, request);
-    if (response.IsSuccessStatusCode)
-    {
-      var result = await JsonSerializer.DeserializeAsync<CompareAndSwapResponse>(await response.Content.ReadAsStreamAsync());
-      if (result is null || result.Success == false)
-        return new CompareAndSwapResponse { Success = false, Value = $"CAS failed: Version or Expected value must not have matched" };
-      return result;
-    }
-    return new CompareAndSwapResponse { Success = false, Value = $"HTTP error: {response.StatusCode}" };
+    var response = await _raftService.CompareAndSwap(request.Key, request.NewValue, request.ExpectedValue, request.Version);
+    return response.ToRaft();
   }
 
   public async Task HandleGetLobbyCommand(GetLobbyCommand command)
@@ -92,8 +83,8 @@ public class RaftActor : ReceiveActor
     Sender.Tell(JsonSerializer.Deserialize<LobbyInfo>(data.Value));
   }
 
-  public static Props Props(HttpClient httpClient, ILogger<RaftActor> logger)
+  public static Props Props(IRaftService raftService, ILogger<RaftActor> logger)
   {
-    return Akka.Actor.Props.Create<RaftActor>(() => new RaftActor(httpClient, logger));
+    return Akka.Actor.Props.Create<RaftActor>(() => new RaftActor(raftService, logger));
   }
 }

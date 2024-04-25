@@ -46,7 +46,7 @@ public class Asteroid
     }
 
 
-    [JsonConstructor]
+    [JsonConstructor, Newtonsoft.Json.JsonConstructor]
     public Asteroid(Vector2 position, Vector2 velocity, Vector2 direction, float size, float health = 1)
     {
         Position = position;

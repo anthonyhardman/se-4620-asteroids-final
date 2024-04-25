@@ -50,7 +50,7 @@ services:
     depends_on:
       - asteroids_signalr
     environment:
-      SIGNALR_URL: http://asteroids_signalr:8081/ws
+      SIGNALR_URL: http://asteroids_signalr:8080/ws
       CLUSTER_CONFIG: |
         akka {
           actor {
@@ -58,15 +58,15 @@ services:
           }
           remote {
             dot-netty.tcp {
-              hostname = "actor-system-1"
+              hostname = "asteroids_actor_system_1"
               port = 2551
             }
           }
           cluster {
             seed-nodes = [
-              "akka.tcp://asteroid-system@actor-system-1:2551"
-              "akka.tcp://asteroid-system@actor-system-2:2551"
-              "akka.tcp://asteroid-system@actor-system-3:2551"
+              "akka.tcp://asteroid-system@asteroids_actor_system_1:2551"
+              "akka.tcp://asteroid-system@asteroids_actor_system_2:2551"
+              "akka.tcp://asteroid-system@asteroids_actor_system_3:2551"
             ]
             roles = ["lobby"]
           }
@@ -82,7 +82,7 @@ services:
     depends_on:
       - asteroids_signalr
     environment:
-      SIGNALR_URL: http://asteroids_signalr:8081/ws
+      SIGNALR_URL: http://asteroids_signalr:8080/ws
       CLUSTER_CONFIG: |
         akka {
           actor {
@@ -90,15 +90,15 @@ services:
           }
           remote {
             dot-netty.tcp {
-              hostname = "actor-system-2"
+              hostname = "asteroids_actor_system_2"
               port = 2551
             }
           }
           cluster {
             seed-nodes = [
-              "akka.tcp://asteroid-system@actor-system-1:2551"
-              "akka.tcp://asteroid-system@actor-system-2:2551"
-              "akka.tcp://asteroid-system@actor-system-3:2551"
+              "akka.tcp://asteroid-system@asteroids_actor_system_1:2551"
+              "akka.tcp://asteroid-system@asteroids_actor_system_2:2551"
+              "akka.tcp://asteroid-system@asteroids_actor_system_3:2551"
             ]
             roles = ["lobby"]
           }
@@ -114,7 +114,7 @@ services:
     depends_on:
       - asteroids_signalr
     environment:
-      SIGNALR_URL: http://asteroids_signalr:8081/ws
+      SIGNALR_URL: http://asteroids_signalr:8080/ws
       CLUSTER_CONFIG: |
         akka {
           actor {
@@ -122,15 +122,15 @@ services:
           }
           remote {
             dot-netty.tcp {
-              hostname = "actor-system-3"
+              hostname = "asteroids_actor_system_3"
               port = 2551
             }
           }
           cluster {
             seed-nodes = [
-              "akka.tcp://asteroid-system@actor-system-1:2551"
-              "akka.tcp://asteroid-system@actor-system-2:2551"
-              "akka.tcp://asteroid-system@actor-system-3:2551"
+              "akka.tcp://asteroid-system@asteroids_actor_system_1:2551"
+              "akka.tcp://asteroid-system@asteroids_actor_system_2:2551"
+              "akka.tcp://asteroid-system@asteroids_actor_system_3:2551"
             ]
             roles = ["lobby"]
           }
@@ -158,7 +158,7 @@ services:
       - grafana_data:/var/lib/grafana
       - ./ops/grafana-datasource.yml:/etc/grafana/provisioning/datasources/grafana-datasource.yml
       - ./ops/grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/grafana-dashboards.yml
-      - ../dashboards:/var/lib/grafana/dashboards
+      - ./dashboards:/var/lib/grafana/dashboards
     restart: unless-stopped
 
   asteroids_prometheus:

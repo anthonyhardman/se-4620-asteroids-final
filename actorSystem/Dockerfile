@@ -9,6 +9,7 @@ WORKDIR /source/actorSystem
 RUN dotnet publish -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+EXPOSE 2551
 WORKDIR /app
 COPY --from=build /app .
 ENTRYPOINT ["dotnet", "actorSystem.dll"]

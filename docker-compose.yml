@@ -122,7 +122,7 @@ services:
           }
           remote {
             dot-netty.tcp {
-              hostname = "actor-system-2"
+              hostname = "actor-system-3"
               port = 2551
             }
           }

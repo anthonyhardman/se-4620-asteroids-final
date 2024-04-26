@@ -18,7 +18,6 @@ public class AkkaService : IHostedService, IActorBridge
   private readonly IServiceProvider _serviceProvider;
   private readonly IHostApplicationLifetime _applicationLifetime;
   private IActorRef? _lobbySupervisor;
-  private IActorRef? _raftActor;
 
   public AkkaService(IServiceProvider serviceProvider, IHostApplicationLifetime appLifetime, IConfiguration configuration, ILogger<AkkaService> logger)
   {

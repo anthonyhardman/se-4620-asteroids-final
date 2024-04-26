@@ -17,7 +17,8 @@ namespace actorSystem.Test;
 public class LobbySupervisorTests : TestKit
 {
   private readonly IActorRef _lobbySupervisor;
-  private TestProbe _mockRaftActor;
+  private IActorRef _raftActor;
+  private static readonly Mock<IRaftService> _mockRaftService = new();
 
   private static ActorSystem CreateActorSystemWithDI()
   {
@@ -31,11 +32,14 @@ public class LobbySupervisorTests : TestKit
 
   public LobbySupervisorTests() : base(CreateActorSystemWithDI())
   {
-    _mockRaftActor = CreateTestProbe();
+    this._raftActor = base.CreateTestProbe();
 
     var resolver = DependencyResolver.For(Sys);
-    var lobbySupervisorProps = resolver.Props<LobbySupervisor>(_mockRaftActor.Ref);
+    var raftActorProps = resolver.Props<RaftActor>();
+    _raftActor = Sys.ActorOf(raftActorProps, "raft-actor");
+    var lobbySupervisorProps = resolver.Props<LobbySupervisor>();
     _lobbySupervisor = Sys.ActorOf(lobbySupervisorProps, "lobbySupervisor");
+    
   }
 
   private static IServiceProvider SetupMockServiceProvider()
@@ -46,6 +50,9 @@ public class LobbySupervisorTests : TestKit
     services.AddSingleton(new Mock<ILogger<LobbySupervisor>>().Object);
     services.AddSingleton(new Mock<ILogger<LobbyActor>>().Object);
     services.AddSingleton(new Mock<ILogger<RaftActor>>().Object);
+    _mockRaftService.Setup(x => x.StrongGet<List<Guid>>("lobbyList"))
+                   .ReturnsAsync((new List<Guid>(), 0));
+    services.AddSingleton(_mockRaftService.Object);
 
     var serviceProvider = services.BuildServiceProvider(validateScopes: true);
     var mockServiceScope = new Mock<IServiceScope>();

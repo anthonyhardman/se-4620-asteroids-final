@@ -3,7 +3,7 @@ using System.Numerics;
 using Xunit;
 using shared.Models;
 
-namespace shared.Models.Tests;
+namespace actorSystem.Test;
 
 public class SpatialHashTests
 {

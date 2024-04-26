@@ -144,7 +144,6 @@ public class LobbySupervisor : ReceiveActor
     }
   }
 
-
   private void CreateLobby(CreateLobbyCommand command)
   {
     logger.LogInformation("Creating lobby via lobby supervisor");
@@ -154,7 +153,7 @@ public class LobbySupervisor : ReceiveActor
     Context.Watch(lobbyActor);
     Lobbies.Add(lobbyInfo.Id, lobbyActor);
     RaftActor.Tell(new StoreLobbyCommand(lobbyInfo));
-    RaftActor.Tell(new UpdateLobbyList(Lobbies.Keys.ToList()));
+    RaftActor.Tell(new UpdateLobbyList([.. Lobbies.Keys]));
     Sender.Tell(new LobbyCreated(lobbyInfo, lobbyActor.Path.ToString()));
     logger.LogInformation($"Lobby Supervisor: Lobby created: {lobbyActor.Path}");
   }

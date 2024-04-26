@@ -121,7 +121,7 @@ public class LobbyInfo
       spawnProbability *= 1.1f;
     }
 
-    if (Asteroids.Count < 2 || (Asteroids.Count < 30 && random.NextDouble() < spawnProbability))
+    if (Asteroids.Count < 2 || (Asteroids.Count < MaxAsteroids && random.NextDouble() < spawnProbability))
     {
       Asteroids.Add(new Asteroid(maxX, maxY));
     }

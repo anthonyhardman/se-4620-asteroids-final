@@ -3,12 +3,15 @@ using shared.Models;
 using System.Text.Json;
 using Raft.Shared.Models;
 using Raft.Shared;
+using Akka.Cluster.Tools.PublishSubscribe;
 
 namespace actorSystem;
 
 public record StoreLobbyCommand(LobbyInfo Info);
 public record GetLobbyCommand(Guid LobbyId);
 public record OperationFailed(string Reason);
+public record UpdateLobbyList(List<Guid> LobbyList);
+public record GetLobbyListCommand();
 
 public class RaftActor : ReceiveActor
 {
@@ -21,6 +24,8 @@ public class RaftActor : ReceiveActor
 
     ReceiveAsync<StoreLobbyCommand>(HandleStoreLobbyCommand);
     ReceiveAsync<GetLobbyCommand>(HandleGetLobbyCommand);
+    ReceiveAsync<GetLobbyListCommand>(_ => GetLobbyList());
+    ReceiveAsync<UpdateLobbyList>(command => UpdateLobbyList(command.LobbyList));
   }
 
   private async Task HandleStoreLobbyCommand(StoreLobbyCommand command)
@@ -81,6 +86,40 @@ public class RaftActor : ReceiveActor
     }
 
     Sender.Tell(JsonSerializer.Deserialize<LobbyInfo>(data.Value));
+  }
+
+  public async Task GetLobbyList()
+  {
+    _logger.LogInformation("Getting lobby list");
+    try
+    {
+      var response = await _raftService.StrongGet<List<Guid>>("lobbyList");
+      Console.WriteLine($"Lobby List Count {response.value.Count}");
+      Sender.Tell(response.value);
+    }
+    catch (Exception e)
+    {
+      _logger.LogWarning(e, "Could not retrieve lobby list. Returning empty list.");
+      Sender.Tell(new List<Guid>());
+    }
+  }
+
+  public async Task UpdateLobbyList(List<Guid> lobbyList)
+  {
+    _logger.LogInformation("Attempting to update lobby list");
+    try
+    {
+      var response = await _raftService.StrongGet<List<Guid>>("lobbyList");
+      var lobbyListFromRaft = response.value ?? new List<Guid>();
+
+      var casResponse = await _raftService.CompareAndSwap<List<Guid>>("lobbyList", lobbyList, lobbyListFromRaft, response.version);
+      _logger.LogInformation($"Compare and swap for updating lobby list: {casResponse.Success}");
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e, "Error updating lobby list.");
+      var casResponse = await _raftService.CompareAndSwap<List<Guid>>("lobbyList", lobbyList, [], -1);
+    }
   }
 
   public static Props Props(IRaftService raftService, ILogger<RaftActor> logger)

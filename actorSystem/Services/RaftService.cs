@@ -26,7 +26,9 @@ public class RaftService : IRaftService
 
   public async Task<(T value, int version)> StrongGet<T>(string key)
   {
+    Console.WriteLine($"StrongGet: {key} to {_httpClient.BaseAddress}");
     var response = await _httpClient.GetFromJsonAsync<StrongGetResponse>($"api/storage/strong?key={key}");
+    Console.WriteLine($"StrongGet response: {response.Value} {response.Version}");
 
     if (response?.Value == null)
     {

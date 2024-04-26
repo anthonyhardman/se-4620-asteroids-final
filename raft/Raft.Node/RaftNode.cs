@@ -77,16 +77,13 @@ public class RaftNode : IRaftNode
 
     public async void DoAction(object? sender, ElapsedEventArgs e)
     {
-        Console.WriteLine($"{Id} is doing action as {Role}");
         switch (Role)
         {
             case RaftRole.Follower:
             case RaftRole.Candidate:
-                Console.WriteLine($"{Id} is holding election");
                 await HoldElection();
                 break;
             case RaftRole.Leader:
-                Console.WriteLine($"{Id} is sending heartbeat");
                 await SendHeartbeat();
                 break;
         }
@@ -157,7 +154,6 @@ public class RaftNode : IRaftNode
             };
         }
 
-        Console.WriteLine($"{Id} received append entries from {request.LeaderId} prevLogIndex: {request.PrevLogIndex} prevLogTerm: {request.PrevLogTerm} entries: {request.PrevLogTermEntries.Count}");
         Log.AppendRange(request.PrevLogTermEntries);
 
         if (request.LeaderCommit > CommitIndex)
@@ -181,8 +177,6 @@ public class RaftNode : IRaftNode
             var nextIndex = NextIndex[i];
             var prevLogIndex = nextIndex - 1;
             var prevLogTerm = prevLogIndex >= 0 ? Log[prevLogIndex].Term : 0;
-
-            Console.WriteLine($"{Id} sending heartbeat to {follower.Id} nextIndex: {nextIndex} prevLogIndex: {prevLogIndex} prevLogTerm: {prevLogTerm}");
 
             try
             {
@@ -254,17 +248,9 @@ public class RaftNode : IRaftNode
 
     public async Task<CompareAndSwapResponse> CompareAndSwap(CompareAndSwapRequest request)
     {
+        Console.WriteLine($"{Id} CompareAndSwap {request.Key} expected: {request.ExpectedValue} new: {request.NewValue} version: {request.Version}");
         if (Role != RaftRole.Leader || !await MajorityOfPeersHaveMeAsLeader())
         {
-            // var msg = $"{Id} is not leader or does not have majority of peers as leader";
-            // Console.WriteLine(msg);
-            // return new CompareAndSwapResponse
-            // {
-            //     Success = false,
-            //     Version = int.MinValue,
-            //     Value = "NOT_LEADER"
-            // };
-
             var leader = Peers.FirstOrDefault(x => x.Id == MostRecentLeaderId);
 
             if (leader == null)

@@ -61,9 +61,7 @@ public class StorageController : ControllerBase
       try
       {
         var node = GetRandomNode();
-        Console.WriteLine($"Requesting leader from {node.Id}");
         var leaderId = await node.MostRecentLeader();
-        Console.WriteLine($"Leader is {leaderId}");
         var leader = _raftNodes.FirstOrDefault(x => x.Id == leaderId);
         var response = await leader.CompareAndSwap(request);
         if (response.Version >= 0)

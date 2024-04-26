@@ -21,8 +21,6 @@ public class LobbySupervisor : ReceiveActor
   public Dictionary<Guid, IActorRef> Lobbies { get; set; } = [];
   public IActorRef RaftActor { get; set; }
 
-
-
   public static readonly Meter meter = new("LobbySupervisor");
 
   public LobbySupervisor(IServiceProvider serviceProvider, IActorRef? raftActor = null)
@@ -66,6 +64,20 @@ public class LobbySupervisor : ReceiveActor
     {
       return Lobbies.Values.Select(x => x.Ask<LobbyInfo>(new GetLobbyInfoQuery()).Result.Players.Count).Sum();
     }, "Number of Players in Lobbies");
+
+    var lobbyList = RaftActor.Ask<List<Guid>>(new GetLobbyListCommand()).Result;
+    foreach (var lobby in lobbyList)
+    {
+      logger.LogInformation($"Attempting to recreate lobby {lobby}");
+      try
+      {
+        RecreateLobby(lobby);
+      }
+      catch (Exception e)
+      {
+        logger.LogError(e, $"Failed to recreate lobby {lobby}");
+      }
+    }
   }
 
   public void UpdateLobbiesPlayerColor(UpdateLobbiesPlayerColorCommand command)
@@ -141,8 +153,21 @@ public class LobbySupervisor : ReceiveActor
     var lobbyActor = Context.ActorOf(props, $"lobby_{lobbyInfo.Id}");
     Context.Watch(lobbyActor);
     Lobbies.Add(lobbyInfo.Id, lobbyActor);
+    RaftActor.Tell(new StoreLobbyCommand(lobbyInfo));
+    RaftActor.Tell(new UpdateLobbyList(Lobbies.Keys.ToList()));
     Sender.Tell(new LobbyCreated(lobbyInfo, lobbyActor.Path.ToString()));
     logger.LogInformation($"Lobby Supervisor: Lobby created: {lobbyActor.Path}");
+  }
+
+  private void RecreateLobby(Guid guid)
+  {
+    logger.LogInformation($"Attempting to recreating lobby {guid}");
+    var lobbyInfo = RaftActor.Ask<LobbyInfo>(new GetLobbyCommand(guid)).Result;
+    var props = DependencyResolver.For(Context.System).Props<LobbyActor>(lobbyInfo, RaftActor);
+    var lobbyActor = Context.ActorOf(props, $"lobby_{lobbyInfo.Id}");
+    Context.Watch(lobbyActor);
+    Lobbies.Add(lobbyInfo.Id, lobbyActor);
+    logger.LogInformation($"Lobby Supervisor: Lobby recreated: {lobbyActor.Path}");
   }
 
   private async Task RehydrateLobby(IActorRef oldLobby)

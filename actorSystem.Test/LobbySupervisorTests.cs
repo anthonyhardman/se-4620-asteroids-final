@@ -10,15 +10,19 @@ using Akka.Actor.Setup;
 using Akka.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
+using Akka.Event;
 
 namespace actorSystem.Test;
 
 
 public class LobbySupervisorTests : TestKit
 {
-  private readonly IActorRef _lobbySupervisor;
+  private IActorRef _lobbySupervisor;
   private IActorRef _raftActor;
   private static readonly Mock<IRaftService> _mockRaftService = new();
+  private static readonly Guid oldId = Guid.NewGuid();
+  private static LobbyInfo info;
 
   private static ActorSystem CreateActorSystemWithDI()
   {
@@ -35,11 +39,10 @@ public class LobbySupervisorTests : TestKit
     this._raftActor = base.CreateTestProbe();
 
     var resolver = DependencyResolver.For(Sys);
-    var raftActorProps = resolver.Props<RaftActor>();
+    var raftActorProps = resolver.Props<RaftActor>(_mockRaftService.Object);
     _raftActor = Sys.ActorOf(raftActorProps, "raft-actor");
     var lobbySupervisorProps = resolver.Props<LobbySupervisor>();
     _lobbySupervisor = Sys.ActorOf(lobbySupervisorProps, "lobbySupervisor");
-    
   }
 
   private static IServiceProvider SetupMockServiceProvider()
@@ -50,8 +53,23 @@ public class LobbySupervisorTests : TestKit
     services.AddSingleton(new Mock<ILogger<LobbySupervisor>>().Object);
     services.AddSingleton(new Mock<ILogger<LobbyActor>>().Object);
     services.AddSingleton(new Mock<ILogger<RaftActor>>().Object);
+    var lobbyInfo = new LobbyInfo(
+      id: oldId,
+      createdBy: "preExistingUser",
+      maxPlayers: 5,
+      players: new Dictionary<string, PlayerShip> { { "preExistingUser", new PlayerShip(100, 100) } },
+      state: LobbyState.Joining,
+      countdownTime: 0,
+      asteroids: new List<Asteroid>(),
+      maxAsteroids: 30
+    );
+    info = lobbyInfo;
     _mockRaftService.Setup(x => x.StrongGet<List<Guid>>("lobbyList"))
-                   .ReturnsAsync((new List<Guid>(), 0));
+                    .ReturnsAsync((new List<Guid> { lobbyInfo.Id }, 0));
+    var serializedLobbyInfo = JsonSerializer.Serialize(lobbyInfo);
+    _mockRaftService.Setup(x => x.StrongGet<string>(oldId.ToString()))
+                    .ReturnsAsync((serializedLobbyInfo, 1));
+
     services.AddSingleton(_mockRaftService.Object);
 
     var serviceProvider = services.BuildServiceProvider(validateScopes: true);
@@ -80,6 +98,58 @@ public class LobbySupervisorTests : TestKit
       lc.Info.State.Should().Be(LobbyState.Joining);
       lc.ActorPath.Should().Contain("lobby_");
     });
+  }
+
+  [Fact]
+  public void Test_Mock_StrongGet_Returns_Expected_Value()
+  {
+    var serializedLobbyInfo = JsonSerializer.Serialize(info);
+
+    var result = _mockRaftService.Object.StrongGet<string>(info.Id.ToString()).Result;
+
+    result.Should().NotBeNull(); // Verify that the mock returns the correct data
+    result.value.Should().Be(serializedLobbyInfo); // Ensure it returns the correct value
+  }
+
+
+  [Fact]
+  public void LobbySupervisor_ShouldRehydrate_Terminated_Actor()
+  {
+    var probe = CreateTestProbe();
+
+    // Create a lobby and terminate the actor to trigger rehydration
+    var createCommand = new CreateLobbyCommand("testUser");
+    _lobbySupervisor.Tell(createCommand, probe.Ref);
+    var created = probe.ExpectMsg<LobbyCreated>();
+
+    var createdLobbyActor = Sys.ActorSelection(created.ActorPath);
+    createdLobbyActor.Tell(PoisonPill.Instance); // Terminate the actor to trigger rehydration
+
+    // Act
+    probe.Watch(_lobbySupervisor); // Watch the supervisor for rehydration
+    _lobbySupervisor.Tell(new GetLobbiesQuery(), probe.Ref);
+
+    // Assert
+    var lobbyList = probe.ExpectMsg<LobbyList>();
+    lobbyList.Count.Should().Be(1); // Ensure rehydration occurred
+
+    var rehydratedLobby = lobbyList[0];
+    rehydratedLobby.Id.Should().Be(oldId); // Validate correct rehydration
+    rehydratedLobby.CreatedBy.Should().Be("preExistingUser"); // Validate consistent data
+  }
+
+  [Fact]
+  public void LobbySupervisor_ShouldRecreate_PreExisting_Lobby()
+  {
+    var probe = CreateTestProbe();
+    probe.Watch(_lobbySupervisor);
+    _lobbySupervisor.Tell(new GetLobbiesQuery(), probe.Ref);
+
+    var lobbyList = probe.ExpectMsg<LobbyList>();
+
+    lobbyList.Count.Should().Be(1); // Verify that one lobby is recreated
+    var recreatedLobby = lobbyList[0];
+    recreatedLobby.Id.Should().Be(oldId); // Ensure it's the correct lobby
   }
 
   [Fact]

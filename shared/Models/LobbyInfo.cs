@@ -114,7 +114,7 @@ public class LobbyInfo
   {
     elapsedTime += timeStep / 1000.0f;
     float spawnProbability = 0.002f + (elapsedTime / 10000.0f);
-    int desiredAsteroidCount = 2 + (int)(elapsedTime / 180);
+    int desiredAsteroidCount = Math.Min(2, MaxAsteroids) + (int)(elapsedTime / 180);
 
     if (Asteroids.Count < desiredAsteroidCount)
     {

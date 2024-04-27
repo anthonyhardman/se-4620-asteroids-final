@@ -111,8 +111,8 @@ export const Lobby = () => {
         {colors.map((color) => (
           <button
             key={color}
-            className="me-1"
-            style={{ backgroundColor: color, color: 'white' }}
+            className="me-1 btn"
+            style={{ borderColor: color, color: color }}
             onClick={() => handleColorChange(color)}
             disabled={selectedColor === color}
           >
@@ -147,7 +147,7 @@ export const Lobby = () => {
           {user?.preferred_username === lobbyInfo.createdBy && (
             <>
               <div>
-                <label className="form-label">Maximum Asteroids:
+                <label className="form-label text-start">Max Asteroids:
                   <input
                     id="maxAsteroidsInput"
                     type="number"
@@ -168,10 +168,13 @@ export const Lobby = () => {
       );
     } else if (lobbyInfo.state === LobbyState.Countdown) {
       return (
-        <div className="alert alert-primary col-12">
-          Game starting in {lobbyInfo.countdownTime}. Customize your
-          ship!
-        </div>
+        <>
+          <div className="alert alert-primary col-12">
+            Game starting in {lobbyInfo.countdownTime}. Customize your
+            ship!
+          </div>
+          {renderColorOptions()}
+        </>
       );
     } else if (lobbyInfo.state === LobbyState.Playing) {
       return (

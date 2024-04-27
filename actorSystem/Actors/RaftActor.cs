@@ -94,7 +94,6 @@ public class RaftActor : ReceiveActor
     try
     {
       var response = await _raftService.StrongGet<List<Guid>>("lobbyList");
-      Console.WriteLine($"Lobby List Count {response.value.Count}");
       Sender.Tell(response.value);
     }
     catch (Exception e)

@@ -245,7 +245,7 @@ public class LobbySupervisorTests : TestKit
     var probe = CreateTestProbe();
     var nonExistentLobbyId = Guid.NewGuid(); // A GUID that hasn't been used to create a lobby
 
-    _lobbySupervisor.Tell(nonExistentLobbyId, probe.Ref);
+    _lobbySupervisor.Tell(new GetLobbyInfoCommand(nonExistentLobbyId), probe.Ref);
 
     probe.ExpectMsg<Status.Failure>(failure =>
     {

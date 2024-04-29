@@ -12,6 +12,7 @@ public record GetLobbiesQuery();
 public record UpdatePlayerInputStateCommand(string Username, Guid LobbyId, InputState InputState);
 public record KillLobbyCommand(Guid LobbyId);
 public record UpdateLobbiesPlayerColorCommand(Guid LobbyId, string Username, string Color);
+public record GetLobbyInfoCommand(Guid LobbyId);
 
 public class LobbySupervisor : ReceiveActor
 {
@@ -29,7 +30,7 @@ public class LobbySupervisor : ReceiveActor
     Receive<JoinLobbyCommand>(JoinLobby);
     ReceiveAsync<GetLobbiesQuery>(async _ => await GetLobbies());
     Receive<StartGameCommand>(StartGame);
-    Receive<Guid>(GetLobby);
+    Receive<GetLobbyInfoCommand>(GetLobby);
     Receive<UpdatePlayerInputStateCommand>(UpdatePlayerInputState);
     Receive<KillLobbyCommand>(KillLobby);
     Receive<UpdateLobbiesPlayerColorCommand>(UpdateLobbiesPlayerColor);
@@ -88,16 +89,17 @@ public class LobbySupervisor : ReceiveActor
     }
   }
 
-  private void GetLobby(Guid lobbyId)
+  private void GetLobby(GetLobbyInfoCommand command)
   {
-    if (Lobbies.TryGetValue(lobbyId, out var lobby))
+    Console.WriteLine($"GetLobby from {Sender.Path}");
+    if (Lobbies.TryGetValue(command.LobbyId, out var lobby))
     {
       lobby.Forward(new GetLobbyInfoQuery());
     }
     else
     {
-      logger.LogError($"Lobby Supervisor: Failed to get lobby. Lobby {lobbyId} not found.");
-      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Failed to get lobby. Lobby {lobbyId} not found.")));
+      logger.LogError($"Lobby Supervisor: Failed to get lobby. Lobby {command.LobbyId} not found.");
+      Sender.Tell(new Status.Failure(new KeyNotFoundException($"Failed to get lobby. Lobby {command.LobbyId} not found.")));
     }
   }
 

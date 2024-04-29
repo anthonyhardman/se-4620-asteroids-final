@@ -40,7 +40,9 @@ public class LobbyController : ControllerBase
   [HttpGet("{lobbyId}")]
   public async Task<LobbyInfo> GetLobbyInfo(Guid lobbyId)
   {
+    Console.WriteLine("Getting lobby info");
     var result = await _communicationService.GetLobbyInfo(lobbyId);
+    Console.WriteLine("Got lobby info");
     return result;
   }
 

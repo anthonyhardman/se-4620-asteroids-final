@@ -99,6 +99,7 @@ public class AkkaService : IHostedService, IActorBridge
 
   public async Task<LobbyList> GetLobbies()
   {
+    Console.WriteLine("Getting lobbies in Akka service.");
     var result = await _lobbySupervisor.Ask<LobbyList>(new GetLobbiesQuery());
     return result ?? new LobbyList();
   }
@@ -110,7 +111,9 @@ public class AkkaService : IHostedService, IActorBridge
 
   public async Task<LobbyInfo> GetLobbyInfo(Guid lobbyId)
   {
-    var result = await _lobbySupervisor.Ask<LobbyInfo>(lobbyId);
+    Console.WriteLine("Got to get lobby info in Akka service.");
+    Console.WriteLine($"Lobby Supervisor: {_lobbySupervisor?.Path}");
+    var result = await _lobbySupervisor.Ask<LobbyInfo>(new GetLobbyInfoCommand(lobbyId));
     return result;
   }
 

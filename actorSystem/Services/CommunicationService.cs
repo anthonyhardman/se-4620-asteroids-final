@@ -96,6 +96,7 @@ public class CommunicationService : ICommunicationService, IHostedService
 
   public async Task<LobbyInfo> GetLobbyInfo(Guid lobbyId)
   {
+    Console.WriteLine("Got to get lobby info in communication service.");
     var result = await _akkaService.GetLobbyInfo(lobbyId);
     return result;
   }
